@@ -26,6 +26,7 @@ Direct address when the device cannot resolve the Tailscale hostname:
 `http://100.117.88.81:8080/`. This is a private Tailscale TCP forward to the same
 loopback server. It avoids DNS and does not enable public access. Configure it
 with `/Applications/Tailscale.app/Contents/MacOS/Tailscale serve --bg --tcp=8080 127.0.0.1:63402`.
+The user confirmed this address works on sixsac; use it as the preview link.
 The copy action uses its manual-copy fallback if the browser requires HTTPS
 for clipboard access. Each origin has its own browser study storage.
 

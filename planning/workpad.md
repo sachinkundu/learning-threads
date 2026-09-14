@@ -28,8 +28,9 @@ Connection follow-up:
 - Added a private TCP forward on port 8080. Direct address:
   http://100.117.88.81:8080/. Host-side HTTP 200 matched the built page exactly.
   The original HTTPS route and the unrelated route on 443 remain unchanged.
-- Asked the user to open the direct address in Safari on sixsac. Confirmation
-  from that device is still pending.
+- The user opened the direct address on sixsac and confirmed: "that works".
+  Use http://100.117.88.81:8080/ as the working preview address. Remote device
+  access is now confirmed; the hostname's DNS issue remains separate.
 
 ## Delivery
 
