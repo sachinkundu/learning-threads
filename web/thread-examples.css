@@ -1,0 +1,51 @@
+#lt-reading{--lt-axis-a:light-dark(#4d719b,#97b9e1);--lt-axis-b:light-dark(#9b7028,#d6b16c);--lt-axis-c:var(--lt-teal)}
+#lt-reading.lt-in-thread .lt-columns{grid-template-columns:minmax(0,760px);gap:0;justify-content:center}
+#lt-reading.lt-in-thread .lt-demo{display:none}
+#lt-reading.lt-in-thread .lt-thread{background:none;border:0;padding:0;border-radius:0}
+#lt-reading.lt-in-thread .lt-qa{border:0;padding-top:18px;margin-top:0}
+#lt-reading.lt-in-thread .lt-thread .lt-actions{margin:0 0 14px}
+#lt-reading .lt-thread-origin{font-size:12px;color:var(--lt-muted)}
+#lt-reading .lt-thread-origin summary{cursor:pointer;min-height:32px}
+#lt-reading .lt-thread-origin blockquote{font:16px/1.6 Georgia,serif;margin:7px 0 10px;padding-left:13px;border-left:2px solid var(--lt-line)}
+#lt-reading .lt-message-content.lt-rich{white-space:normal}
+#lt-reading .lt-rich p{margin:0 0 15px}
+#lt-reading .lt-rich p:last-child{margin-bottom:0}
+#lt-reading .lt-rich a{color:var(--lt-green);font:12px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-decoration-thickness:1px;text-underline-offset:3px}
+#lt-reading .lt-rich strong{font-weight:600}
+#lt-reading .lt-concept{border:0;border-bottom:1px dashed var(--lt-green);border-radius:0;padding:0;background:none;color:var(--lt-green);font:inherit!important}
+#lt-reading .lt-concept:hover{background:var(--lt-soft)}
+#lt-reading .lt-thread-entry{margin-top:16px;color:var(--lt-green)}
+#lt-reading .lt-highlight-origin{color:inherit;text-decoration:none;border-bottom:1px dashed var(--lt-green);cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+#lt-reading .lt-highlight-origin mark{padding:2px 0;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+#lt-reading .lt-highlight-origin:hover mark{filter:brightness(1.1)}
+#lt-reading .lt-highlight-origin:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px;border-radius:3px}
+#lt-reading .lt-linked-origin{border:1px solid var(--lt-line);border-radius:8px;padding:10px 13px}
+#lt-reading .lt-linked-origin blockquote{border:0;padding:0;margin-bottom:4px}
+#lt-reading .lt-message.lt-visual-message{background:transparent;border:1px solid var(--lt-line)}
+#lt-reading .lt-answer-visual{margin:14px 0 0}
+#lt-reading .lt-visual-title{font:550 14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-bottom:14px}
+#lt-reading .lt-wrist-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#lt-reading .lt-wrist-pair figure{margin:0;min-width:0}
+#lt-reading .lt-wrist-pair figcaption{font:550 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#lt-reading .lt-wrist-pair small{display:block;color:var(--lt-muted);font-size:11px;font-weight:400;margin-top:4px;min-height:30px}
+#lt-reading .lt-wrist-pair svg{display:block;width:100%;height:245px;overflow:visible}
+#lt-reading .lt-wrist-pair svg text,#lt-reading .lt-torque-svg text{font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:var(--lt-muted)}
+#lt-reading .lt-wrist-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:8px 0}
+#lt-reading .lt-wrist-controls label{font:12px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#lt-reading .lt-wrist-controls output{display:block;font-size:14px;margin:3px 0}
+#lt-reading .lt-visual-note{font:12px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:var(--lt-muted);margin:10px 0 0!important}
+#lt-reading .lt-drive-chain{list-style:none;display:flex;flex-wrap:wrap;gap:9px;padding:0;margin:20px 0;font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#lt-reading .lt-drive-chain li{padding:8px 0}
+#lt-reading .lt-drive-chain li:not(:last-child)::after{content:'→';margin-left:9px;color:var(--lt-muted)}
+#lt-reading .lt-feedback-loop{font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border-top:1px solid var(--lt-line);padding-top:12px;color:var(--lt-green)}
+#lt-reading .lt-torque-svg{width:100%;height:245px}
+#lt-reading .lt-message-note{padding:12px 0 0;font-size:12px}
+#lt-reading .lt-message-note label{display:block;color:var(--lt-muted);margin-bottom:6px}
+#lt-reading .lt-message-note textarea{width:100%;min-height:75px;resize:vertical;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:7px;padding:9px;font-size:16px}
+
+#lt-reading.lt-in-thread .lt-content{max-width:880px}
+#lt-reading.lt-in-thread .lt-thread{grid-column:1;grid-row:1}
+#lt-reading.lt-in-thread .lt-qa{grid-column:1;grid-row:2}
+#lt-reading .lt-feedback:empty,#lt-reading .lt-qa-status:empty{display:none}
+@media(max-width:540px){#lt-reading .lt-wrist-pair{grid-template-columns:1fr;gap:22px}#lt-reading .lt-wrist-pair small{min-height:0}#lt-reading .lt-wrist-controls{grid-template-columns:1fr;gap:8px}#lt-reading .lt-wrist-controls output{display:inline;margin-left:10px}#lt-reading .lt-message{padding:14px 12px}#lt-reading .lt-message.lt-user{margin-left:0}}
+@media(pointer:coarse){#lt-reading .lt-concept{padding:4px 0}}

@@ -1,0 +1,395 @@
+<div id="lt-reading" aria-label="Learning Threads reading experiment">
+  <style>
+    #lt-reading{--lt-bg:light-dark(#faf9f5,#171e20);--lt-surface:light-dark(#ffffff,#20292b);--lt-ink:light-dark(#203431,#edf3ee);--lt-muted:light-dark(#63736e,#a9bbb4);--lt-line:light-dark(#e1e7df,#354641);--lt-green:light-dark(#1d6758,#95d7be);--lt-soft:light-dark(#e9f1e8,#293f37);--lt-teal:light-dark(#398878,#79c3ab);--lt-fixed:light-dark(#94a69f,#6d8b80);--lt-paper:light-dark(#f0f3ed,#1c3028);--lt-mark:light-dark(#fcf1b8,#625721);color:var(--lt-ink);background:var(--lt-bg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border:1px solid var(--lt-line);border-radius:16px;overflow:hidden}
+    #lt-reading *{box-sizing:border-box}
+    #lt-reading button,#lt-reading input,#lt-reading textarea{font:inherit}
+    #lt-reading button{cursor:pointer;touch-action:manipulation;color:inherit}
+    #lt-reading button:disabled{opacity:.4;cursor:default}
+    #lt-reading button:focus-visible,#lt-reading input:focus-visible,#lt-reading textarea:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px}
+    #lt-reading [hidden]{display:none!important}
+    #lt-reading .lt-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;background:var(--lt-surface);border-bottom:1px solid var(--lt-line)}
+    #lt-reading .lt-brand{font-weight:650;letter-spacing:-.4px;display:flex;align-items:center;gap:10px;font-size:17px}
+    #lt-reading .lt-brand i{color:var(--lt-green)}
+    #lt-reading .lt-preview{font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-content{padding:28px 32px 22px}
+    #lt-reading .lt-bookline{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;color:var(--lt-muted);font-size:13px;margin-bottom:22px}
+    #lt-reading .lt-bookline strong{font-weight:550;color:var(--lt-ink)}
+    #lt-reading .lt-crumb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;min-height:29px;margin-bottom:13px}
+    #lt-reading .lt-crumb button{border:0;background:none;padding:3px 0;color:var(--lt-green)}
+    #lt-reading .lt-crumb span{color:var(--lt-muted)}
+    #lt-reading h2{font:500 32px/1.15 Georgia,"Times New Roman",serif;letter-spacing:-.7px;margin:0 0 25px}
+    #lt-reading .lt-columns{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:34px;align-items:start}
+    #lt-reading .lt-sectionlabel{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lt-muted);font-weight:600;margin-bottom:14px}
+    #lt-reading .lt-prose{font:400 var(--lt-reading-size,19px)/1.75 Georgia,"Times New Roman",serif;margin:0;color:var(--lt-ink)}
+    #lt-reading .lt-term{font:inherit!important;border:0;border-bottom:1px solid var(--lt-green);padding:0 2px;background:transparent;color:var(--lt-green);border-radius:3px;text-align:left;display:inline}
+    #lt-reading .lt-term[aria-pressed="true"]{background:var(--lt-soft);border-bottom:2px solid var(--lt-green)}
+    #lt-reading .lt-source{font-size:12px;color:var(--lt-muted);margin-top:18px}
+    #lt-reading .lt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+    #lt-reading .lt-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--lt-line);border-radius:8px;background:var(--lt-surface);padding:9px 12px;min-height:42px;font-size:13px}
+    #lt-reading .lt-action.lt-primary{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
+    #lt-reading .lt-quiet{background:none;border:0;font-size:13px;padding:8px 0;color:var(--lt-muted)}
+    #lt-reading .lt-demo{background:var(--lt-paper);border-radius:12px;padding:19px 18px 17px}
+    #lt-reading .lt-demotop{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:14px}
+    #lt-reading .lt-demotop strong{font-size:14px;font-weight:600}
+    #lt-reading .lt-demotop span{font-size:11px;color:var(--lt-muted)}
+    #lt-reading .lt-joints{display:flex;gap:3px;flex-wrap:wrap;background:var(--lt-surface);padding:4px;border-radius:8px}
+    #lt-reading .lt-joints button{flex:1;border:0;padding:8px 7px;border-radius:5px;background:transparent;font-size:12px;min-height:38px}
+    #lt-reading .lt-joints button[aria-pressed="true"]{background:var(--lt-green);color:var(--lt-bg)}
+    #lt-reading .lt-diagram{display:block;width:100%;height:270px;overflow:visible}
+    #lt-reading .lt-diagram text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:var(--lt-muted);font-size:11px}
+    #lt-reading .lt-caption{font-size:14px;line-height:1.5;text-align:center;min-height:43px;margin:0 0 16px;color:var(--lt-ink)}
+    #lt-reading .lt-control{margin-top:12px}
+    #lt-reading .lt-control label{display:flex;justify-content:space-between;font-size:12px;gap:8px}
+    #lt-reading output{font-variant-numeric:tabular-nums;color:var(--lt-green);font-weight:600}
+    #lt-reading input[type="range"]{width:100%;accent-color:var(--lt-green);height:26px;cursor:ew-resize;margin:3px 0 0}
+    #lt-reading .lt-demofoot{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:14px;font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-demofoot button{border:0;background:var(--lt-surface);border-radius:6px;padding:7px 10px;font-size:12px;min-height:38px}
+    #lt-reading .lt-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:28px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    #lt-reading .lt-progress{display:flex;align-items:center;gap:8px;color:var(--lt-muted);font-size:12px}
+    #lt-reading .lt-progress button{width:32px;height:32px;border-radius:50%;border:1px solid var(--lt-line);background:var(--lt-surface);font-size:12px}
+    #lt-reading .lt-progress button.current{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
+    #lt-reading .lt-nav{display:flex;gap:10px}
+    #lt-reading .lt-context{margin-top:22px;border-top:1px solid var(--lt-line);padding-top:16px;color:var(--lt-muted);font:16px/1.7 Georgia,serif}
+    #lt-reading .lt-context .lt-sectionlabel{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    #lt-reading .lt-thread{background:var(--lt-surface);border-left:3px solid var(--lt-green);padding:19px 21px;border-radius:0 10px 10px 0}
+    #lt-reading .lt-thread h3{font:500 23px/1.3 Georgia,serif;margin:0 0 15px}
+    #lt-reading .lt-thread p{font:17px/1.7 Georgia,serif;margin:0 0 15px}
+    #lt-reading .lt-thread .lt-sectionlabel{margin-bottom:15px}
+    #lt-reading .lt-thread small{font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-note{margin-top:18px;background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:8px;padding:13px}
+    #lt-reading .lt-note label{font-size:12px;color:var(--lt-muted);display:block;margin-bottom:7px}
+    #lt-reading .lt-note textarea{width:100%;resize:vertical;min-height:80px;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:5px;padding:9px;font-size:16px}
+    #lt-reading .lt-note small{display:block;color:var(--lt-muted);font-size:11px;margin-top:5px}
+    #lt-reading mark{background:var(--lt-mark);color:inherit;border-radius:3px}
+    #lt-reading .lt-feedback{font-size:12px;color:var(--lt-muted);min-height:18px;margin-top:8px}
+    #lt-reading .lt-qa{margin-top:23px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    #lt-reading .lt-qa-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px;font-size:14px;font-weight:550}
+    #lt-reading .lt-qa-head small{font-size:11px;font-weight:400;color:var(--lt-muted)}
+    #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
+    #lt-reading .lt-message{min-width:0;padding:15px 17px;border-radius:10px;background:var(--lt-surface);overflow-wrap:anywhere}
+    #lt-reading .lt-message.lt-user{background:var(--lt-soft);margin-left:22px}
+    #lt-reading .lt-message-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--lt-muted);margin-bottom:6px}
+    #lt-reading .lt-message-content{font:17px/1.65 Georgia,serif;white-space:pre-line}
+    #lt-reading .lt-message .lt-actions{margin-top:12px;gap:6px}
+    #lt-reading .lt-message .lt-action{font-size:12px;padding:7px 9px}
+    #lt-reading .lt-message-quote{font-size:12px;color:var(--lt-muted);border-left:2px solid var(--lt-teal);padding-left:8px;margin-bottom:9px}
+    #lt-reading .lt-compose{background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:10px;padding:13px}
+    #lt-reading .lt-compose label{display:block;font-size:12px;font-weight:550;margin-bottom:8px}
+    #lt-reading .lt-compose textarea{display:block;width:100%;min-height:82px;resize:vertical;font-size:16px;line-height:1.5;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:7px;padding:10px}
+    #lt-reading .lt-compose .lt-actions{margin-top:10px}
+    #lt-reading .lt-compose-help{font-size:11px;color:var(--lt-muted);margin:9px 0 0}
+    #lt-reading .lt-ask-context{background:var(--lt-soft);padding:9px 10px;border-radius:6px;margin-bottom:10px;font-size:12px;overflow-wrap:anywhere}
+    #lt-reading .lt-ask-context blockquote{margin:5px 0;font:15px/1.5 Georgia,serif;max-height:none}
+    #lt-reading .lt-ask-context button{padding:5px 7px;border:0;background:var(--lt-surface);border-radius:5px;font-size:11px;min-height:32px}
+    #lt-reading .lt-ask-context .lt-context-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+    #lt-reading .lt-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 0}
+    #lt-reading .lt-suggestions button{background:none;border:0;color:var(--lt-green);padding:5px 0;text-align:left;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+    #lt-reading .lt-qa-status{font-size:12px;color:var(--lt-muted);margin-top:10px;overflow-wrap:anywhere}
+    #lt-reading .lt-branches{margin-top:17px;font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-branches summary{cursor:pointer;min-height:30px}
+    #lt-reading .lt-branches button{display:flex;gap:8px;align-items:center;width:100%;padding:9px 8px;background:transparent;border:0;text-align:left;font-size:12px;color:var(--lt-green);border-left:1px solid var(--lt-line);overflow-wrap:anywhere}
+    #lt-reading .lt-branch-origin{font-size:13px;color:var(--lt-muted);border-left:2px solid var(--lt-line);padding-left:10px;margin:12px 0;overflow-wrap:anywhere}
+    #lt-reading.lt-stacked .lt-columns{grid-template-columns:1fr}
+    #lt-reading.lt-stacked .lt-demo{max-width:650px;width:100%;margin:0 auto}
+    @media(max-width:700px){#lt-reading .lt-content{padding:22px 20px}#lt-reading .lt-columns{grid-template-columns:1fr;gap:24px}#lt-reading .lt-top{padding:15px 20px}#lt-reading h2{font-size:29px;margin-bottom:22px}#lt-reading .lt-preview{max-width:112px;text-align:right}#lt-reading .lt-prose{font-size:19px}#lt-reading .lt-demo{padding:16px}}
+    @media(pointer:coarse){#lt-reading .lt-joints button,#lt-reading .lt-action,#lt-reading .lt-demofoot button,#lt-reading .lt-progress button{min-height:44px}#lt-reading .lt-progress button{width:44px}#lt-reading input[type="range"]{height:38px}}
+  </style>
+  <header class="lt-top">
+    <div class="lt-brand"><i data-lucide="git-branch" aria-hidden="true"></i> Learning Threads</div>
+    <div class="lt-preview">Reading &amp; conversation experiment</div>
+  </header>
+  <div class="lt-content">
+    <div class="lt-bookline"><strong>Modern Robotics</strong><span>Chapter 2 · Configuration space</span></div>
+    <nav class="lt-crumb" aria-label="Learning path"></nav>
+    <h2>How robot joints move</h2>
+    <div class="lt-columns">
+      <div class="lt-reading-pane">
+        <section class="lt-book-section" aria-label="Current book paragraph">
+          <div class="lt-sectionlabel lt-passagelabel">2.2.1 Robot joints · paragraph 1</div>
+          <p class="lt-prose" id="lt-passage"></p>
+          <div class="lt-source">Lynch &amp; Park · §2.2.1 · source p. 16</div>
+          <div class="lt-actions">
+            <button class="lt-action" type="button" data-action="focus-question"><i data-lucide="message-circle" aria-hidden="true"></i> Ask a question</button>
+            <button class="lt-action" type="button" data-action="note"><i data-lucide="pencil-line" aria-hidden="true"></i> Note</button>
+            <button class="lt-action" type="button" data-action="highlight">Highlight selection</button>
+          </div>
+          <div class="lt-note" hidden><label for="lt-note-text">Note on this paragraph</label><textarea id="lt-note-text" placeholder="Write what you want to return to…"></textarea><small>Kept during this preview session.</small></div>
+          <div class="lt-feedback" aria-live="polite"></div>
+          <button class="lt-quiet" type="button" data-action="context" aria-expanded="false">Show surrounding text</button>
+          <div class="lt-context" hidden><div class="lt-sectionlabel">Next paragraph</div><div class="lt-context-text"></div></div>
+        </section>
+        <section class="lt-thread" aria-label="Sample learning thread" hidden></section>
+        <section class="lt-qa" aria-label="Questions and follow-ups">
+          <div class="lt-qa-head"><span class="lt-conversation-label">Paragraph conversation</span><small>Preview session</small></div>
+          <div class="lt-messages" role="log" aria-label="Conversation"></div>
+          <form class="lt-compose">
+            <label for="lt-question">Ask about this paragraph</label>
+            <div class="lt-ask-context" hidden></div>
+            <textarea id="lt-question" rows="3" placeholder="What would you like to understand?"></textarea>
+            <div class="lt-actions">
+              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="arrow-up-right" aria-hidden="true"></i> Ask Codex</button>
+              <button class="lt-action" type="button" data-action="sample-reply">Try sample reply</button>
+            </div>
+            <p class="lt-compose-help">Live Codex replies appear in this chat. Sample replies appear below your question here.</p>
+          </form>
+          <div class="lt-suggestions" aria-label="Sample questions"></div>
+          <div class="lt-qa-status" role="status" aria-live="polite"></div>
+          <details class="lt-branches" hidden><summary>Saved branches in this preview</summary><div class="lt-branch-list"></div></details>
+        </section>
+      </div>
+      <section class="lt-demo" aria-label="Interactive joint model">
+        <div class="lt-demotop"><strong>Move the joint</strong><span>Schematic · live motion</span></div>
+        <div class="lt-joints" aria-label="Joint type"></div>
+        <svg class="lt-diagram" role="img" aria-label="Joint motion diagram"></svg>
+        <p class="lt-caption" aria-live="polite"></p>
+        <div class="lt-controls"></div>
+        <div class="lt-demofoot"><span class="lt-dof">1 degree of freedom</span><button type="button" data-action="animate">Play one motion</button></div>
+      </section>
+    </div>
+    <footer class="lt-footer">
+      <div class="lt-progress"><span>Sample passages</span><button type="button" data-page="0" aria-label="Read sample paragraph 1">1</button><button type="button" data-page="1" aria-label="Read sample paragraph 2">2</button><span class="lt-readstatus"></span></div>
+      <div class="lt-nav"><button class="lt-action" type="button" data-action="previous">Previous</button><button class="lt-action lt-primary" type="button" data-action="next">Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
+    </footer>
+  </div>
+  <script>
+  (() => {
+    const root=document.getElementById('lt-reading');
+    const q=s=>root.querySelector(s), qa=s=>[...root.querySelectorAll(s)];
+    const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
+    const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
+    const paragraphs=[
+      `Figure 2.3 illustrates the basic joints found in typical robots. Every joint connects exactly two links; joints that simultaneously connect three or more links are not allowed. The ${term('R','revolute')} (R), also called a hinge joint, allows rotational motion about the joint axis. The ${term('P','prismatic')} (P), also called a sliding or linear joint, allows translational (or rectilinear) motion along the direction of the joint axis. The ${term('H','helical')} (H), also called a screw joint, allows simultaneous rotation and translation about a screw axis. Revolute, prismatic, and helical joints all have one degree of freedom.`,
+      `Joints can also have multiple degrees of freedom. The ${term('C','cylindrical')} (C) has two degrees of freedom and allows independent translations and rotations about a single fixed joint axis. The ${term('U','universal')} (U) is another two-degree-of-freedom joint that consists of a pair of revolute joints arranged so that their joint axes are orthogonal. The ${term('S','spherical')} (S), also called a ball-and-socket joint, has three degrees of freedom and functions much like our shoulder joint.`
+    ];
+    const clean=s=>{const t=document.createElement('div');t.innerHTML=s;return t.textContent};
+    const states={R:[40],P:[35],H:[90],C:[40,30],U:[25,20],S:[25,20,15]};
+    const defs={
+      R:{controls:[['Angle',-140,140,'°']],caption:'The moving link turns around one fixed axis.',dof:1},
+      P:{controls:[['Travel',0,100,'%']],caption:'The moving link slides along one fixed axis.',dof:1},
+      H:{controls:[['Turn',0,360,'°']],caption:'Turning also moves the nut along the screw. They are linked.',dof:1},
+      C:{controls:[['Angle',-140,140,'°'],['Travel',0,100,'%']],caption:'Rotate and slide independently: two controls, two freedoms.',dof:2},
+      U:{controls:[['First hinge',-60,60,'°'],['Second hinge',-60,60,'°']],caption:'Two hinges, with their axes at right angles.',dof:2},
+      S:{controls:[['Tilt',-60,60,'°'],['Swing',-60,60,'°'],['Twist',-140,140,'°']],caption:'The link can turn about three axes through the joint.',dof:3}
+    };
+    let page=0,joint='R',stack=[],read=new Set(),notes=['',''],savedHtml=[null,null],feedback='',animation=0,context=false;
+    let selection=null;
+    let selectedSource=null,branchCount=0,messageCount=0;
+    const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
+    const conversations=new Map([['p0',makeNode('p0','Paragraph 1')],['p1',makeNode('p1','Paragraph 2')]]);
+    conversations.get('p0').draft='Why does a screw have only one degree of freedom?';
+    conversations.get('p1').page=1;
+    const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
+    const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const sampleAnswers=[
+      {id:'screw',question:'Why does a screw have only one degree of freedom?',short:'Why only one degree of freedom?',text:'A screw turns and moves along its axis, but those motions cannot be chosen independently. The thread links them: choosing the angle also fixes the travel.\n\nThat leaves one independent value to set. Compare the screw with the cylindrical joint: that joint lets you choose rotation and travel separately.',concept:'independent motion',joint:'H'},
+      {id:'example',question:'Can you give me an everyday example?',short:'Give me an everyday example',text:'Think of opening a door. Its outer edge changes position in two directions as it moves in an arc, but you only choose one thing: the hinge angle.\n\nThe path can curve through space without adding a degree of freedom. What matters is how many independent values you need to set the position.',concept:'independent motion',joint:'R'},
+      {id:'independent',question:'What does independent mean?',short:'What does independent mean?',text:'Two motions are independent if you can vary either one while keeping the other fixed.\n\nTry the cylindrical joint. Hold the angle still and move the travel slider. Then hold the travel still and change the angle. You need two values to specify its position.\n\nFor the screw, the thread prevents that separate choice: turning and travel are linked.',concept:'the thread links turning and travel',joint:'C'},
+      {id:'comparison',question:'How is a cylindrical joint different from a screw?',short:'Compare a cylinder and a screw',text:'A cylindrical joint permits two separate choices: how far to slide and how far to turn.\n\nA helical joint adds a thread that ties those choices together. As you turn it, its travel follows from the thread spacing. The cylindrical joint has two degrees of freedom; the helical joint has one.',concept:'independent motion',joint:'C'}
+    ];
+    const matchSample=text=>sampleAnswers.find(s=>s.question.toLowerCase()===text.trim().toLowerCase());
+    function rememberVisual(){activeNode().visual={joint,values:[...states[joint]]}}
+    function renderAskContext(){
+      const node=activeNode(),box=q('.lt-ask-context');
+      const message=node.replyTo?node.messages.find(m=>m.id===node.replyTo):null;
+      box.hidden=!node.quote&&!message;
+      box.innerHTML=(node.quote?`<span>Selected text</span><blockquote>${escapeText(node.quote)}</blockquote>`:message?'<span>Following up on the selected reply</span>':'')+`<div class="lt-context-actions"><button type="button" data-action="clear-ask-context">Clear selection</button><button type="button" data-action="branch-selection">Explore separately <span aria-hidden="true">↗</span></button></div>`;
+    }
+    function renderQA(){
+      const node=activeNode();
+      q('.lt-conversation-label').textContent=stack.length?'Conversation in this branch':'Paragraph conversation';
+      q('.lt-compose label').textContent=node.messages.length?'Ask a follow-up':stack.length?'Ask about '+node.title.toLowerCase():'Ask about this paragraph';
+      q('.lt-messages').innerHTML=node.messages.map(m=>`<article class="lt-message ${m.role==='user'?'lt-user':''}" data-message="${m.id}"><div class="lt-message-meta"><span>${m.role==='user'?'You':'Tutor · sample reply'}</span><span>${m.kind==='live'?'Continue in Codex chat':m.role==='assistant'?'Prepared example':''}</span></div>${m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}<div class="lt-message-content">${escapeText(m.text)}</div>${m.role==='assistant'?`<div class="lt-actions"><button class="lt-action" type="button" data-follow="${m.id}">Ask follow-up</button><button class="lt-action" type="button" data-branch-message="${m.id}"><i data-lucide="git-branch" aria-hidden="true"></i> Explore separately</button></div>`:''}</article>`).join('');
+      q('#lt-question').value=node.draft;
+      q('[data-action="ask-codex"]').disabled=node.busy||!node.draft.trim();
+      q('[data-action="sample-reply"]').hidden=!matchSample(node.draft);
+      q('[data-action="sample-reply"]').disabled=node.busy;
+      const samples=node.messages.length?[sampleAnswers[1],sampleAnswers[2]]:stack.length?[sampleAnswers[2],sampleAnswers[3]]:[sampleAnswers[0],sampleAnswers[3]];
+      q('.lt-suggestions').innerHTML=samples.map(s=>`<button type="button" data-sample="${s.id}">${escapeText(s.short)}</button>`).join('');
+      q('.lt-qa-status').textContent=node.status;
+      const children=[...conversations.values()].filter(n=>n.parent&&n.page===page);
+      q('.lt-branches').hidden=!children.length;
+      q('.lt-branch-list').innerHTML=children.map(n=>`<button type="button" data-reopen="${n.id}" style="padding-left:${8+Math.min(n.path.length-1,4)*14}px"><i data-lucide="git-branch" aria-hidden="true"></i>${escapeText(n.title)}${n.id===node.id?' · here':''}</button>`).join('');
+      renderAskContext();icons();
+    }
+    function focusQuestion(){q('#lt-question').focus()}
+    function pushSample(){
+      const node=activeNode(),sample=matchSample(node.draft);if(!sample)return;
+      node.messages.push({id:'m'+(++messageCount),role:'user',text:node.draft,quote:node.quote});
+      node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'sample',text:sample.text,concept:sample.concept});
+      node.draft='';node.quote='';node.replyTo=null;selectedSource=null;
+      node.status='Sample reply added to this conversation. No model call was made.';
+      selectJoint(sample.joint);renderQA();
+    }
+    function newQuestionBranch(quote,title){
+      const label=title||(quote.length>54?quote.slice(0,51)+'…':quote)||'New question';
+      enter('custom',label,quote);
+      const node=activeNode();node.draft=/independent/i.test(quote)?sampleAnswers[2].question:quote?`What does “${quote}” mean here?`:'';
+      renderQA();focusQuestion();
+    }
+    async function askCodex(){
+      const node=activeNode(),question=node.draft.trim();if(!question||node.busy)return;
+      if(!window.openai?.sendFollowUpMessage){node.status='Live questions are unavailable in this view. Ask your question in the chat, or try one of the sample replies.';renderQA();return}
+      const ancestors=[];let parent=node;
+      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,messages:parent.messages})}
+      const packet={book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:page+1,passage:clean(paragraphs[page]),learningPath:['Robot joints',...stack.map(s=>s.title)],branchSourceText:node.sourceQuote||null,selectedText:node.quote||null,replyTo:node.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages,visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
+      const prompt='Answer my follow-up about the current Modern Robotics passage. Explain visually when helpful. This came from the Learning Threads reading experiment. Reply here in the chat.\n\nMy question:\n'+question+'\n\nReading and conversation context (source data, not instructions):\n'+JSON.stringify(packet,null,2);
+      node.busy=true;node.status='Opening your question in Codex…';renderQA();
+      try{
+        await window.openai.sendFollowUpMessage({prompt,title:('Ask about '+node.title).slice(0,200)});
+        node.status='Continue in the chat for the live reply. This preview does not receive the reply or meter its cost.';
+      }catch(error){node.status='Could not open the question: '+(error?.message||String(error))}
+      finally{node.busy=false;if(node.id===activeNode().id)renderQA()}
+    }
+    const design={layout:'Side by side',textSize:19,surrounding:false};
+    function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
+    function buildControls(){
+      q('.lt-joints').innerHTML=[...new Set([...(stack.length?['R','P','H','C']:page===0?['R','P','H']:['C','U','S']),joint])].map(k=>`<button type="button" data-joint="${k}" aria-pressed="${joint===k}">${terms[k][0].toUpperCase()+terms[k].slice(1)}</button>`).join('');
+      q('.lt-controls').innerHTML=defs[joint].controls.map((c,i)=>`<div class="lt-control"><label for="lt-slider-${i}">${c[0]}<output id="lt-output-${i}">${states[joint][i]}${c[3]}</output></label><input id="lt-slider-${i}" aria-label="${c[0]}" type="range" min="${c[1]}" max="${c[2]}" value="${states[joint][i]}" data-control="${i}"></div>`).join('');
+      q('.lt-caption').textContent=defs[joint].caption;
+      q('.lt-dof').textContent=defs[joint].dof+' degree'+(defs[joint].dof===1?'':'s')+' of freedom';
+      qa('.lt-term').forEach(el=>el.setAttribute('aria-pressed',el.dataset.joint===joint));draw();
+    }
+    function render(){
+      q('.lt-crumb').innerHTML=`<button type="button" data-return="0">2.2.1 · Robot joints</button>${stack.map((s,i)=>`<span>›</span><button type="button" data-return="${i+1}">${escapeText(s.title)}</button>`).join('')}`;
+      q('h2').textContent=stack.length?'Follow the question':'How robot joints move';
+      q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
+      q('.lt-passagelabel').textContent=`2.2.1 Robot joints · paragraph ${page+1}`;
+      q('#lt-passage').innerHTML=savedHtml[page]||paragraphs[page];
+      q('#lt-note-text').value=notes[page];
+      q('.lt-feedback').textContent=feedback;
+      q('.lt-context').hidden=!(context||design.surrounding);
+      q('[data-action="context"]').setAttribute('aria-expanded',String(context||design.surrounding));
+      q('[data-action="context"]').textContent=context||design.surrounding?'Hide surrounding text':'Show surrounding text';
+      q('.lt-context .lt-sectionlabel').textContent=page===0?'Next paragraph':'Previous paragraph';
+      q('.lt-context-text').textContent=clean(paragraphs[1-page]);
+      qa('[data-page]').forEach(el=>{el.classList.toggle('current',+el.dataset.page===page);el.setAttribute('aria-current',+el.dataset.page===page?'step':'false')});
+      q('.lt-readstatus').textContent=read.size?read.size+' read':'';
+      q('[data-action="previous"]').disabled=page===0&&!stack.length;
+      q('[data-action="next"]').innerHTML=stack.length?'Return to reading':page===0?'Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i>':'Done for now <i data-lucide="check" aria-hidden="true"></i>';
+      if(stack.length){
+        const deep=stack.at(-1).type==='independent';
+        q('.lt-thread').innerHTML=`<div class="lt-sectionlabel">Sample explanation · branch ${stack.length}</div><h3>${deep?'What makes two motions independent?':'Why does a screw have only one degree of freedom?'}</h3>${deep?`<p>Try the cylindrical joint on the right. Set an angle, then move the travel slider. You can change either value while keeping the other fixed.</p><p>A screw behaves differently: its thread ties the travel to the turn. Once you choose the angle, its position along the axis is fixed too.</p>`:`<p>A degree of freedom is an independent value you need to set the joint’s position.</p><p>A hinge needs one angle. A slider needs one distance. A screw turns <em>and</em> moves along its axis, but those motions are linked by the thread. One angle determines both.</p><p>Move the screw’s control and watch both motions change together.</p><button class="lt-action" data-action="deeper" type="button"><i data-lucide="git-branch" aria-hidden="true"></i> What does “independent” mean?</button>`}<div class="lt-actions"><button class="lt-action" data-action="back-thread" type="button">${deep?'Back to degrees of freedom':'Back to the paragraph'}</button></div><small>Your reading place stays at paragraph ${page+1}.</small>`;
+        if(stack.at(-1).type==='custom'){
+          const node=activeNode();q('.lt-thread').innerHTML=`<div class="lt-sectionlabel">Side thread · level ${stack.length}</div><h3>${escapeText(node.title)}</h3>${node.sourceQuote?`<div class="lt-branch-origin">Exploring this text:<br>“${escapeText(node.sourceQuote)}”</div>`:''}<small>Reading place: paragraph ${page+1}. Your parent conversation is kept.</small><div class="lt-actions"><button class="lt-action" data-action="back-thread" type="button">${stack.length===1?'Return to paragraph':'Return to parent thread'}</button></div>`;
+        }
+      }
+      buildControls();renderQA();icons();
+    }
+    const ns='http://www.w3.org/2000/svg';
+    function draw(){
+      const svg=q('.lt-diagram'),w=svg.clientWidth||380,h=270,sc=Math.min(w/4.8,76),cx=w/2,cy=158;
+      svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.replaceChildren();
+      const el=(tag,attrs={},text)=>{let n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;svg.append(n);return n};
+      el('title',{},`${terms[joint]} joint with ${defs[joint].dof} degrees of freedom`);
+      el('desc',{},defs[joint].caption+' Use the controls below to change the moving link. Gray is fixed and green moves.');
+      const proj=([x,y,z])=>[cx+sc*(x*.87-y*.64),cy+sc*(x*.3+y*.4-z)];
+      const path=(points,color,width=2,dash=null)=>{const n=el('path',{d:points.map((p,i)=>{let [x,y]=proj(p);return(i?'L':'M')+x.toFixed(2)+','+y.toFixed(2)}).join(' '),fill:'none',stroke:color,'stroke-width':width,'stroke-linecap':'round','stroke-linejoin':'round'});if(dash)n.setAttribute('stroke-dasharray',dash);return n};
+      const fixed='var(--lt-fixed)',green='var(--lt-teal)',ink='var(--lt-ink)',line='var(--lt-line)';
+      const dot=(p,r,fill)=>{const a=proj(p);return el('circle',{cx:a[0],cy:a[1],r,fill})};
+      const ring=(center,a,b,r,color,width=2)=>path(Array.from({length:65},(_,i)=>{let t=i/64*Math.PI*2;return center.map((v,j)=>v+r*(a[j]*Math.cos(t)+b[j]*Math.sin(t)))}),color,width);
+      const beam=(a,b,color)=>{path([a,b],line,23);path([a,b],color,18)};
+      const degree=Math.PI/180,v=states[joint],angle=v[0]*degree;
+      for(let i=-2;i<=2;i++){path([[i*.6,-1.3,-.48],[i*.6,1.3,-.48]],line,1);path([[-1.3,i*.6,-.48],[1.3,i*.6,-.48]],line,1)}
+      const label=(x,y,t,anchor='start')=>el('text',{x,y,'text-anchor':anchor},t);
+      if(joint==='R'){
+        ring([0,0,0],[1,0,0],[0,1,0],1.25,line,1.5);
+        path([[0,0,-.6],[0,0,1.2]],fixed,1.5,'4 5');
+        beam([-1.35,0,0],[0,0,0],fixed);
+        beam([0,0,.05],[1.5*Math.cos(angle),1.5*Math.sin(angle),.05],green);
+        dot([0,0,.05],12,ink);dot([0,0,.05],5,'var(--lt-surface)');
+        label(cx+9,cy-sc*1.2,'axis');
+      }else if(joint==='P'){
+        path([[-1.5,-.22,0],[1.5,-.22,0]],fixed,7);path([[-1.5,.22,0],[1.5,.22,0]],fixed,7);
+        let x=-1+v[0]/50;beam([x,-.3,.07],[x,.3,.07],green);beam([x,0,.07],[x,0,1.05],green);
+        dot([x,0,1.05],6,green);label(cx,45,'straight-line travel','middle');
+      }else if(joint==='H'||joint==='C'){
+        const z=joint==='H'?v[0]/360*.9:v[1]/100*.9;
+        beam([0,0,-.3],[0,0,1.7],fixed);
+        if(joint==='H')path(Array.from({length:200},(_,i)=>{let t=i/199*12*Math.PI;return [.18*Math.cos(t),.18*Math.sin(t),-.25+i/199*1.9]}),'var(--lt-ink)',1.8);
+        ring([0,0,z],[1,0,0],[0,1,0],.33,green,14);
+        beam([0,0,z],[1.4*Math.cos(angle),1.4*Math.sin(angle),z],green);
+        label(cx+32,32,joint==='H'?'thread fixes the travel':'smooth shaft');
+        if(joint==='H')label(cx,244,`${v[0]}° turn → ${(v[0]/360).toFixed(2)} of one pitch`,'middle');
+      }else{
+        const a=v[0]*degree,b=v[1]*degree,c=(v[2]||0)*degree;
+        const rx=p=>[p[0],p[1]*Math.cos(a)-p[2]*Math.sin(a),p[1]*Math.sin(a)+p[2]*Math.cos(a)];
+        const ry=p=>[p[0]*Math.cos(b)+p[2]*Math.sin(b),p[1],-p[0]*Math.sin(b)+p[2]*Math.cos(b)];
+        const rz=p=>[p[0]*Math.cos(c)-p[1]*Math.sin(c),p[0]*Math.sin(c)+p[1]*Math.cos(c),p[2]];
+        const rot=p=>rx(ry(rz(p)));
+        beam([0,0,-.65],[0,0,0],fixed);
+        if(joint==='U'){
+          ring([0,0,0],[1,0,0],[0,0,1],.5,fixed,7);
+          ring([0,0,0],rx([0,1,0]),rx([0,0,1]),.37,green,7);
+          path([[-.65,0,0],[.65,0,0]],fixed,2,'3 4');
+          path([rx([0,-.65,0]),rx([0,.65,0])],green,2,'3 4');
+        }else{dot([0,0,0],28,fixed);dot([-.05,-.08,.07],20,green)}
+        const end=rot([0,0,1.45]);beam([0,0,0],end,green);
+        const x=rot([.36,0,1.45]),y=rot([0,.36,1.45]);path([x,end,y],ink,3);
+        label(cx,244,joint==='U'?'two perpendicular hinges':'three rotation controls','middle');
+      }
+      el('circle',{cx:11,cy:19,r:4,fill:fixed});label(22,23,'Fixed link');
+      el('circle',{cx:w-105,cy:19,r:4,fill:green});label(w-94,23,'Moving link');
+    }
+    function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';joint=k;buildControls()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render()}
+    function enter(type,title,quote=''){
+      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id='b'+(++branchCount),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
+      const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
+      stack.push({id,type,title:label,restoreJoint:joint,restoreValues:[...states[joint]]});node.path=stack.map(s=>({...s,restoreValues:[...s.restoreValues]}));
+      if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();
+    }
+    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render()}
+    root.addEventListener('click',e=>{
+      const btn=e.target.closest('button');if(!btn)return;
+      if(btn.dataset.joint){selectJoint(btn.dataset.joint);return}
+      if(btn.dataset.page!==undefined){goPage(+btn.dataset.page);return}
+      if(btn.dataset.return!==undefined){backTo(+btn.dataset.return);return}
+      if(btn.dataset.sample){const sample=sampleAnswers.find(s=>s.id===btn.dataset.sample);activeNode().draft=sample.question;renderQA();focusQuestion();return}
+      if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;node.quote=selectedSource?.nodeId===node.id&&selectedSource.messageId===btn.dataset.follow?selectedSource.quote:'';node.draft='';renderQA();focusQuestion();return}
+      if(btn.dataset.branchMessage){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.branchMessage);const quote=selectedSource?.nodeId===node.id&&selectedSource.messageId===message.id?selectedSource.quote:message.concept;newQuestionBranch(quote,quote);return}
+      if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
+      const action=btn.dataset.action;
+      if(action==='focus-question'){focusQuestion();return}
+      if(action==='sample-reply'){pushSample();return}
+      if(action==='clear-ask-context'){activeNode().quote='';activeNode().replyTo=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
+      if(action==='branch-selection'){const node=activeNode(),message=node.messages.find(m=>m.id===node.replyTo);newQuestionBranch(node.quote||message?.concept||'A related concept');return}
+      if(action==='next'){if(stack.length)backTo(0);else{read.add(page);if(page===0)goPage(1);else{feedback='Both sample paragraphs read. You can return to either.';render()}}}
+      if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(page>0)goPage(page-1)}
+      if(action==='explore')enter('freedom');
+      if(action==='deeper')enter('independent');
+      if(action==='back-thread')backTo(stack.length-1);
+      if(action==='context'){context=!(context||design.surrounding);design.surrounding=false;render()}
+      if(action==='note'){q('.lt-note').hidden=!q('.lt-note').hidden;if(!q('.lt-note').hidden)q('#lt-note-text').focus()}
+      if(action==='highlight'){
+        if(selection&&q('#lt-passage').contains(selection.commonAncestorContainer)){try{const mark=document.createElement('mark');mark.append(selection.extractContents());selection.insertNode(mark);savedHtml[page]=q('#lt-passage').innerHTML;selection=null;window.getSelection()?.removeAllRanges();feedback='Highlight kept in this preview.'}catch(err){feedback='Select a short phrase in the paragraph, then highlight it.'}}
+        else feedback='Select a phrase in the paragraph first.';
+        q('.lt-feedback').textContent=feedback;
+      }
+      if(action==='animate'){
+        cancelAnimationFrame(animation);const target=joint,def=defs[target].controls[0],from=states[target][0],to=from<(def[1]+def[2])/2?def[2]:def[1];
+        if(matchMedia('(prefers-reduced-motion: reduce)').matches){states[target][0]=to;buildControls();return}
+        const start=performance.now();btn.textContent='Moving…';
+        const frame=t=>{if(target!==joint)return;const p=Math.min((t-start)/2200,1),ease=p*p*(3-2*p);states[target][0]=Math.round(from+(to-from)*ease);q('#lt-slider-0').value=states[target][0];q('#lt-output-0').textContent=states[target][0]+def[3];draw();if(p<1)animation=requestAnimationFrame(frame);else btn.textContent='Play one motion'};
+        animation=requestAnimationFrame(frame);
+      }
+    });
+    root.addEventListener('input',e=>{if(e.target.dataset.control!==undefined){cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';const i=+e.target.dataset.control;states[joint][i]=+e.target.value;q('#lt-output-'+i).textContent=e.target.value+defs[joint].controls[i][3];draw()}if(e.target.id==='lt-note-text')notes[page]=e.target.value;if(e.target.id==='lt-question'){const node=activeNode();node.draft=e.target.value;q('[data-action="sample-reply"]').hidden=!matchSample(node.draft);q('[data-action="ask-codex"]').disabled=node.busy||!node.draft.trim()}});
+    q('.lt-compose').addEventListener('submit',e=>{e.preventDefault();askCodex()});
+    document.addEventListener('selectionchange',()=>{
+      const s=window.getSelection();if(!s||!s.rangeCount||s.isCollapsed)return;
+      const range=s.getRangeAt(0),container=range.commonAncestorContainer,element=container.nodeType===1?container:container.parentElement;
+      if(!root.contains(element))return;
+      const message=element.closest('.lt-message-content'),inPassage=q('#lt-passage').contains(container),inExplanation=q('.lt-thread').contains(container);
+      if(!inPassage&&!message&&!inExplanation)return;
+      const text=s.toString().trim().slice(0,1200);if(!text)return;
+      const node=activeNode(),messageId=message?.closest('[data-message]')?.dataset.message||null;
+      if(inPassage)selection=range.cloneRange();else selection=null;
+      selectedSource={quote:text,nodeId:node.id,messageId};node.quote=text;node.replyTo=messageId;renderAskContext();
+    });
+    function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
+    render();new ResizeObserver(draw).observe(q('.lt-diagram'));
+    if(globalThis.Tweak){const t=new Tweak({container:root,onChange:applyDesign});t.addSelect(design,'layout',{label:'Reading layout',options:['Side by side','Visual below']});t.addSlider(design,'textSize',{label:'Paragraph text size',min:17,max:24,step:1,unit:'px'});t.addToggle(design,'surrounding',{label:'Show surrounding text'})}
+  })();
+  </script>
+</div>

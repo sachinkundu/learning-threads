@@ -1,0 +1,96 @@
+[
+  {
+    "key": "saved-state",
+    "title": "Resume the same reading session after reopening the app",
+    "priority": 2,
+    "description": "## What?\n\nKeep the reading place and study work when the app is closed.\n\n## Why?\n\nA learner should be free to stop and return without losing work.\n\n## Done when\n\n- Reopening on the same browser restores the paragraph or thread.\n- Highlights, notes, drafts, replies, and nested threads remain intact.\n- Read marks and visual controls keep their state.\n- If saving fails, the learner sees a clear error and can keep a copy."
+  },
+  {
+    "key": "source-links",
+    "title": "Keep every question linked to its exact highlight",
+    "priority": 2,
+    "depends": [
+      "saved-state"
+    ],
+    "description": "## What?\n\nLink each question to the text that led to it, in the book or a reply.\n\n## Why?\n\nThe learner needs to trace an idea back to its source when they review it.\n\n## Done when\n\n- Any selected text can start a thread with a visible source highlight.\n- The highlight opens its thread, and the thread returns to the same text.\n- Deeper threads keep their parent links, replies, notes, and visuals.\n- Revised notes and questions keep earlier work for review."
+  },
+  {
+    "key": "cloud-sync",
+    "title": "Resume private study on a computer or iPad",
+    "priority": 2,
+    "depends": [
+      "saved-state",
+      "source-links"
+    ],
+    "description": "## What?\n\nHost the app on Cloudflare and keep study work in sync across devices.\n\n## Why?\n\nThe learner may read on an iPad and return to a computer later.\n\n## Done when\n\n- Only the signed-in owner can access books and study work.\n- A session closed on one device resumes on the other.\n- Offline edits and edits from two devices do not silently erase work.\n- The saved study work can be exported and restored."
+  },
+  {
+    "key": "live-assistant",
+    "title": "Ask the assistant and get replies inside the thread",
+    "priority": 2,
+    "depends": [
+      "source-links",
+      "cloud-sync"
+    ],
+    "description": "## What?\n\nAsk Codex about the current passage and read its reply in the app.\n\n## Why?\n\nCopying questions to another app breaks the flow of study.\n\n## Done when\n\n- Replies use the passage, selected text, and relevant thread history.\n- Follow-ups stay in the thread unless the learner starts a new branch.\n- Replies and source links remain saved after the app closes.\n- Failed replies can be retried without losing or repeating the question.\n- No follow-up questions are added without being asked for."
+  },
+  {
+    "key": "usage",
+    "title": "See the tokens and cost of each assistant reply",
+    "priority": 2,
+    "depends": [
+      "live-assistant"
+    ],
+    "description": "## What?\n\nShow what each reply costs and the total spent on study.\n\n## Why?\n\nThe learner needs to know what they are spending as they use the assistant.\n\n## Done when\n\n- Each call records input, cached input, and output tokens where reported.\n- Costs include image and tool charges when those are used.\n- A small usage view shows each reply and the running total.\n- Unknown charges are shown as unknown, never as free.\n- Retries count the work billed without counting a call twice."
+  },
+  {
+    "key": "chapter",
+    "title": "Read a full checked chapter one paragraph at a time",
+    "priority": 3,
+    "depends": [
+      "saved-state"
+    ],
+    "description": "## What?\n\nTurn a Modern Robotics chapter into clear web text, equations, and figures.\n\n## Why?\n\nA full chapter will show whether the reading flow works beyond the sample.\n\n## Done when\n\n- Paragraphs, equations, figures, and source pages match the book.\n- The learner chooses when to move on and can return to any read passage.\n- Chapter order and reading history stay saved without a mastery gate.\n- The layout uses web text and visuals rather than full PDF pages."
+  },
+  {
+    "key": "visuals",
+    "title": "Ask for a visual explanation within a thread",
+    "priority": 3,
+    "depends": [
+      "live-assistant",
+      "usage"
+    ],
+    "description": "## What?\n\nLet the learner ask for a diagram, image, or a visual they can move.\n\n## Why?\n\nSome ideas are easier to grasp through motion or a picture than text alone.\n\n## Done when\n\n- Visualize adds a useful answer to the same thread.\n- Visuals and their controls stay linked to the source answer.\n- New images are saved and their costs are included.\n- Video links use a checked start time for the relevant part."
+  },
+  {
+    "key": "ipad",
+    "title": "Read, highlight, and follow threads comfortably on iPad",
+    "priority": 3,
+    "depends": [
+      "source-links",
+      "cloud-sync"
+    ],
+    "description": "## What?\n\nMake the reading flow work well with touch, in both iPad orientations.\n\n## Why?\n\nReading and selecting text should feel natural away from a desk.\n\n## Done when\n\n- Text selection, highlights, notes, and thread links work with touch.\n- The keyboard leaves the question and reply controls within reach.\n- Equations and visuals fit the screen or have clear local scrolling.\n- The same spare interface works on a computer and an iPad."
+  },
+  {
+    "key": "exercises",
+    "title": "Turn book exercises into saved assignments with hints",
+    "priority": 3,
+    "depends": [
+      "chapter",
+      "live-assistant",
+      "usage"
+    ],
+    "description": "## What?\n\nGive the learner book exercises at the right point, with hints on request.\n\n## Why?\n\nTrying a problem helps the learner test ideas and find gaps.\n\n## Done when\n\n- Assignments link to the book exercise and the relevant reading.\n- Attempts and notes stay saved for later review.\n- Hints build in steps and do not show the full solution by default.\n- The learner can revisit a problem without losing earlier attempts."
+  },
+  {
+    "key": "books",
+    "title": "Add another book without changing the learning flow",
+    "priority": 4,
+    "depends": [
+      "chapter",
+      "cloud-sync"
+    ],
+    "description": "## What?\n\nAdd a second book with its own chapters, threads, notes, and progress.\n\n## Why?\n\nThis app is for learning across books, not only Modern Robotics.\n\n## Done when\n\n- A second book can be added and its reading order checked.\n- Each book keeps its own source links, history, and study work.\n- Switching books returns to the saved place in each one.\n- An updated source does not silently move an old highlight."
+  }
+]

@@ -1,0 +1,501 @@
+<div id="lt-reading" aria-label="Learning Threads reading experiment">
+  <style>
+    #lt-reading{--lt-bg:light-dark(#faf9f5,#171e20);--lt-surface:light-dark(#ffffff,#20292b);--lt-ink:light-dark(#203431,#edf3ee);--lt-muted:light-dark(#63736e,#a9bbb4);--lt-line:light-dark(#e1e7df,#354641);--lt-green:light-dark(#1d6758,#95d7be);--lt-soft:light-dark(#e9f1e8,#293f37);--lt-teal:light-dark(#398878,#79c3ab);--lt-fixed:light-dark(#94a69f,#6d8b80);--lt-paper:light-dark(#f0f3ed,#1c3028);--lt-mark:light-dark(#fcf1b8,#625721);color:var(--lt-ink);background:var(--lt-bg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border:1px solid var(--lt-line);border-radius:16px;overflow:hidden}
+    #lt-reading *{box-sizing:border-box}
+    #lt-reading button,#lt-reading input,#lt-reading textarea{font:inherit}
+    #lt-reading button{cursor:pointer;touch-action:manipulation;color:inherit}
+    #lt-reading button:disabled{opacity:.4;cursor:default}
+    #lt-reading button:focus-visible,#lt-reading input:focus-visible,#lt-reading textarea:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px}
+    #lt-reading [hidden]{display:none!important}
+    #lt-reading .lt-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;background:var(--lt-surface);border-bottom:1px solid var(--lt-line)}
+    #lt-reading .lt-brand{font-weight:650;letter-spacing:-.4px;display:flex;align-items:center;gap:10px;font-size:17px}
+    #lt-reading .lt-brand i{color:var(--lt-green)}
+    
+    #lt-reading .lt-content{padding:28px 32px 22px}
+    #lt-reading .lt-bookline{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;color:var(--lt-muted);font-size:13px;margin-bottom:22px}
+    #lt-reading .lt-bookline strong{font-weight:550;color:var(--lt-ink)}
+    
+    
+    
+    #lt-reading h2{font:500 32px/1.15 Georgia,"Times New Roman",serif;letter-spacing:-.7px;margin:0 0 25px}
+    #lt-reading .lt-columns{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:34px;align-items:start}
+    #lt-reading .lt-sectionlabel{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lt-muted);font-weight:600;margin-bottom:14px}
+    #lt-reading .lt-prose{font:400 var(--lt-reading-size,19px)/1.75 Georgia,"Times New Roman",serif;margin:0;color:var(--lt-ink)}
+    #lt-reading .lt-term{font:inherit!important;border:0;border-bottom:1px solid var(--lt-green);padding:0 2px;background:transparent;color:var(--lt-green);border-radius:3px;text-align:left;display:inline}
+    #lt-reading .lt-term[aria-pressed="true"]{background:var(--lt-soft);border-bottom:2px solid var(--lt-green)}
+    #lt-reading .lt-source{font-size:12px;color:var(--lt-muted);margin-top:18px}
+    #lt-reading .lt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+    #lt-reading .lt-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--lt-line);border-radius:8px;background:var(--lt-surface);padding:9px 12px;min-height:42px;font-size:13px}
+    #lt-reading .lt-action.lt-primary{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
+    #lt-reading .lt-quiet{background:none;border:0;font-size:13px;padding:8px 0;color:var(--lt-muted)}
+    #lt-reading .lt-demo{background:var(--lt-paper);border-radius:12px;padding:19px 18px 17px}
+    #lt-reading .lt-demotop{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:14px}
+    #lt-reading .lt-demotop strong{font-size:14px;font-weight:600}
+    #lt-reading .lt-demotop span{font-size:11px;color:var(--lt-muted)}
+    #lt-reading .lt-joints{display:flex;gap:3px;flex-wrap:wrap;background:var(--lt-surface);padding:4px;border-radius:8px}
+    #lt-reading .lt-joints button{flex:1;border:0;padding:8px 7px;border-radius:5px;background:transparent;font-size:12px;min-height:38px}
+    #lt-reading .lt-joints button[aria-pressed="true"]{background:var(--lt-green);color:var(--lt-bg)}
+    #lt-reading .lt-diagram{display:block;width:100%;height:270px;overflow:visible}
+    #lt-reading .lt-diagram text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:var(--lt-muted);font-size:11px}
+    #lt-reading .lt-caption{font-size:14px;line-height:1.5;text-align:center;min-height:43px;margin:0 0 16px;color:var(--lt-ink)}
+    #lt-reading .lt-control{margin-top:12px}
+    #lt-reading .lt-control label{display:flex;justify-content:space-between;font-size:12px;gap:8px}
+    #lt-reading output{font-variant-numeric:tabular-nums;color:var(--lt-green);font-weight:600}
+    #lt-reading input[type="range"]{width:100%;accent-color:var(--lt-green);height:26px;cursor:ew-resize;margin:3px 0 0}
+    #lt-reading .lt-demofoot{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:14px;font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-demofoot button{border:0;background:var(--lt-surface);border-radius:6px;padding:7px 10px;font-size:12px;min-height:38px}
+    #lt-reading .lt-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:28px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    #lt-reading .lt-progress{display:flex;align-items:center;gap:8px;color:var(--lt-muted);font-size:12px}
+    #lt-reading .lt-progress button{width:32px;height:32px;border-radius:50%;border:1px solid var(--lt-line);background:var(--lt-surface);font-size:12px}
+    #lt-reading .lt-progress button.current{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
+    #lt-reading .lt-nav{display:flex;gap:10px}
+    #lt-reading .lt-context{margin-top:22px;border-top:1px solid var(--lt-line);padding-top:16px;color:var(--lt-muted);font:16px/1.7 Georgia,serif}
+    #lt-reading .lt-context .lt-sectionlabel{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    #lt-reading .lt-thread{background:var(--lt-surface);border-left:3px solid var(--lt-green);padding:19px 21px;border-radius:0 10px 10px 0}
+    #lt-reading .lt-thread h3{font:500 23px/1.3 Georgia,serif;margin:0 0 15px}
+    #lt-reading .lt-thread p{font:17px/1.7 Georgia,serif;margin:0 0 15px}
+    #lt-reading .lt-thread .lt-sectionlabel{margin-bottom:15px}
+    #lt-reading .lt-thread small{font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-note{margin-top:18px;background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:8px;padding:13px}
+    #lt-reading .lt-note label{font-size:12px;color:var(--lt-muted);display:block;margin-bottom:7px}
+    #lt-reading .lt-note textarea{width:100%;resize:vertical;min-height:80px;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:5px;padding:9px;font-size:16px}
+    #lt-reading .lt-note small{display:block;color:var(--lt-muted);font-size:11px;margin-top:5px}
+    #lt-reading mark{background:var(--lt-mark);color:inherit;border-radius:3px}
+    #lt-reading .lt-feedback{font-size:12px;color:var(--lt-muted);min-height:18px;margin-top:8px}
+    #lt-reading .lt-qa{margin-top:23px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    
+    
+    #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
+    #lt-reading .lt-message{min-width:0;padding:15px 17px;border-radius:10px;background:var(--lt-surface);overflow-wrap:anywhere}
+    #lt-reading .lt-message.lt-user{background:var(--lt-soft);margin-left:22px}
+    #lt-reading .lt-message-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--lt-muted);margin-bottom:6px}
+    #lt-reading .lt-message-content{font:17px/1.65 Georgia,serif;white-space:pre-line}
+    #lt-reading .lt-message .lt-actions{margin-top:12px;gap:6px}
+    #lt-reading .lt-message .lt-action{font-size:12px;padding:7px 9px}
+    #lt-reading .lt-message-quote{font-size:12px;color:var(--lt-muted);border-left:2px solid var(--lt-teal);padding-left:8px;margin-bottom:9px}
+    #lt-reading .lt-compose{background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:10px;padding:13px}
+    #lt-reading .lt-compose label{display:block;font-size:12px;font-weight:550;margin-bottom:8px}
+    #lt-reading .lt-compose textarea{display:block;width:100%;min-height:82px;resize:vertical;font-size:16px;line-height:1.5;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:7px;padding:10px}
+    #lt-reading .lt-compose .lt-actions{margin-top:10px}
+    
+    #lt-reading .lt-ask-context{background:var(--lt-soft);padding:9px 10px;border-radius:6px;margin-bottom:10px;font-size:12px;overflow-wrap:anywhere}
+    #lt-reading .lt-ask-context blockquote{margin:5px 0;font:15px/1.5 Georgia,serif;max-height:none}
+    #lt-reading .lt-ask-context button{padding:5px 7px;border:0;background:var(--lt-surface);border-radius:5px;font-size:11px;min-height:32px}
+    #lt-reading .lt-ask-context .lt-context-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+    #lt-reading .lt-qa-status{font-size:12px;color:var(--lt-muted);margin-top:10px;overflow-wrap:anywhere}
+    #lt-reading .lt-branches{margin-top:17px;font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-branches summary{cursor:pointer;min-height:30px}
+    #lt-reading .lt-branches button{display:flex;gap:8px;align-items:center;width:100%;padding:9px 8px;background:transparent;border:0;text-align:left;font-size:12px;color:var(--lt-green);border-left:1px solid var(--lt-line);overflow-wrap:anywhere}
+    #lt-reading .lt-branch-origin{font-size:13px;color:var(--lt-muted);border-left:2px solid var(--lt-line);padding-left:10px;margin:12px 0;overflow-wrap:anywhere}
+    #lt-reading.lt-stacked .lt-columns{grid-template-columns:1fr}
+    #lt-reading.lt-stacked .lt-demo{max-width:650px;width:100%;margin:0 auto}
+    @media(max-width:700px){#lt-reading .lt-content{padding:22px 20px}#lt-reading .lt-columns{grid-template-columns:1fr;gap:24px}#lt-reading .lt-top{padding:15px 20px}#lt-reading h2{font-size:29px;margin-bottom:22px}#lt-reading .lt-prose{font-size:19px}#lt-reading .lt-demo{padding:16px}}
+    @media(pointer:coarse){#lt-reading .lt-joints button,#lt-reading .lt-action,#lt-reading .lt-demofoot button,#lt-reading .lt-progress button{min-height:44px}#lt-reading .lt-progress button{width:44px}#lt-reading input[type="range"]{height:38px}}
+    html,body{margin:0;padding:0;color-scheme:light dark;background:light-dark(#faf9f5,#171e20)}
+    #lt-reading{min-height:100dvh;border:0;border-radius:0;overflow:visible}
+    #lt-reading .lt-top{padding:18px clamp(20px,4vw,64px)}
+    #lt-reading .lt-content{max-width:1440px;margin:0 auto;padding:32px clamp(20px,4vw,64px) 24px}
+    #lt-reading .lt-columns{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);column-gap:44px;row-gap:0}
+    #lt-reading .lt-reading-pane{display:contents}
+    #lt-reading .lt-book-section,#lt-reading .lt-thread{grid-column:1;grid-row:1}
+    #lt-reading .lt-qa{grid-column:1;grid-row:2}
+    #lt-reading .lt-demo{grid-column:2;grid-row:1 / span 2;position:sticky;top:24px;padding:24px}
+    #lt-reading .lt-diagram{height:330px}
+    #lt-reading .lt-top-right{display:flex;align-items:center;gap:22px}
+    #lt-reading .lt-view-menu{position:relative;font-size:13px}
+    #lt-reading .lt-view-menu summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:8px}
+    #lt-reading .lt-view-options{position:absolute;right:0;top:43px;z-index:10;width:260px;max-width:calc(100vw - 32px);padding:16px;background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:10px;box-shadow:0 12px 30px #0002}
+    #lt-reading .lt-view-options label{display:block;margin-bottom:15px;font-size:13px}
+    #lt-reading .lt-view-options label:last-child{margin-bottom:0}
+    #lt-reading .lt-view-options select{font:inherit;color:var(--lt-ink);background:var(--lt-bg);border:1px solid var(--lt-line);border-radius:5px;min-height:38px;width:100%;margin-top:5px;padding:5px}
+    #lt-reading .lt-view-options .lt-view-check{display:flex;gap:9px;align-items:center}
+    #lt-reading .lt-view-check input{accent-color:var(--lt-green)}
+    #lt-reading .lt-copy-fallback{margin-top:12px}
+    #lt-reading .lt-copy-fallback textarea{font-size:13px;min-height:130px}
+    
+    #lt-reading.lt-stacked .lt-book-section,#lt-reading.lt-stacked .lt-thread{grid-column:1;grid-row:1}
+    #lt-reading.lt-stacked .lt-demo{grid-column:1;grid-row:2;position:static;margin-top:25px}
+    #lt-reading.lt-stacked .lt-qa{grid-column:1;grid-row:3}
+    #lt-reading.lt-stacked .lt-reading-pane{display:contents}
+    #lt-reading.lt-stacked .lt-columns{max-width:760px;margin:auto}
+    #lt-reading .lt-footer{padding-bottom:12px}
+    @media(max-width:860px){#lt-reading .lt-columns{grid-template-columns:minmax(0,1fr);row-gap:0}#lt-reading .lt-book-section,#lt-reading .lt-thread{grid-column:1;grid-row:1}#lt-reading .lt-demo{grid-column:1;grid-row:2;position:static;margin-top:24px}#lt-reading .lt-qa{grid-column:1;grid-row:3}#lt-reading .lt-diagram{height:300px}#lt-reading .lt-content{max-width:760px;padding-top:24px}#lt-reading .lt-top-right{gap:0}}
+    @media(max-width:400px){#lt-reading .lt-brand{font-size:15px}#lt-reading .lt-view-menu summary{font-size:12px}#lt-reading .lt-demo{padding:16px}#lt-reading .lt-diagram{height:270px}}
+  </style>
+  <link rel="stylesheet" href="./thread-examples.css">
+  <header class="lt-top">
+    <div class="lt-brand"><i data-lucide="git-branch" aria-hidden="true"></i> Learning Threads</div>
+    <div class="lt-top-right"><details class="lt-view-menu"><summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Reading view</summary><div class="lt-view-options"><label for="lt-layout">Layout<select id="lt-layout"><option>Side by side</option><option>Visual below</option></select></label><label for="lt-text-size">Text size <output id="lt-size-value">19 px</output><input id="lt-text-size" type="range" min="17" max="24" value="19"></label><label class="lt-view-check"><input id="lt-surrounding" type="checkbox"> Show surrounding text</label></div></details></div>
+  </header>
+  <div class="lt-content">
+    <div class="lt-bookline"><strong>Modern Robotics</strong><span>Chapter 2 · Configuration space</span></div>
+    <h2>How robot joints move</h2>
+    <div class="lt-columns">
+      <div class="lt-reading-pane">
+        <section class="lt-book-section" aria-label="Current book paragraph">
+          <div class="lt-sectionlabel lt-passagelabel">2.2.1 Robot joints · paragraph 1</div>
+          <p class="lt-prose" id="lt-passage"></p>
+          <div class="lt-source">Lynch &amp; Park · §2.2.1 · source p. 16</div>
+          <button class="lt-action lt-thread-entry" type="button" data-action="open-wrist" hidden><i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion</button>
+          <div class="lt-actions">
+            <button class="lt-action" type="button" data-action="focus-question"><i data-lucide="message-circle" aria-hidden="true"></i> Ask a question</button>
+            <button class="lt-action" type="button" data-action="note"><i data-lucide="pencil-line" aria-hidden="true"></i> Note</button>
+            <button class="lt-action" type="button" data-action="highlight">Highlight selection</button>
+          </div>
+          <div class="lt-note" hidden><label for="lt-note-text">Note on this paragraph</label><textarea id="lt-note-text" placeholder="Write what you want to return to…"></textarea></div>
+          <div class="lt-feedback" aria-live="polite"></div>
+          <button class="lt-quiet" type="button" data-action="context" aria-expanded="false">Show surrounding text</button>
+          <div class="lt-context" hidden><div class="lt-sectionlabel">Next paragraph</div><div class="lt-context-text"></div></div>
+        </section>
+        <section class="lt-thread" aria-label="Learning thread" hidden></section>
+        <section class="lt-qa" aria-label="Questions and follow-ups">
+          <div class="lt-messages" role="log" aria-label="Conversation"></div>
+          <form class="lt-compose">
+            <label for="lt-question">Ask about this paragraph</label>
+            <div class="lt-ask-context" hidden></div>
+            <textarea id="lt-question" rows="3" placeholder="What would you like to understand?"></textarea>
+            <div class="lt-actions">
+              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="copy" aria-hidden="true"></i> Copy for Codex</button>
+            </div>
+            <div class="lt-copy-fallback" hidden><label for="lt-copy-text">Question and context to copy</label><textarea id="lt-copy-text" readonly></textarea></div>
+          </form>
+          <div class="lt-qa-status" role="status" aria-live="polite"></div>
+          <details class="lt-branches" hidden><summary>Discussions</summary><div class="lt-branch-list"></div></details>
+        </section>
+      </div>
+      <section class="lt-demo" aria-label="Interactive joint model">
+        <div class="lt-demotop"><strong>Move the joint</strong><span>Schematic · live motion</span></div>
+        <div class="lt-joints" aria-label="Joint type"></div>
+        <svg class="lt-diagram" role="img" aria-label="Joint motion diagram"></svg>
+        <p class="lt-caption" aria-live="polite"></p>
+        <div class="lt-controls"></div>
+        <div class="lt-demofoot"><span class="lt-dof">1 degree of freedom</span><button type="button" data-action="animate">Play one motion</button></div>
+      </section>
+    </div>
+    <footer class="lt-footer">
+      <div class="lt-progress"><button type="button" data-page="0" aria-label="Read sample paragraph 1">1</button><button type="button" data-page="1" aria-label="Read sample paragraph 2">2</button><span class="lt-readstatus"></span></div>
+      <div class="lt-nav"><button class="lt-action" type="button" data-action="previous">Previous</button><button class="lt-action lt-primary" type="button" data-action="next">Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
+    </footer>
+  </div>
+  <script src="./thread-examples.js"></script>
+  <script>
+  (() => {
+    const root=document.getElementById('lt-reading');
+    const q=s=>root.querySelector(s), qa=s=>[...root.querySelectorAll(s)];
+    const threadExamples=window.LearningThreadExamples;
+    const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
+    const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
+    const paragraphs=[
+      `Figure 2.3 illustrates the basic joints found in typical robots. Every joint connects exactly two links; joints that simultaneously connect three or more links are not allowed. The ${term('R','revolute')} (R), also called a hinge joint, allows rotational motion about the joint axis. The ${term('P','prismatic')} (P), also called a sliding or linear joint, allows translational (or rectilinear) motion along the direction of the joint axis. The ${term('H','helical')} (H), also called a screw joint, allows simultaneous rotation and translation about a screw axis. Revolute, prismatic, and helical joints all have one degree of freedom.`,
+      `Joints can also have multiple degrees of freedom. The ${term('C','cylindrical')} (C) has two degrees of freedom and allows independent translations and rotations about a single fixed joint axis. The ${term('U','universal')} (U) is another two-degree-of-freedom joint that consists of a pair of revolute joints arranged so that their joint axes are orthogonal. The ${term('S','spherical')} (S), also called a ball-and-socket joint, has three degrees of freedom and functions much like our shoulder joint.`
+    ];
+    const clean=s=>{const t=document.createElement('div');t.innerHTML=s;return t.textContent};
+    const states={R:[40],P:[35],H:[90],C:[40,30],U:[25,20],S:[25,20,15]};
+    const defs={
+      R:{controls:[['Angle',-140,140,'°']],caption:'The moving link turns around one fixed axis.',dof:1},
+      P:{controls:[['Travel',0,100,'%']],caption:'The moving link slides along one fixed axis.',dof:1},
+      H:{controls:[['Turn',0,360,'°']],caption:'Turning also moves the nut along the screw. They are linked.',dof:1},
+      C:{controls:[['Angle',-140,140,'°'],['Travel',0,100,'%']],caption:'Rotate and slide independently: two controls, two freedoms.',dof:2},
+      U:{controls:[['First hinge',-60,60,'°'],['Second hinge',-60,60,'°']],caption:'Two hinges, with their axes at right angles.',dof:2},
+      S:{controls:[['Tilt',-60,60,'°'],['Swing',-60,60,'°'],['Twist',-140,140,'°']],caption:'The link can turn about three axes through the joint.',dof:3}
+    };
+    let page=0,joint='R',stack=[],read=new Set(),notes=['',''],savedHtml=[null,null],feedback='',animation=0,context=false;
+    let selection=null;
+    let selectedSource=null,branchCount=0,messageCount=0;
+    const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
+    const conversations=new Map([['p0',makeNode('p0','Paragraph 1')],['p1',makeNode('p1','Paragraph 2')]]);
+    conversations.get('p1').page=1;
+    const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
+    const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    function rememberVisual(){activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
+    function restoreReadingPosition(){const y=activeNode().scrollY||0;requestAnimationFrame(()=>window.scrollTo(0,y))}
+    function renderAskContext(){
+      const node=activeNode(),box=q('.lt-ask-context');
+      const message=node.replyTo?node.messages.find(m=>m.id===node.replyTo):null;
+      box.hidden=!node.quote&&!message;
+      box.innerHTML=(node.quote?`<span>Selected text</span><blockquote>${escapeText(node.quote)}</blockquote>`:message?'<span>Following up on the selected reply</span>':'')+`<div class="lt-context-actions"><button type="button" data-action="clear-ask-context">Clear selection</button><button type="button" data-action="branch-selection">Explore separately <span aria-hidden="true">↗</span></button></div>`;
+    }
+    function renderQA(){
+      const node=activeNode();
+      q('.lt-compose label').textContent=node.messages.length?'Ask a follow-up':stack.length?'Ask about '+node.title.toLowerCase():'Ask about this paragraph';
+      q('.lt-messages').innerHTML=node.messages.map(renderMessage).join('');
+      q('#lt-question').value=node.draft;
+      q('[data-action="ask-codex"]').disabled=node.busy||!node.draft.trim();
+      q('.lt-qa-status').textContent=node.status;
+      const children=[...conversations.values()].filter(n=>n.parent&&n.page===page);
+      q('.lt-branches').hidden=!children.length||!!stack.length;
+      q('.lt-branch-list').innerHTML=children.map(n=>`<button type="button" data-reopen="${n.id}" style="padding-left:${8+Math.min(n.path.length-1,4)*14}px"><i data-lucide="git-branch" aria-hidden="true"></i>${escapeText(n.title)}${n.id===node.id?' · here':''}</button>`).join('');
+      renderAskContext();icons();threadExamples.drawVisuals(q('.lt-messages'),node.messages);
+    }
+    function renderMessage(m){
+      const example=m.example?threadExamples.examples[m.example]:null;
+      const label=m.role==='user'?'You':'Assistant';
+      const content=example?example.html():escapeText(m.text);
+      const hasVisual=activeNode().messages.some(other=>other.visualization?.sourceMessage===m.id);
+      return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}">
+        <div class="lt-message-meta"><span>${label}</span></div>
+        ${m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
+        ${m.visualization?'':`<div class="lt-message-content ${example?'lt-rich':''}">${content}</div>`}
+        ${m.visualization?threadExamples.visualHtml(m):''}
+        ${m.role==='assistant'?`<div class="lt-actions">
+          ${m.visualKey?`<button class="lt-action" type="button" data-visualize="${m.id}"><i data-lucide="shapes" aria-hidden="true"></i>${hasVisual?'View visual':'Visualize'}</button>`:''}
+          <button class="lt-action" type="button" data-follow="${m.id}">Ask follow-up</button>
+          <button class="lt-action" type="button" data-branch-message="${m.id}"><i data-lucide="git-branch" aria-hidden="true"></i> Explore separately</button>
+          <button class="lt-action" type="button" data-message-note="${m.id}" aria-expanded="${!!m.noteOpen}"><i data-lucide="pencil-line" aria-hidden="true"></i>${m.note?'Your note':'Note'}</button>
+        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea></div>`:''}
+      </article>`;
+    }
+    function openExample(key){
+      const example=threadExamples.examples[key];if(!example)return;
+      const parent=activeNode();
+      const existing=[...conversations.values()].find(n=>n.parent===parent.id&&n.example===key);
+      if(existing){reopen(existing.id);return}
+      enter('custom',example.title,example.quote);
+      const node=activeNode();node.example=key;
+      if(key==='wrist')node.sourceAnchor=makeBookAnchor(example.quote,node.id);
+      node.messages.push({id:'m'+(++messageCount),role:'user',text:example.question,sourceAnchor:node.sourceAnchor||null});
+      node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
+      render();
+    }
+    function makeBookAnchor(quote,threadId){
+      const text=clean(paragraphs[page]),start=text.indexOf(quote);
+      if(start<0||text.indexOf(quote,start+1)!==-1)throw new Error('The highlighted source must match one exact passage.');
+      return {id:'highlight-'+threadId,book:'modern-robotics-2019-preprint',paragraph:'2.2.1-p'+(page+1),page,sourcePage:16,start,end:start+quote.length,quote,prefix:text.slice(Math.max(0,start-40),start),suffix:text.slice(start+quote.length,start+quote.length+40)};
+    }
+    function renderBookAnchors(){
+      const passage=q('#lt-passage');
+      passage.querySelectorAll('[data-book-anchor]').forEach(link=>link.replaceWith(document.createTextNode(link.textContent)));
+      const anchored=[...conversations.values()].filter(n=>n.sourceAnchor?.page===page).sort((a,b)=>b.sourceAnchor.start-a.sourceAnchor.start);
+      for(const node of anchored){
+        const anchor=node.sourceAnchor,walker=document.createTreeWalker(passage,NodeFilter.SHOW_TEXT),segments=[];
+        let part,offset=0;while((part=walker.nextNode())){segments.push({node:part,start:offset,end:offset+part.length});offset+=part.length}
+        const first=segments.find(s=>s.start<=anchor.start&&s.end>anchor.start),last=segments.find(s=>s.start<anchor.end&&s.end>=anchor.end);
+        if(!first||!last)continue;
+        const range=document.createRange();range.setStart(first.node,anchor.start-first.start);range.setEnd(last.node,anchor.end-last.start);
+        if(range.toString()!==anchor.quote)continue;
+        range.deleteContents();
+        const link=document.createElement('a');link.href='#'+anchor.id;link.className='lt-highlight-origin';link.dataset.highlightThread=node.id;link.dataset.bookAnchor=anchor.id;
+        link.setAttribute('aria-label','Highlighted passage: '+anchor.quote+' Open discussion: '+node.title);
+        const mark=document.createElement('mark');mark.textContent=anchor.quote;link.append(mark);range.insertNode(link);
+      }
+      const wrist=anchored.find(n=>n.example==='wrist'),button=q('[data-action="open-wrist"]');
+      if(wrist){button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> 1 linked discussion <span>· Why three wrist joints?</span>';button.setAttribute('aria-label','Open discussion linked to the spherical-joint highlight')}
+      else{button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion';button.removeAttribute('aria-label')}
+    }
+    function returnToHighlight(threadId){
+      const node=conversations.get(threadId);if(!node?.sourceAnchor)return;
+      const anchor=node.sourceAnchor;goPage(anchor.page);
+      requestAnimationFrame(()=>{const link=q(`[data-book-anchor="${anchor.id}"]`);if(link){link.scrollIntoView({block:'center'});link.focus({preventScroll:true});feedback='';q('.lt-feedback').textContent=''}});
+    }
+    function openWrist(){
+      const existing=[...conversations.values()].find(n=>n.example==='wrist'&&n.parent==='p1');
+      if(existing){reopen(existing.id);return}
+      goPage(1);selectJoint('S');openExample('wrist');
+    }
+    function showVisual(id){
+      const node=activeNode(),answer=node.messages.find(m=>m.id===id);if(!answer?.visualKey)return;
+      let visual=node.messages.find(m=>m.visualization?.sourceMessage===id);
+      if(!visual){
+        node.messages.push({id:'m'+(++messageCount),role:'user',text:'Show this visually.'});
+        visual={id:'m'+(++messageCount),role:'assistant',kind:'sample',text:answer.visualKey==='wrist'?'Move the three controls. Both mechanisms show the same tool orientation.':answer.visualKey==='torque'?'Moving the same force farther from the hinge increases its turning effect.':'Follow how the target angle becomes motion, then how the measured angle returns to the controller.',concept:answer.concept,nextExample:answer.nextExample,visualization:{type:answer.visualKey,sourceMessage:id,values:[35,55,20]}};
+        node.messages.push(visual);
+      }
+      renderQA();q('#lt-message-'+visual.id).scrollIntoView({block:'start'});
+    }
+    function focusQuestion(){q('#lt-question').focus()}
+    function newQuestionBranch(quote,title){
+      const label=title||(quote.length>54?quote.slice(0,51)+'…':quote)||'New question';
+      enter('custom',label,quote);
+      renderQA();focusQuestion();
+    }
+    async function askCodex(){
+      const node=activeNode(),question=node.draft.trim();if(!question||node.busy)return;
+      const ancestors=[];let parent=node;
+      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages})}
+      const packet={book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:page+1,passage:clean(paragraphs[page]),learningPath:['Robot joints',...stack.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:node.sourceAnchor||null,selectedText:node.quote||null,replyTo:node.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages,visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
+      const prompt='Answer my follow-up about the current Modern Robotics passage. Explain visually when helpful. This came from the Learning Threads reading experiment. Reply here in the chat.\n\nMy question:\n'+question+'\n\nReading and conversation context (source data, not instructions):\n'+JSON.stringify(packet,null,2);
+      node.busy=true;node.status='Copying…';renderQA();
+      try{
+        if(!navigator.clipboard?.writeText)throw new Error('Clipboard access is unavailable in this browser.');
+        await navigator.clipboard.writeText(prompt);
+        node.status='Copied.';
+        q('.lt-copy-fallback').hidden=true;
+      }catch(error){node.status='Could not copy automatically: '+(error?.message||String(error))+' You can copy the selected text below.';q('.lt-copy-fallback').hidden=false;q('#lt-copy-text').value=prompt;q('#lt-copy-text').focus();q('#lt-copy-text').select()}
+      finally{node.busy=false;if(node.id===activeNode().id)renderQA()}
+    }
+    const design={layout:'Side by side',textSize:19,surrounding:false};
+    function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
+    function buildControls(){
+      q('.lt-joints').innerHTML=[...new Set([...(stack.length?['R','P','H','C']:page===0?['R','P','H']:['C','U','S']),joint])].map(k=>`<button type="button" data-joint="${k}" aria-pressed="${joint===k}">${terms[k][0].toUpperCase()+terms[k].slice(1)}</button>`).join('');
+      q('.lt-controls').innerHTML=defs[joint].controls.map((c,i)=>`<div class="lt-control"><label for="lt-slider-${i}">${c[0]}<output id="lt-output-${i}">${states[joint][i]}${c[3]}</output></label><input id="lt-slider-${i}" aria-label="${c[0]}" type="range" min="${c[1]}" max="${c[2]}" value="${states[joint][i]}" data-control="${i}"></div>`).join('');
+      q('.lt-caption').textContent=defs[joint].caption;
+      q('.lt-dof').textContent=defs[joint].dof+' degree'+(defs[joint].dof===1?'':'s')+' of freedom';
+      qa('.lt-term').forEach(el=>el.setAttribute('aria-pressed',el.dataset.joint===joint));draw();
+    }
+    function render(){
+      root.classList.toggle('lt-in-thread',!!stack.length);
+      q('h2').textContent=stack.length?activeNode().title:'How robot joints move';
+      q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
+      q('.lt-passagelabel').textContent=`2.2.1 Robot joints · paragraph ${page+1}`;
+      q('[data-action="open-wrist"]').hidden=page!==1;
+      q('#lt-passage').innerHTML=savedHtml[page]||paragraphs[page];
+      renderBookAnchors();
+      q('#lt-note-text').value=notes[page];
+      q('.lt-feedback').textContent=feedback;
+      q('.lt-context').hidden=!(context||design.surrounding);
+      q('[data-action="context"]').setAttribute('aria-expanded',String(context||design.surrounding));
+      q('[data-action="context"]').textContent=context||design.surrounding?'Hide surrounding text':'Show surrounding text';
+      q('.lt-context .lt-sectionlabel').textContent=page===0?'Next paragraph':'Previous paragraph';
+      q('.lt-context-text').textContent=clean(paragraphs[1-page]);
+      qa('[data-page]').forEach(el=>{el.classList.toggle('current',+el.dataset.page===page);el.setAttribute('aria-current',+el.dataset.page===page?'step':'false')});
+      q('.lt-readstatus').textContent=read.size?read.size+' read':'';
+      q('[data-action="previous"]').disabled=page===0&&!stack.length;
+      q('[data-action="next"]').innerHTML=stack.length?'Return to reading':page===0?'Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i>':'Done for now <i data-lucide="check" aria-hidden="true"></i>';
+      q('.lt-footer').hidden=!!stack.length;
+      if(stack.length){
+        const node=activeNode();
+        const back=node.sourceAnchor
+          ? `<button class="lt-action" data-highlight-return="${node.id}" type="button"><i data-lucide="arrow-left" aria-hidden="true"></i> Back to highlight</button>`
+          : `<button class="lt-action" data-action="back-thread" type="button"><i data-lucide="arrow-left" aria-hidden="true"></i>${stack.length===1?'Back to paragraph':'Back to '+escapeText(conversations.get(node.parent).title)}</button>`;
+        const origin=node.sourceAnchor
+          ? `<details class="lt-thread-origin lt-linked-origin" open><summary>Highlighted passage</summary><blockquote><mark>${escapeText(node.sourceAnchor.quote)}</mark></blockquote></details>`
+          : node.sourceQuote?`<details class="lt-thread-origin"><summary>Selected text</summary><blockquote>${escapeText(node.sourceQuote)}</blockquote></details>`:'';
+        q('.lt-thread').innerHTML=`<div class="lt-actions">${back}</div>${origin}`;
+      }
+      buildControls();renderQA();icons();
+    }
+    const ns='http://www.w3.org/2000/svg';
+    function draw(){
+      const svg=q('.lt-diagram'),w=svg.clientWidth||380,h=svg.clientHeight||270,sc=Math.min(w/4.8,(h-72)/2.65),cx=w/2,cy=h*.58;
+      svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.replaceChildren();
+      const el=(tag,attrs={},text)=>{let n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;svg.append(n);return n};
+      el('title',{},`${terms[joint]} joint with ${defs[joint].dof} degrees of freedom`);
+      el('desc',{},defs[joint].caption+' Use the controls below to change the moving link. Gray is fixed and green moves.');
+      const proj=([x,y,z])=>[cx+sc*(x*.87-y*.64),cy+sc*(x*.3+y*.4-z)];
+      const path=(points,color,width=2,dash=null)=>{const n=el('path',{d:points.map((p,i)=>{let [x,y]=proj(p);return(i?'L':'M')+x.toFixed(2)+','+y.toFixed(2)}).join(' '),fill:'none',stroke:color,'stroke-width':width,'stroke-linecap':'round','stroke-linejoin':'round'});if(dash)n.setAttribute('stroke-dasharray',dash);return n};
+      const fixed='var(--lt-fixed)',green='var(--lt-teal)',ink='var(--lt-ink)',line='var(--lt-line)';
+      const dot=(p,r,fill)=>{const a=proj(p);return el('circle',{cx:a[0],cy:a[1],r,fill})};
+      const ring=(center,a,b,r,color,width=2)=>path(Array.from({length:65},(_,i)=>{let t=i/64*Math.PI*2;return center.map((v,j)=>v+r*(a[j]*Math.cos(t)+b[j]*Math.sin(t)))}),color,width);
+      const beam=(a,b,color)=>{path([a,b],line,23);path([a,b],color,18)};
+      const degree=Math.PI/180,v=states[joint],angle=v[0]*degree;
+      for(let i=-2;i<=2;i++){path([[i*.6,-1.3,-.48],[i*.6,1.3,-.48]],line,1);path([[-1.3,i*.6,-.48],[1.3,i*.6,-.48]],line,1)}
+      const label=(x,y,t,anchor='start')=>el('text',{x,y,'text-anchor':anchor},t);
+      if(joint==='R'){
+        ring([0,0,0],[1,0,0],[0,1,0],1.25,line,1.5);
+        path([[0,0,-.6],[0,0,1.2]],fixed,1.5,'4 5');
+        beam([-1.35,0,0],[0,0,0],fixed);
+        beam([0,0,.05],[1.5*Math.cos(angle),1.5*Math.sin(angle),.05],green);
+        dot([0,0,.05],12,ink);dot([0,0,.05],5,'var(--lt-surface)');
+        label(cx+9,cy-sc*1.2,'axis');
+      }else if(joint==='P'){
+        path([[-1.5,-.22,0],[1.5,-.22,0]],fixed,7);path([[-1.5,.22,0],[1.5,.22,0]],fixed,7);
+        let x=-1+v[0]/50;beam([x,-.3,.07],[x,.3,.07],green);beam([x,0,.07],[x,0,1.05],green);
+        dot([x,0,1.05],6,green);label(cx,45,'straight-line travel','middle');
+      }else if(joint==='H'||joint==='C'){
+        const z=joint==='H'?v[0]/360*.9:v[1]/100*.9;
+        beam([0,0,-.3],[0,0,1.7],fixed);
+        if(joint==='H')path(Array.from({length:200},(_,i)=>{let t=i/199*12*Math.PI;return [.18*Math.cos(t),.18*Math.sin(t),-.25+i/199*1.9]}),'var(--lt-ink)',1.8);
+        ring([0,0,z],[1,0,0],[0,1,0],.33,green,14);
+        beam([0,0,z],[1.4*Math.cos(angle),1.4*Math.sin(angle),z],green);
+        label(cx+32,32,joint==='H'?'thread fixes the travel':'smooth shaft');
+        if(joint==='H')label(cx,h-22,`${v[0]}° turn → ${(v[0]/360).toFixed(2)} of one pitch`,'middle');
+      }else{
+        const a=v[0]*degree,b=v[1]*degree,c=(v[2]||0)*degree;
+        const rx=p=>[p[0],p[1]*Math.cos(a)-p[2]*Math.sin(a),p[1]*Math.sin(a)+p[2]*Math.cos(a)];
+        const ry=p=>[p[0]*Math.cos(b)+p[2]*Math.sin(b),p[1],-p[0]*Math.sin(b)+p[2]*Math.cos(b)];
+        const rz=p=>[p[0]*Math.cos(c)-p[1]*Math.sin(c),p[0]*Math.sin(c)+p[1]*Math.cos(c),p[2]];
+        const rot=p=>rx(ry(rz(p)));
+        beam([0,0,-.65],[0,0,0],fixed);
+        if(joint==='U'){
+          ring([0,0,0],[1,0,0],[0,0,1],.5,fixed,7);
+          ring([0,0,0],rx([0,1,0]),rx([0,0,1]),.37,green,7);
+          path([[-.65,0,0],[.65,0,0]],fixed,2,'3 4');
+          path([rx([0,-.65,0]),rx([0,.65,0])],green,2,'3 4');
+        }else{dot([0,0,0],28,fixed);dot([-.05,-.08,.07],20,green)}
+        const end=rot([0,0,1.45]);beam([0,0,0],end,green);
+        const x=rot([.36,0,1.45]),y=rot([0,.36,1.45]);path([x,end,y],ink,3);
+        label(cx,h-22,joint==='U'?'two perpendicular hinges':'three rotation controls','middle');
+      }
+      el('circle',{cx:11,cy:19,r:4,fill:fixed});label(22,23,'Fixed link');
+      el('circle',{cx:w-105,cy:19,r:4,fill:green});label(w-94,23,'Moving link');
+    }
+    function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';joint=k;buildControls()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
+    function enter(type,title,quote=''){
+      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id='b'+(++branchCount),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
+      const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
+      stack.push({id,type,title:label,restoreJoint:joint,restoreValues:[...states[joint]]});node.path=stack.map(s=>({...s,restoreValues:[...s.restoreValues]}));
+      if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();
+    }
+    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    root.addEventListener('click',e=>{
+      const highlighted=e.target.closest('[data-highlight-thread]');
+      if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&highlighted.contains(selected.anchorNode))return;reopen(highlighted.dataset.highlightThread);return}
+      const btn=e.target.closest('button');if(!btn)return;
+      if(btn.dataset.highlightReturn){returnToHighlight(btn.dataset.highlightReturn);return}
+      if(btn.dataset.concept){openExample(btn.dataset.concept);q('h2').scrollIntoView({block:'start'});return}
+      if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}
+      if(btn.dataset.messageNote){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.messageNote);message.noteOpen=!message.noteOpen;renderQA();if(message.noteOpen)q('#lt-answer-note-'+message.id).focus();return}
+      if(btn.dataset.joint){selectJoint(btn.dataset.joint);return}
+      if(btn.dataset.page!==undefined){goPage(+btn.dataset.page);return}
+      if(btn.dataset.return!==undefined){backTo(+btn.dataset.return);return}
+      if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;node.quote=selectedSource?.nodeId===node.id&&selectedSource.messageId===btn.dataset.follow?selectedSource.quote:'';node.draft='';renderQA();focusQuestion();return}
+      if(btn.dataset.branchMessage){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.branchMessage);const chosen=selectedSource?.nodeId===node.id&&selectedSource.messageId===message.id?selectedSource.quote:null;if(!chosen&&message.nextExample)openExample(message.nextExample);else newQuestionBranch(chosen||message.concept,chosen||message.concept);q('h2').scrollIntoView({block:'start'});return}
+      if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
+      const action=btn.dataset.action;
+      if(action==='open-wrist'){openWrist();q('h2').scrollIntoView({block:'start'});return}
+      if(action==='focus-question'){focusQuestion();return}
+      if(action==='clear-ask-context'){activeNode().quote='';activeNode().replyTo=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
+      if(action==='branch-selection'){const node=activeNode(),message=node.messages.find(m=>m.id===node.replyTo);newQuestionBranch(node.quote||message?.concept||'A related concept');return}
+      if(action==='next'){if(stack.length)backTo(0);else{read.add(page);if(page===0)goPage(1);else{feedback='';render()}}}
+      if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(page>0)goPage(page-1)}
+      if(action==='back-thread')backTo(stack.length-1);
+      if(action==='context'){context=!(context||design.surrounding);design.surrounding=false;render()}
+      if(action==='note'){q('.lt-note').hidden=!q('.lt-note').hidden;if(!q('.lt-note').hidden)q('#lt-note-text').focus()}
+      if(action==='highlight'){
+        if(selection&&q('#lt-passage').contains(selection.commonAncestorContainer)){try{const mark=document.createElement('mark');mark.append(selection.extractContents());selection.insertNode(mark);savedHtml[page]=q('#lt-passage').innerHTML;selection=null;window.getSelection()?.removeAllRanges();feedback=''}catch(err){feedback='Select a short phrase in the paragraph, then highlight it.'}}
+        else feedback='Select a phrase in the paragraph first.';
+        q('.lt-feedback').textContent=feedback;
+      }
+      if(action==='animate'){
+        cancelAnimationFrame(animation);const target=joint,def=defs[target].controls[0],from=states[target][0],to=from<(def[1]+def[2])/2?def[2]:def[1];
+        if(matchMedia('(prefers-reduced-motion: reduce)').matches){states[target][0]=to;buildControls();return}
+        const start=performance.now();btn.textContent='Moving…';
+        const frame=t=>{if(target!==joint)return;const p=Math.min((t-start)/2200,1),ease=p*p*(3-2*p);states[target][0]=Math.round(from+(to-from)*ease);q('#lt-slider-0').value=states[target][0];q('#lt-output-0').textContent=states[target][0]+def[3];draw();if(p<1)animation=requestAnimationFrame(frame);else btn.textContent='Play one motion'};
+        animation=requestAnimationFrame(frame);
+      }
+    });
+    root.addEventListener('input',e=>{
+      if(e.target.dataset.wristControl!==undefined){
+        const message=activeNode().messages.find(m=>m.id===e.target.dataset.visualMessage);
+        message.visualization.values[+e.target.dataset.wristControl]=+e.target.value;
+        e.target.closest('label').querySelector('output').textContent=e.target.value+'°';
+        threadExamples.drawVisuals(q('.lt-messages'),activeNode().messages);
+      }
+      if(e.target.dataset.noteMessage){const message=activeNode().messages.find(m=>m.id===e.target.dataset.noteMessage);message.note=e.target.value;const btn=q(`[data-message-note="${message.id}"]`);btn.lastChild.textContent=message.note?' Your note':' Note'}
+    });
+    root.addEventListener('input',e=>{if(e.target.dataset.control!==undefined){cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';const i=+e.target.dataset.control;states[joint][i]=+e.target.value;q('#lt-output-'+i).textContent=e.target.value+defs[joint].controls[i][3];draw()}if(e.target.id==='lt-note-text')notes[page]=e.target.value;if(e.target.id==='lt-question'){const node=activeNode();node.draft=e.target.value;q('[data-action="ask-codex"]').disabled=node.busy||!node.draft.trim()}});
+    q('.lt-compose').addEventListener('submit',e=>{e.preventDefault();askCodex()});
+    document.addEventListener('selectionchange',()=>{
+      const s=window.getSelection();if(!s||!s.rangeCount||s.isCollapsed)return;
+      const range=s.getRangeAt(0),container=range.commonAncestorContainer,element=container.nodeType===1?container:container.parentElement;
+      if(!root.contains(element))return;
+      const message=element.closest('.lt-message-content'),inPassage=q('#lt-passage').contains(container),inExplanation=q('.lt-thread').contains(container);
+      if(!inPassage&&!message&&!inExplanation)return;
+      const text=s.toString().trim().slice(0,1200);if(!text)return;
+      const node=activeNode(),messageId=message?.closest('[data-message]')?.dataset.message||null;
+      if(inPassage)selection=range.cloneRange();else selection=null;
+      selectedSource={quote:text,nodeId:node.id,messageId};node.quote=text;node.replyTo=messageId;renderAskContext();
+    });
+    function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
+    render();new ResizeObserver(draw).observe(q('.lt-diagram'));
+    new ResizeObserver(()=>threadExamples.drawVisuals(q('.lt-messages'),activeNode().messages)).observe(q('.lt-messages'));
+    q('#lt-layout').addEventListener('change',e=>{design.layout=e.target.value;applyDesign()});
+    q('#lt-text-size').addEventListener('input',e=>{design.textSize=+e.target.value;q('#lt-size-value').textContent=e.target.value+' px';applyDesign()});
+    q('#lt-surrounding').addEventListener('change',e=>{design.surrounding=e.target.checked;context=false;applyDesign()});
+    if(new URLSearchParams(location.search).get('example')==='wrist')openWrist();
+    if(new URLSearchParams(location.search).get('example')==='highlight'){openWrist();returnToHighlight(activeNode().id)}
+  })();
+  </script>
+</div>

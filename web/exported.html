@@ -1,0 +1,1894 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Learning Threads — Reading prototype</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Learning Threads — Reading prototype" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Learning Threads — Reading prototype&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 10px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover,
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, var(--font-size-normal));
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+
+  .form-range::-webkit-slider-runnable-track {
+    height: 44px;
+  }
+
+  .form-range::-moz-range-track {
+    height: 44px;
+  }
+
+  .form-range::-webkit-slider-thumb {
+    margin-top: 12px;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;lt-reading&quot; aria-label=&quot;Learning Threads reading experiment&quot;&gt;
+  &lt;style&gt;
+    #lt-reading{--lt-bg:light-dark(#faf9f5,#171e20);--lt-surface:light-dark(#ffffff,#20292b);--lt-ink:light-dark(#203431,#edf3ee);--lt-muted:light-dark(#63736e,#a9bbb4);--lt-line:light-dark(#e1e7df,#354641);--lt-green:light-dark(#1d6758,#95d7be);--lt-soft:light-dark(#e9f1e8,#293f37);--lt-teal:light-dark(#398878,#79c3ab);--lt-fixed:light-dark(#94a69f,#6d8b80);--lt-paper:light-dark(#f0f3ed,#1c3028);--lt-mark:light-dark(#fcf1b8,#625721);color:var(--lt-ink);background:var(--lt-bg);font:15px/1.5 -apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif;border:1px solid var(--lt-line);border-radius:16px;overflow:hidden}
+    #lt-reading *{box-sizing:border-box}
+    #lt-reading button,#lt-reading input,#lt-reading textarea{font:inherit}
+    #lt-reading button{cursor:pointer;touch-action:manipulation;color:inherit}
+    #lt-reading button:disabled{opacity:.4;cursor:default}
+    #lt-reading button:focus-visible,#lt-reading input:focus-visible,#lt-reading textarea:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px}
+    #lt-reading [hidden]{display:none!important}
+    #lt-reading .lt-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;background:var(--lt-surface);border-bottom:1px solid var(--lt-line)}
+    #lt-reading .lt-brand{font-weight:650;letter-spacing:-.4px;display:flex;align-items:center;gap:10px;font-size:17px}
+    #lt-reading .lt-brand i{color:var(--lt-green)}
+    
+    #lt-reading .lt-content{padding:28px 32px 22px}
+    #lt-reading .lt-bookline{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;color:var(--lt-muted);font-size:13px;margin-bottom:22px}
+    #lt-reading .lt-bookline strong{font-weight:550;color:var(--lt-ink)}
+    
+    
+    
+    #lt-reading h2{font:500 32px/1.15 Georgia,&quot;Times New Roman&quot;,serif;letter-spacing:-.7px;margin:0 0 25px}
+    #lt-reading .lt-columns{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:34px;align-items:start}
+    #lt-reading .lt-sectionlabel{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lt-muted);font-weight:600;margin-bottom:14px}
+    #lt-reading .lt-prose{font:400 var(--lt-reading-size,19px)/1.75 Georgia,&quot;Times New Roman&quot;,serif;margin:0;color:var(--lt-ink)}
+    #lt-reading .lt-term{font:inherit!important;border:0;border-bottom:1px solid var(--lt-green);padding:0 2px;background:transparent;color:var(--lt-green);border-radius:3px;text-align:left;display:inline}
+    #lt-reading .lt-term[aria-pressed=&quot;true&quot;]{background:var(--lt-soft);border-bottom:2px solid var(--lt-green)}
+    #lt-reading .lt-source{font-size:12px;color:var(--lt-muted);margin-top:18px}
+    #lt-reading .lt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+    #lt-reading .lt-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--lt-line);border-radius:8px;background:var(--lt-surface);padding:9px 12px;min-height:42px;font-size:13px}
+    #lt-reading .lt-action.lt-primary{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
+    #lt-reading .lt-quiet{background:none;border:0;font-size:13px;padding:8px 0;color:var(--lt-muted)}
+    #lt-reading .lt-demo{background:var(--lt-paper);border-radius:12px;padding:19px 18px 17px}
+    #lt-reading .lt-demotop{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:14px}
+    #lt-reading .lt-demotop strong{font-size:14px;font-weight:600}
+    #lt-reading .lt-demotop span{font-size:11px;color:var(--lt-muted)}
+    #lt-reading .lt-joints{display:flex;gap:3px;flex-wrap:wrap;background:var(--lt-surface);padding:4px;border-radius:8px}
+    #lt-reading .lt-joints button{flex:1;border:0;padding:8px 7px;border-radius:5px;background:transparent;font-size:12px;min-height:38px}
+    #lt-reading .lt-joints button[aria-pressed=&quot;true&quot;]{background:var(--lt-green);color:var(--lt-bg)}
+    #lt-reading .lt-diagram{display:block;width:100%;height:270px;overflow:visible}
+    #lt-reading .lt-diagram text{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif;fill:var(--lt-muted);font-size:11px}
+    #lt-reading .lt-caption{font-size:14px;line-height:1.5;text-align:center;min-height:43px;margin:0 0 16px;color:var(--lt-ink)}
+    #lt-reading .lt-control{margin-top:12px}
+    #lt-reading .lt-control label{display:flex;justify-content:space-between;font-size:12px;gap:8px}
+    #lt-reading output{font-variant-numeric:tabular-nums;color:var(--lt-green);font-weight:600}
+    #lt-reading input[type=&quot;range&quot;]{width:100%;accent-color:var(--lt-green);height:26px;cursor:ew-resize;margin:3px 0 0}
+    #lt-reading .lt-demofoot{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:14px;font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-demofoot button{border:0;background:var(--lt-surface);border-radius:6px;padding:7px 10px;font-size:12px;min-height:38px}
+    #lt-reading .lt-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:28px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    #lt-reading .lt-progress{display:flex;align-items:center;gap:8px;color:var(--lt-muted);font-size:12px}
+    #lt-reading .lt-progress button{width:32px;height:32px;border-radius:50%;border:1px solid var(--lt-line);background:var(--lt-surface);font-size:12px}
+    #lt-reading .lt-progress button.current{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
+    #lt-reading .lt-nav{display:flex;gap:10px}
+    #lt-reading .lt-context{margin-top:22px;border-top:1px solid var(--lt-line);padding-top:16px;color:var(--lt-muted);font:16px/1.7 Georgia,serif}
+    #lt-reading .lt-context .lt-sectionlabel{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif}
+    #lt-reading .lt-thread{background:var(--lt-surface);border-left:3px solid var(--lt-green);padding:19px 21px;border-radius:0 10px 10px 0}
+    #lt-reading .lt-thread h3{font:500 23px/1.3 Georgia,serif;margin:0 0 15px}
+    #lt-reading .lt-thread p{font:17px/1.7 Georgia,serif;margin:0 0 15px}
+    #lt-reading .lt-thread .lt-sectionlabel{margin-bottom:15px}
+    #lt-reading .lt-thread small{font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-note{margin-top:18px;background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:8px;padding:13px}
+    #lt-reading .lt-note label{font-size:12px;color:var(--lt-muted);display:block;margin-bottom:7px}
+    #lt-reading .lt-note textarea{width:100%;resize:vertical;min-height:80px;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:5px;padding:9px;font-size:16px}
+    #lt-reading .lt-note small{display:block;color:var(--lt-muted);font-size:11px;margin-top:5px}
+    #lt-reading mark{background:var(--lt-mark);color:inherit;border-radius:3px}
+    #lt-reading .lt-feedback{font-size:12px;color:var(--lt-muted);min-height:18px;margin-top:8px}
+    #lt-reading .lt-qa{margin-top:23px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    
+    
+    #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
+    #lt-reading .lt-message{min-width:0;padding:15px 17px;border-radius:10px;background:var(--lt-surface);overflow-wrap:anywhere}
+    #lt-reading .lt-message.lt-user{background:var(--lt-soft);margin-left:22px}
+    #lt-reading .lt-message-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--lt-muted);margin-bottom:6px}
+    #lt-reading .lt-message-content{font:17px/1.65 Georgia,serif;white-space:pre-line}
+    #lt-reading .lt-message .lt-actions{margin-top:12px;gap:6px}
+    #lt-reading .lt-message .lt-action{font-size:12px;padding:7px 9px}
+    #lt-reading .lt-message-quote{font-size:12px;color:var(--lt-muted);border-left:2px solid var(--lt-teal);padding-left:8px;margin-bottom:9px}
+    #lt-reading .lt-compose{background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:10px;padding:13px}
+    #lt-reading .lt-compose label{display:block;font-size:12px;font-weight:550;margin-bottom:8px}
+    #lt-reading .lt-compose textarea{display:block;width:100%;min-height:82px;resize:vertical;font-size:16px;line-height:1.5;background:var(--lt-bg);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:7px;padding:10px}
+    #lt-reading .lt-compose .lt-actions{margin-top:10px}
+    
+    #lt-reading .lt-ask-context{background:var(--lt-soft);padding:9px 10px;border-radius:6px;margin-bottom:10px;font-size:12px;overflow-wrap:anywhere}
+    #lt-reading .lt-ask-context blockquote{margin:5px 0;font:15px/1.5 Georgia,serif;max-height:none}
+    #lt-reading .lt-ask-context button{padding:5px 7px;border:0;background:var(--lt-surface);border-radius:5px;font-size:11px;min-height:32px}
+    #lt-reading .lt-ask-context .lt-context-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+    #lt-reading .lt-qa-status{font-size:12px;color:var(--lt-muted);margin-top:10px;overflow-wrap:anywhere}
+    #lt-reading .lt-branches{margin-top:17px;font-size:12px;color:var(--lt-muted)}
+    #lt-reading .lt-branches summary{cursor:pointer;min-height:30px}
+    #lt-reading .lt-branches button{display:flex;gap:8px;align-items:center;width:100%;padding:9px 8px;background:transparent;border:0;text-align:left;font-size:12px;color:var(--lt-green);border-left:1px solid var(--lt-line);overflow-wrap:anywhere}
+    #lt-reading .lt-branch-origin{font-size:13px;color:var(--lt-muted);border-left:2px solid var(--lt-line);padding-left:10px;margin:12px 0;overflow-wrap:anywhere}
+    #lt-reading.lt-stacked .lt-columns{grid-template-columns:1fr}
+    #lt-reading.lt-stacked .lt-demo{max-width:650px;width:100%;margin:0 auto}
+    @media(max-width:700px){#lt-reading .lt-content{padding:22px 20px}#lt-reading .lt-columns{grid-template-columns:1fr;gap:24px}#lt-reading .lt-top{padding:15px 20px}#lt-reading h2{font-size:29px;margin-bottom:22px}#lt-reading .lt-prose{font-size:19px}#lt-reading .lt-demo{padding:16px}}
+    @media(pointer:coarse){#lt-reading .lt-joints button,#lt-reading .lt-action,#lt-reading .lt-demofoot button,#lt-reading .lt-progress button{min-height:44px}#lt-reading .lt-progress button{width:44px}#lt-reading input[type=&quot;range&quot;]{height:38px}}
+    html,body{margin:0;padding:0;color-scheme:light dark;background:light-dark(#faf9f5,#171e20)}
+    #lt-reading{min-height:100dvh;border:0;border-radius:0;overflow:visible}
+    #lt-reading .lt-top{padding:18px clamp(20px,4vw,64px)}
+    #lt-reading .lt-content{max-width:1440px;margin:0 auto;padding:32px clamp(20px,4vw,64px) 24px}
+    #lt-reading .lt-columns{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);column-gap:44px;row-gap:0}
+    #lt-reading .lt-reading-pane{display:contents}
+    #lt-reading .lt-book-section,#lt-reading .lt-thread{grid-column:1;grid-row:1}
+    #lt-reading .lt-qa{grid-column:1;grid-row:2}
+    #lt-reading .lt-demo{grid-column:2;grid-row:1 / span 2;position:sticky;top:24px;padding:24px}
+    #lt-reading .lt-diagram{height:330px}
+    #lt-reading .lt-top-right{display:flex;align-items:center;gap:22px}
+    #lt-reading .lt-view-menu{position:relative;font-size:13px}
+    #lt-reading .lt-view-menu summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:8px}
+    #lt-reading .lt-view-options{position:absolute;right:0;top:43px;z-index:10;width:260px;max-width:calc(100vw - 32px);padding:16px;background:var(--lt-surface);border:1px solid var(--lt-line);border-radius:10px;box-shadow:0 12px 30px #0002}
+    #lt-reading .lt-view-options label{display:block;margin-bottom:15px;font-size:13px}
+    #lt-reading .lt-view-options label:last-child{margin-bottom:0}
+    #lt-reading .lt-view-options select{font:inherit;color:var(--lt-ink);background:var(--lt-bg);border:1px solid var(--lt-line);border-radius:5px;min-height:38px;width:100%;margin-top:5px;padding:5px}
+    #lt-reading .lt-view-options .lt-view-check{display:flex;gap:9px;align-items:center}
+    #lt-reading .lt-view-check input{accent-color:var(--lt-green)}
+    #lt-reading .lt-copy-fallback{margin-top:12px}
+    #lt-reading .lt-copy-fallback textarea{font-size:13px;min-height:130px}
+    
+    #lt-reading.lt-stacked .lt-book-section,#lt-reading.lt-stacked .lt-thread{grid-column:1;grid-row:1}
+    #lt-reading.lt-stacked .lt-demo{grid-column:1;grid-row:2;position:static;margin-top:25px}
+    #lt-reading.lt-stacked .lt-qa{grid-column:1;grid-row:3}
+    #lt-reading.lt-stacked .lt-reading-pane{display:contents}
+    #lt-reading.lt-stacked .lt-columns{max-width:760px;margin:auto}
+    #lt-reading .lt-footer{padding-bottom:12px}
+    @media(max-width:860px){#lt-reading .lt-columns{grid-template-columns:minmax(0,1fr);row-gap:0}#lt-reading .lt-book-section,#lt-reading .lt-thread{grid-column:1;grid-row:1}#lt-reading .lt-demo{grid-column:1;grid-row:2;position:static;margin-top:24px}#lt-reading .lt-qa{grid-column:1;grid-row:3}#lt-reading .lt-diagram{height:300px}#lt-reading .lt-content{max-width:760px;padding-top:24px}#lt-reading .lt-top-right{gap:0}}
+    @media(max-width:400px){#lt-reading .lt-brand{font-size:15px}#lt-reading .lt-view-menu summary{font-size:12px}#lt-reading .lt-demo{padding:16px}#lt-reading .lt-diagram{height:270px}}
+  &lt;/style&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;./thread-examples.css&quot;&gt;
+  &lt;header class=&quot;lt-top&quot;&gt;
+    &lt;div class=&quot;lt-brand&quot;&gt;&lt;i data-lucide=&quot;git-branch&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Learning Threads&lt;/div&gt;
+    &lt;div class=&quot;lt-top-right&quot;&gt;&lt;details class=&quot;lt-view-menu&quot;&gt;&lt;summary&gt;&lt;i data-lucide=&quot;sliders-horizontal&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Reading view&lt;/summary&gt;&lt;div class=&quot;lt-view-options&quot;&gt;&lt;label for=&quot;lt-layout&quot;&gt;Layout&lt;select id=&quot;lt-layout&quot;&gt;&lt;option&gt;Side by side&lt;/option&gt;&lt;option&gt;Visual below&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;&lt;label for=&quot;lt-text-size&quot;&gt;Text size &lt;output id=&quot;lt-size-value&quot;&gt;19 px&lt;/output&gt;&lt;input id=&quot;lt-text-size&quot; type=&quot;range&quot; min=&quot;17&quot; max=&quot;24&quot; value=&quot;19&quot;&gt;&lt;/label&gt;&lt;label class=&quot;lt-view-check&quot;&gt;&lt;input id=&quot;lt-surrounding&quot; type=&quot;checkbox&quot;&gt; Show surrounding text&lt;/label&gt;&lt;/div&gt;&lt;/details&gt;&lt;/div&gt;
+  &lt;/header&gt;
+  &lt;div class=&quot;lt-content&quot;&gt;
+    &lt;div class=&quot;lt-bookline&quot;&gt;&lt;strong&gt;Modern Robotics&lt;/strong&gt;&lt;span&gt;Chapter 2 · Configuration space&lt;/span&gt;&lt;/div&gt;
+    &lt;h2&gt;How robot joints move&lt;/h2&gt;
+    &lt;div class=&quot;lt-columns&quot;&gt;
+      &lt;div class=&quot;lt-reading-pane&quot;&gt;
+        &lt;section class=&quot;lt-book-section&quot; aria-label=&quot;Current book paragraph&quot;&gt;
+          &lt;div class=&quot;lt-sectionlabel lt-passagelabel&quot;&gt;2.2.1 Robot joints · paragraph 1&lt;/div&gt;
+          &lt;p class=&quot;lt-prose&quot; id=&quot;lt-passage&quot;&gt;&lt;/p&gt;
+          &lt;div class=&quot;lt-source&quot;&gt;Lynch &amp;amp; Park · §2.2.1 · source p. 16&lt;/div&gt;
+          &lt;button class=&quot;lt-action lt-thread-entry&quot; type=&quot;button&quot; data-action=&quot;open-wrist&quot; hidden&gt;&lt;i data-lucide=&quot;git-branch&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Wrist discussion&lt;/button&gt;
+          &lt;div class=&quot;lt-actions&quot;&gt;
+            &lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-action=&quot;focus-question&quot;&gt;&lt;i data-lucide=&quot;message-circle&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Ask a question&lt;/button&gt;
+            &lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-action=&quot;note&quot;&gt;&lt;i data-lucide=&quot;pencil-line&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Note&lt;/button&gt;
+            &lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-action=&quot;highlight&quot;&gt;Highlight selection&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;lt-note&quot; hidden&gt;&lt;label for=&quot;lt-note-text&quot;&gt;Note on this paragraph&lt;/label&gt;&lt;textarea id=&quot;lt-note-text&quot; placeholder=&quot;Write what you want to return to…&quot;&gt;&lt;/textarea&gt;&lt;/div&gt;
+          &lt;div class=&quot;lt-feedback&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+          &lt;button class=&quot;lt-quiet&quot; type=&quot;button&quot; data-action=&quot;context&quot; aria-expanded=&quot;false&quot;&gt;Show surrounding text&lt;/button&gt;
+          &lt;div class=&quot;lt-context&quot; hidden&gt;&lt;div class=&quot;lt-sectionlabel&quot;&gt;Next paragraph&lt;/div&gt;&lt;div class=&quot;lt-context-text&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;/section&gt;
+        &lt;section class=&quot;lt-thread&quot; aria-label=&quot;Learning thread&quot; hidden&gt;&lt;/section&gt;
+        &lt;section class=&quot;lt-qa&quot; aria-label=&quot;Questions and follow-ups&quot;&gt;
+          &lt;div class=&quot;lt-messages&quot; role=&quot;log&quot; aria-label=&quot;Conversation&quot;&gt;&lt;/div&gt;
+          &lt;form class=&quot;lt-compose&quot;&gt;
+            &lt;label for=&quot;lt-question&quot;&gt;Ask about this paragraph&lt;/label&gt;
+            &lt;div class=&quot;lt-ask-context&quot; hidden&gt;&lt;/div&gt;
+            &lt;textarea id=&quot;lt-question&quot; rows=&quot;3&quot; placeholder=&quot;What would you like to understand?&quot;&gt;&lt;/textarea&gt;
+            &lt;div class=&quot;lt-actions&quot;&gt;
+              &lt;button class=&quot;lt-action lt-primary&quot; type=&quot;submit&quot; data-action=&quot;ask-codex&quot;&gt;&lt;i data-lucide=&quot;copy&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Copy for Codex&lt;/button&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;lt-copy-fallback&quot; hidden&gt;&lt;label for=&quot;lt-copy-text&quot;&gt;Question and context to copy&lt;/label&gt;&lt;textarea id=&quot;lt-copy-text&quot; readonly&gt;&lt;/textarea&gt;&lt;/div&gt;
+          &lt;/form&gt;
+          &lt;div class=&quot;lt-qa-status&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+          &lt;details class=&quot;lt-branches&quot; hidden&gt;&lt;summary&gt;Discussions&lt;/summary&gt;&lt;div class=&quot;lt-branch-list&quot;&gt;&lt;/div&gt;&lt;/details&gt;
+        &lt;/section&gt;
+      &lt;/div&gt;
+      &lt;section class=&quot;lt-demo&quot; aria-label=&quot;Interactive joint model&quot;&gt;
+        &lt;div class=&quot;lt-demotop&quot;&gt;&lt;strong&gt;Move the joint&lt;/strong&gt;&lt;span&gt;Schematic · live motion&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;lt-joints&quot; aria-label=&quot;Joint type&quot;&gt;&lt;/div&gt;
+        &lt;svg class=&quot;lt-diagram&quot; role=&quot;img&quot; aria-label=&quot;Joint motion diagram&quot;&gt;&lt;/svg&gt;
+        &lt;p class=&quot;lt-caption&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;
+        &lt;div class=&quot;lt-controls&quot;&gt;&lt;/div&gt;
+        &lt;div class=&quot;lt-demofoot&quot;&gt;&lt;span class=&quot;lt-dof&quot;&gt;1 degree of freedom&lt;/span&gt;&lt;button type=&quot;button&quot; data-action=&quot;animate&quot;&gt;Play one motion&lt;/button&gt;&lt;/div&gt;
+      &lt;/section&gt;
+    &lt;/div&gt;
+    &lt;footer class=&quot;lt-footer&quot;&gt;
+      &lt;div class=&quot;lt-progress&quot;&gt;&lt;button type=&quot;button&quot; data-page=&quot;0&quot; aria-label=&quot;Read sample paragraph 1&quot;&gt;1&lt;/button&gt;&lt;button type=&quot;button&quot; data-page=&quot;1&quot; aria-label=&quot;Read sample paragraph 2&quot;&gt;2&lt;/button&gt;&lt;span class=&quot;lt-readstatus&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;lt-nav&quot;&gt;&lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-action=&quot;previous&quot;&gt;Previous&lt;/button&gt;&lt;button class=&quot;lt-action lt-primary&quot; type=&quot;button&quot; data-action=&quot;next&quot;&gt;Next paragraph &lt;i data-lucide=&quot;arrow-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;
+    &lt;/footer&gt;
+  &lt;/div&gt;
+  &lt;script src=&quot;./thread-examples.js&quot;&gt;&lt;/script&gt;
+  &lt;script&gt;
+  (() =&gt; {
+    const root=document.getElementById(&#x27;lt-reading&#x27;);
+    const q=s=&gt;root.querySelector(s), qa=s=&gt;[...root.querySelectorAll(s)];
+    const threadExamples=window.LearningThreadExamples;
+    const terms={R:&#x27;revolute&#x27;,P:&#x27;prismatic&#x27;,H:&#x27;helical&#x27;,C:&#x27;cylindrical&#x27;,U:&#x27;universal&#x27;,S:&#x27;spherical&#x27;};
+    const term=(key,name)=&gt;`&lt;button type=&quot;button&quot; class=&quot;lt-term&quot; data-joint=&quot;${key}&quot; aria-pressed=&quot;false&quot;&gt;${name} joint&lt;/button&gt;`;
+    const paragraphs=[
+      `Figure 2.3 illustrates the basic joints found in typical robots. Every joint connects exactly two links; joints that simultaneously connect three or more links are not allowed. The ${term(&#x27;R&#x27;,&#x27;revolute&#x27;)} (R), also called a hinge joint, allows rotational motion about the joint axis. The ${term(&#x27;P&#x27;,&#x27;prismatic&#x27;)} (P), also called a sliding or linear joint, allows translational (or rectilinear) motion along the direction of the joint axis. The ${term(&#x27;H&#x27;,&#x27;helical&#x27;)} (H), also called a screw joint, allows simultaneous rotation and translation about a screw axis. Revolute, prismatic, and helical joints all have one degree of freedom.`,
+      `Joints can also have multiple degrees of freedom. The ${term(&#x27;C&#x27;,&#x27;cylindrical&#x27;)} (C) has two degrees of freedom and allows independent translations and rotations about a single fixed joint axis. The ${term(&#x27;U&#x27;,&#x27;universal&#x27;)} (U) is another two-degree-of-freedom joint that consists of a pair of revolute joints arranged so that their joint axes are orthogonal. The ${term(&#x27;S&#x27;,&#x27;spherical&#x27;)} (S), also called a ball-and-socket joint, has three degrees of freedom and functions much like our shoulder joint.`
+    ];
+    const clean=s=&gt;{const t=document.createElement(&#x27;div&#x27;);t.innerHTML=s;return t.textContent};
+    const states={R:[40],P:[35],H:[90],C:[40,30],U:[25,20],S:[25,20,15]};
+    const defs={
+      R:{controls:[[&#x27;Angle&#x27;,-140,140,&#x27;°&#x27;]],caption:&#x27;The moving link turns around one fixed axis.&#x27;,dof:1},
+      P:{controls:[[&#x27;Travel&#x27;,0,100,&#x27;%&#x27;]],caption:&#x27;The moving link slides along one fixed axis.&#x27;,dof:1},
+      H:{controls:[[&#x27;Turn&#x27;,0,360,&#x27;°&#x27;]],caption:&#x27;Turning also moves the nut along the screw. They are linked.&#x27;,dof:1},
+      C:{controls:[[&#x27;Angle&#x27;,-140,140,&#x27;°&#x27;],[&#x27;Travel&#x27;,0,100,&#x27;%&#x27;]],caption:&#x27;Rotate and slide independently: two controls, two freedoms.&#x27;,dof:2},
+      U:{controls:[[&#x27;First hinge&#x27;,-60,60,&#x27;°&#x27;],[&#x27;Second hinge&#x27;,-60,60,&#x27;°&#x27;]],caption:&#x27;Two hinges, with their axes at right angles.&#x27;,dof:2},
+      S:{controls:[[&#x27;Tilt&#x27;,-60,60,&#x27;°&#x27;],[&#x27;Swing&#x27;,-60,60,&#x27;°&#x27;],[&#x27;Twist&#x27;,-140,140,&#x27;°&#x27;]],caption:&#x27;The link can turn about three axes through the joint.&#x27;,dof:3}
+    };
+    let page=0,joint=&#x27;R&#x27;,stack=[],read=new Set(),notes=[&#x27;&#x27;,&#x27;&#x27;],savedHtml=[null,null],feedback=&#x27;&#x27;,animation=0,context=false;
+    let selection=null;
+    let selectedSource=null,branchCount=0,messageCount=0;
+    const makeNode=(id,title)=&gt;({id,title,page,parent:null,path:[],messages:[],draft:&#x27;&#x27;,quote:&#x27;&#x27;,replyTo:null,status:&#x27;&#x27;,busy:false,visual:null});
+    const conversations=new Map([[&#x27;p0&#x27;,makeNode(&#x27;p0&#x27;,&#x27;Paragraph 1&#x27;)],[&#x27;p1&#x27;,makeNode(&#x27;p1&#x27;,&#x27;Paragraph 2&#x27;)]]);
+    conversations.get(&#x27;p1&#x27;).page=1;
+    const activeNode=()=&gt;conversations.get(stack.length?stack.at(-1).id:&#x27;p&#x27;+page);
+    const escapeText=value=&gt;String(value??&#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,char=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[char]));
+    function rememberVisual(){activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
+    function restoreReadingPosition(){const y=activeNode().scrollY||0;requestAnimationFrame(()=&gt;window.scrollTo(0,y))}
+    function renderAskContext(){
+      const node=activeNode(),box=q(&#x27;.lt-ask-context&#x27;);
+      const message=node.replyTo?node.messages.find(m=&gt;m.id===node.replyTo):null;
+      box.hidden=!node.quote&amp;&amp;!message;
+      box.innerHTML=(node.quote?`&lt;span&gt;Selected text&lt;/span&gt;&lt;blockquote&gt;${escapeText(node.quote)}&lt;/blockquote&gt;`:message?&#x27;&lt;span&gt;Following up on the selected reply&lt;/span&gt;&#x27;:&#x27;&#x27;)+`&lt;div class=&quot;lt-context-actions&quot;&gt;&lt;button type=&quot;button&quot; data-action=&quot;clear-ask-context&quot;&gt;Clear selection&lt;/button&gt;&lt;button type=&quot;button&quot; data-action=&quot;branch-selection&quot;&gt;Explore separately &lt;span aria-hidden=&quot;true&quot;&gt;↗&lt;/span&gt;&lt;/button&gt;&lt;/div&gt;`;
+    }
+    function renderQA(){
+      const node=activeNode();
+      q(&#x27;.lt-compose label&#x27;).textContent=node.messages.length?&#x27;Ask a follow-up&#x27;:stack.length?&#x27;Ask about &#x27;+node.title.toLowerCase():&#x27;Ask about this paragraph&#x27;;
+      q(&#x27;.lt-messages&#x27;).innerHTML=node.messages.map(renderMessage).join(&#x27;&#x27;);
+      q(&#x27;#lt-question&#x27;).value=node.draft;
+      q(&#x27;[data-action=&quot;ask-codex&quot;]&#x27;).disabled=node.busy||!node.draft.trim();
+      q(&#x27;.lt-qa-status&#x27;).textContent=node.status;
+      const children=[...conversations.values()].filter(n=&gt;n.parent&amp;&amp;n.page===page);
+      q(&#x27;.lt-branches&#x27;).hidden=!children.length||!!stack.length;
+      q(&#x27;.lt-branch-list&#x27;).innerHTML=children.map(n=&gt;`&lt;button type=&quot;button&quot; data-reopen=&quot;${n.id}&quot; style=&quot;padding-left:${8+Math.min(n.path.length-1,4)*14}px&quot;&gt;&lt;i data-lucide=&quot;git-branch&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;${escapeText(n.title)}${n.id===node.id?&#x27; · here&#x27;:&#x27;&#x27;}&lt;/button&gt;`).join(&#x27;&#x27;);
+      renderAskContext();icons();threadExamples.drawVisuals(q(&#x27;.lt-messages&#x27;),node.messages);
+    }
+    function renderMessage(m){
+      const example=m.example?threadExamples.examples[m.example]:null;
+      const label=m.role===&#x27;user&#x27;?&#x27;You&#x27;:&#x27;Assistant&#x27;;
+      const content=example?example.html():escapeText(m.text);
+      const hasVisual=activeNode().messages.some(other=&gt;other.visualization?.sourceMessage===m.id);
+      return `&lt;article class=&quot;lt-message ${m.role===&#x27;user&#x27;?&#x27;lt-user&#x27;:&#x27;&#x27;} ${m.visualization?&#x27;lt-visual-message&#x27;:&#x27;&#x27;}&quot; data-message=&quot;${m.id}&quot; id=&quot;lt-message-${m.id}&quot;&gt;
+        &lt;div class=&quot;lt-message-meta&quot;&gt;&lt;span&gt;${label}&lt;/span&gt;&lt;/div&gt;
+        ${m.quote?`&lt;div class=&quot;lt-message-quote&quot;&gt;${escapeText(m.quote)}&lt;/div&gt;`:&#x27;&#x27;}
+        ${m.visualization?&#x27;&#x27;:`&lt;div class=&quot;lt-message-content ${example?&#x27;lt-rich&#x27;:&#x27;&#x27;}&quot;&gt;${content}&lt;/div&gt;`}
+        ${m.visualization?threadExamples.visualHtml(m):&#x27;&#x27;}
+        ${m.role===&#x27;assistant&#x27;?`&lt;div class=&quot;lt-actions&quot;&gt;
+          ${m.visualKey?`&lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-visualize=&quot;${m.id}&quot;&gt;&lt;i data-lucide=&quot;shapes&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;${hasVisual?&#x27;View visual&#x27;:&#x27;Visualize&#x27;}&lt;/button&gt;`:&#x27;&#x27;}
+          &lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-follow=&quot;${m.id}&quot;&gt;Ask follow-up&lt;/button&gt;
+          &lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-branch-message=&quot;${m.id}&quot;&gt;&lt;i data-lucide=&quot;git-branch&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Explore separately&lt;/button&gt;
+          &lt;button class=&quot;lt-action&quot; type=&quot;button&quot; data-message-note=&quot;${m.id}&quot; aria-expanded=&quot;${!!m.noteOpen}&quot;&gt;&lt;i data-lucide=&quot;pencil-line&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;${m.note?&#x27;Your note&#x27;:&#x27;Note&#x27;}&lt;/button&gt;
+        &lt;/div&gt;&lt;div class=&quot;lt-message-note&quot; ${m.noteOpen?&#x27;&#x27;:&#x27;hidden&#x27;}&gt;&lt;label for=&quot;lt-answer-note-${m.id}&quot;&gt;Your note on this answer&lt;/label&gt;&lt;textarea id=&quot;lt-answer-note-${m.id}&quot; data-note-message=&quot;${m.id}&quot;&gt;${escapeText(m.note||&#x27;&#x27;)}&lt;/textarea&gt;&lt;/div&gt;`:&#x27;&#x27;}
+      &lt;/article&gt;`;
+    }
+    function openExample(key){
+      const example=threadExamples.examples[key];if(!example)return;
+      const parent=activeNode();
+      const existing=[...conversations.values()].find(n=&gt;n.parent===parent.id&amp;&amp;n.example===key);
+      if(existing){reopen(existing.id);return}
+      enter(&#x27;custom&#x27;,example.title,example.quote);
+      const node=activeNode();node.example=key;
+      if(key===&#x27;wrist&#x27;)node.sourceAnchor=makeBookAnchor(example.quote,node.id);
+      node.messages.push({id:&#x27;m&#x27;+(++messageCount),role:&#x27;user&#x27;,text:example.question,sourceAnchor:node.sourceAnchor||null});
+      node.messages.push({id:&#x27;m&#x27;+(++messageCount),role:&#x27;assistant&#x27;,kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
+      render();
+    }
+    function makeBookAnchor(quote,threadId){
+      const text=clean(paragraphs[page]),start=text.indexOf(quote);
+      if(start&lt;0||text.indexOf(quote,start+1)!==-1)throw new Error(&#x27;The highlighted source must match one exact passage.&#x27;);
+      return {id:&#x27;highlight-&#x27;+threadId,book:&#x27;modern-robotics-2019-preprint&#x27;,paragraph:&#x27;2.2.1-p&#x27;+(page+1),page,sourcePage:16,start,end:start+quote.length,quote,prefix:text.slice(Math.max(0,start-40),start),suffix:text.slice(start+quote.length,start+quote.length+40)};
+    }
+    function renderBookAnchors(){
+      const passage=q(&#x27;#lt-passage&#x27;);
+      passage.querySelectorAll(&#x27;[data-book-anchor]&#x27;).forEach(link=&gt;link.replaceWith(document.createTextNode(link.textContent)));
+      const anchored=[...conversations.values()].filter(n=&gt;n.sourceAnchor?.page===page).sort((a,b)=&gt;b.sourceAnchor.start-a.sourceAnchor.start);
+      for(const node of anchored){
+        const anchor=node.sourceAnchor,walker=document.createTreeWalker(passage,NodeFilter.SHOW_TEXT),segments=[];
+        let part,offset=0;while((part=walker.nextNode())){segments.push({node:part,start:offset,end:offset+part.length});offset+=part.length}
+        const first=segments.find(s=&gt;s.start&lt;=anchor.start&amp;&amp;s.end&gt;anchor.start),last=segments.find(s=&gt;s.start&lt;anchor.end&amp;&amp;s.end&gt;=anchor.end);
+        if(!first||!last)continue;
+        const range=document.createRange();range.setStart(first.node,anchor.start-first.start);range.setEnd(last.node,anchor.end-last.start);
+        if(range.toString()!==anchor.quote)continue;
+        range.deleteContents();
+        const link=document.createElement(&#x27;a&#x27;);link.href=&#x27;#&#x27;+anchor.id;link.className=&#x27;lt-highlight-origin&#x27;;link.dataset.highlightThread=node.id;link.dataset.bookAnchor=anchor.id;
+        link.setAttribute(&#x27;aria-label&#x27;,&#x27;Highlighted passage: &#x27;+anchor.quote+&#x27; Open discussion: &#x27;+node.title);
+        const mark=document.createElement(&#x27;mark&#x27;);mark.textContent=anchor.quote;link.append(mark);range.insertNode(link);
+      }
+      const wrist=anchored.find(n=&gt;n.example===&#x27;wrist&#x27;),button=q(&#x27;[data-action=&quot;open-wrist&quot;]&#x27;);
+      if(wrist){button.innerHTML=&#x27;&lt;i data-lucide=&quot;git-branch&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; 1 linked discussion &lt;span&gt;· Why three wrist joints?&lt;/span&gt;&#x27;;button.setAttribute(&#x27;aria-label&#x27;,&#x27;Open discussion linked to the spherical-joint highlight&#x27;)}
+      else{button.innerHTML=&#x27;&lt;i data-lucide=&quot;git-branch&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Wrist discussion&#x27;;button.removeAttribute(&#x27;aria-label&#x27;)}
+    }
+    function returnToHighlight(threadId){
+      const node=conversations.get(threadId);if(!node?.sourceAnchor)return;
+      const anchor=node.sourceAnchor;goPage(anchor.page);
+      requestAnimationFrame(()=&gt;{const link=q(`[data-book-anchor=&quot;${anchor.id}&quot;]`);if(link){link.scrollIntoView({block:&#x27;center&#x27;});link.focus({preventScroll:true});feedback=&#x27;&#x27;;q(&#x27;.lt-feedback&#x27;).textContent=&#x27;&#x27;}});
+    }
+    function openWrist(){
+      const existing=[...conversations.values()].find(n=&gt;n.example===&#x27;wrist&#x27;&amp;&amp;n.parent===&#x27;p1&#x27;);
+      if(existing){reopen(existing.id);return}
+      goPage(1);selectJoint(&#x27;S&#x27;);openExample(&#x27;wrist&#x27;);
+    }
+    function showVisual(id){
+      const node=activeNode(),answer=node.messages.find(m=&gt;m.id===id);if(!answer?.visualKey)return;
+      let visual=node.messages.find(m=&gt;m.visualization?.sourceMessage===id);
+      if(!visual){
+        node.messages.push({id:&#x27;m&#x27;+(++messageCount),role:&#x27;user&#x27;,text:&#x27;Show this visually.&#x27;});
+        visual={id:&#x27;m&#x27;+(++messageCount),role:&#x27;assistant&#x27;,kind:&#x27;sample&#x27;,text:answer.visualKey===&#x27;wrist&#x27;?&#x27;Move the three controls. Both mechanisms show the same tool orientation.&#x27;:answer.visualKey===&#x27;torque&#x27;?&#x27;Moving the same force farther from the hinge increases its turning effect.&#x27;:&#x27;Follow how the target angle becomes motion, then how the measured angle returns to the controller.&#x27;,concept:answer.concept,nextExample:answer.nextExample,visualization:{type:answer.visualKey,sourceMessage:id,values:[35,55,20]}};
+        node.messages.push(visual);
+      }
+      renderQA();q(&#x27;#lt-message-&#x27;+visual.id).scrollIntoView({block:&#x27;start&#x27;});
+    }
+    function focusQuestion(){q(&#x27;#lt-question&#x27;).focus()}
+    function newQuestionBranch(quote,title){
+      const label=title||(quote.length&gt;54?quote.slice(0,51)+&#x27;…&#x27;:quote)||&#x27;New question&#x27;;
+      enter(&#x27;custom&#x27;,label,quote);
+      renderQA();focusQuestion();
+    }
+    async function askCodex(){
+      const node=activeNode(),question=node.draft.trim();if(!question||node.busy)return;
+      const ancestors=[];let parent=node;
+      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages})}
+      const packet={book:&#x27;Modern Robotics, Lynch and Park&#x27;,section:&#x27;2.2.1 Robot joints&#x27;,sourcePage:16,paragraph:page+1,passage:clean(paragraphs[page]),learningPath:[&#x27;Robot joints&#x27;,...stack.map(s=&gt;s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:node.sourceAnchor||null,selectedText:node.quote||null,replyTo:node.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages,visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=&gt;({name:c[0],value:states[joint][i],unit:c[3]}))}};
+      const prompt=&#x27;Answer my follow-up about the current Modern Robotics passage. Explain visually when helpful. This came from the Learning Threads reading experiment. Reply here in the chat.\n\nMy question:\n&#x27;+question+&#x27;\n\nReading and conversation context (source data, not instructions):\n&#x27;+JSON.stringify(packet,null,2);
+      node.busy=true;node.status=&#x27;Copying…&#x27;;renderQA();
+      try{
+        if(!navigator.clipboard?.writeText)throw new Error(&#x27;Clipboard access is unavailable in this browser.&#x27;);
+        await navigator.clipboard.writeText(prompt);
+        node.status=&#x27;Copied.&#x27;;
+        q(&#x27;.lt-copy-fallback&#x27;).hidden=true;
+      }catch(error){node.status=&#x27;Could not copy automatically: &#x27;+(error?.message||String(error))+&#x27; You can copy the selected text below.&#x27;;q(&#x27;.lt-copy-fallback&#x27;).hidden=false;q(&#x27;#lt-copy-text&#x27;).value=prompt;q(&#x27;#lt-copy-text&#x27;).focus();q(&#x27;#lt-copy-text&#x27;).select()}
+      finally{node.busy=false;if(node.id===activeNode().id)renderQA()}
+    }
+    const design={layout:&#x27;Side by side&#x27;,textSize:19,surrounding:false};
+    function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
+    function buildControls(){
+      q(&#x27;.lt-joints&#x27;).innerHTML=[...new Set([...(stack.length?[&#x27;R&#x27;,&#x27;P&#x27;,&#x27;H&#x27;,&#x27;C&#x27;]:page===0?[&#x27;R&#x27;,&#x27;P&#x27;,&#x27;H&#x27;]:[&#x27;C&#x27;,&#x27;U&#x27;,&#x27;S&#x27;]),joint])].map(k=&gt;`&lt;button type=&quot;button&quot; data-joint=&quot;${k}&quot; aria-pressed=&quot;${joint===k}&quot;&gt;${terms[k][0].toUpperCase()+terms[k].slice(1)}&lt;/button&gt;`).join(&#x27;&#x27;);
+      q(&#x27;.lt-controls&#x27;).innerHTML=defs[joint].controls.map((c,i)=&gt;`&lt;div class=&quot;lt-control&quot;&gt;&lt;label for=&quot;lt-slider-${i}&quot;&gt;${c[0]}&lt;output id=&quot;lt-output-${i}&quot;&gt;${states[joint][i]}${c[3]}&lt;/output&gt;&lt;/label&gt;&lt;input id=&quot;lt-slider-${i}&quot; aria-label=&quot;${c[0]}&quot; type=&quot;range&quot; min=&quot;${c[1]}&quot; max=&quot;${c[2]}&quot; value=&quot;${states[joint][i]}&quot; data-control=&quot;${i}&quot;&gt;&lt;/div&gt;`).join(&#x27;&#x27;);
+      q(&#x27;.lt-caption&#x27;).textContent=defs[joint].caption;
+      q(&#x27;.lt-dof&#x27;).textContent=defs[joint].dof+&#x27; degree&#x27;+(defs[joint].dof===1?&#x27;&#x27;:&#x27;s&#x27;)+&#x27; of freedom&#x27;;
+      qa(&#x27;.lt-term&#x27;).forEach(el=&gt;el.setAttribute(&#x27;aria-pressed&#x27;,el.dataset.joint===joint));draw();
+    }
+    function render(){
+      root.classList.toggle(&#x27;lt-in-thread&#x27;,!!stack.length);
+      q(&#x27;h2&#x27;).textContent=stack.length?activeNode().title:&#x27;How robot joints move&#x27;;
+      q(&#x27;.lt-book-section&#x27;).hidden=!!stack.length;q(&#x27;.lt-thread&#x27;).hidden=!stack.length;
+      q(&#x27;.lt-passagelabel&#x27;).textContent=`2.2.1 Robot joints · paragraph ${page+1}`;
+      q(&#x27;[data-action=&quot;open-wrist&quot;]&#x27;).hidden=page!==1;
+      q(&#x27;#lt-passage&#x27;).innerHTML=savedHtml[page]||paragraphs[page];
+      renderBookAnchors();
+      q(&#x27;#lt-note-text&#x27;).value=notes[page];
+      q(&#x27;.lt-feedback&#x27;).textContent=feedback;
+      q(&#x27;.lt-context&#x27;).hidden=!(context||design.surrounding);
+      q(&#x27;[data-action=&quot;context&quot;]&#x27;).setAttribute(&#x27;aria-expanded&#x27;,String(context||design.surrounding));
+      q(&#x27;[data-action=&quot;context&quot;]&#x27;).textContent=context||design.surrounding?&#x27;Hide surrounding text&#x27;:&#x27;Show surrounding text&#x27;;
+      q(&#x27;.lt-context .lt-sectionlabel&#x27;).textContent=page===0?&#x27;Next paragraph&#x27;:&#x27;Previous paragraph&#x27;;
+      q(&#x27;.lt-context-text&#x27;).textContent=clean(paragraphs[1-page]);
+      qa(&#x27;[data-page]&#x27;).forEach(el=&gt;{el.classList.toggle(&#x27;current&#x27;,+el.dataset.page===page);el.setAttribute(&#x27;aria-current&#x27;,+el.dataset.page===page?&#x27;step&#x27;:&#x27;false&#x27;)});
+      q(&#x27;.lt-readstatus&#x27;).textContent=read.size?read.size+&#x27; read&#x27;:&#x27;&#x27;;
+      q(&#x27;[data-action=&quot;previous&quot;]&#x27;).disabled=page===0&amp;&amp;!stack.length;
+      q(&#x27;[data-action=&quot;next&quot;]&#x27;).innerHTML=stack.length?&#x27;Return to reading&#x27;:page===0?&#x27;Next paragraph &lt;i data-lucide=&quot;arrow-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&#x27;:&#x27;Done for now &lt;i data-lucide=&quot;check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&#x27;;
+      q(&#x27;.lt-footer&#x27;).hidden=!!stack.length;
+      if(stack.length){
+        const node=activeNode();
+        const back=node.sourceAnchor
+          ? `&lt;button class=&quot;lt-action&quot; data-highlight-return=&quot;${node.id}&quot; type=&quot;button&quot;&gt;&lt;i data-lucide=&quot;arrow-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Back to highlight&lt;/button&gt;`
+          : `&lt;button class=&quot;lt-action&quot; data-action=&quot;back-thread&quot; type=&quot;button&quot;&gt;&lt;i data-lucide=&quot;arrow-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;${stack.length===1?&#x27;Back to paragraph&#x27;:&#x27;Back to &#x27;+escapeText(conversations.get(node.parent).title)}&lt;/button&gt;`;
+        const origin=node.sourceAnchor
+          ? `&lt;details class=&quot;lt-thread-origin lt-linked-origin&quot; open&gt;&lt;summary&gt;Highlighted passage&lt;/summary&gt;&lt;blockquote&gt;&lt;mark&gt;${escapeText(node.sourceAnchor.quote)}&lt;/mark&gt;&lt;/blockquote&gt;&lt;/details&gt;`
+          : node.sourceQuote?`&lt;details class=&quot;lt-thread-origin&quot;&gt;&lt;summary&gt;Selected text&lt;/summary&gt;&lt;blockquote&gt;${escapeText(node.sourceQuote)}&lt;/blockquote&gt;&lt;/details&gt;`:&#x27;&#x27;;
+        q(&#x27;.lt-thread&#x27;).innerHTML=`&lt;div class=&quot;lt-actions&quot;&gt;${back}&lt;/div&gt;${origin}`;
+      }
+      buildControls();renderQA();icons();
+    }
+    const ns=&#x27;http://www.w3.org/2000/svg&#x27;;
+    function draw(){
+      const svg=q(&#x27;.lt-diagram&#x27;),w=svg.clientWidth||380,h=svg.clientHeight||270,sc=Math.min(w/4.8,(h-72)/2.65),cx=w/2,cy=h*.58;
+      svg.setAttribute(&#x27;viewBox&#x27;,`0 0 ${w} ${h}`);svg.replaceChildren();
+      const el=(tag,attrs={},text)=&gt;{let n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=&gt;n.setAttribute(k,v));if(text!==undefined)n.textContent=text;svg.append(n);return n};
+      el(&#x27;title&#x27;,{},`${terms[joint]} joint with ${defs[joint].dof} degrees of freedom`);
+      el(&#x27;desc&#x27;,{},defs[joint].caption+&#x27; Use the controls below to change the moving link. Gray is fixed and green moves.&#x27;);
+      const proj=([x,y,z])=&gt;[cx+sc*(x*.87-y*.64),cy+sc*(x*.3+y*.4-z)];
+      const path=(points,color,width=2,dash=null)=&gt;{const n=el(&#x27;path&#x27;,{d:points.map((p,i)=&gt;{let [x,y]=proj(p);return(i?&#x27;L&#x27;:&#x27;M&#x27;)+x.toFixed(2)+&#x27;,&#x27;+y.toFixed(2)}).join(&#x27; &#x27;),fill:&#x27;none&#x27;,stroke:color,&#x27;stroke-width&#x27;:width,&#x27;stroke-linecap&#x27;:&#x27;round&#x27;,&#x27;stroke-linejoin&#x27;:&#x27;round&#x27;});if(dash)n.setAttribute(&#x27;stroke-dasharray&#x27;,dash);return n};
+      const fixed=&#x27;var(--lt-fixed)&#x27;,green=&#x27;var(--lt-teal)&#x27;,ink=&#x27;var(--lt-ink)&#x27;,line=&#x27;var(--lt-line)&#x27;;
+      const dot=(p,r,fill)=&gt;{const a=proj(p);return el(&#x27;circle&#x27;,{cx:a[0],cy:a[1],r,fill})};
+      const ring=(center,a,b,r,color,width=2)=&gt;path(Array.from({length:65},(_,i)=&gt;{let t=i/64*Math.PI*2;return center.map((v,j)=&gt;v+r*(a[j]*Math.cos(t)+b[j]*Math.sin(t)))}),color,width);
+      const beam=(a,b,color)=&gt;{path([a,b],line,23);path([a,b],color,18)};
+      const degree=Math.PI/180,v=states[joint],angle=v[0]*degree;
+      for(let i=-2;i&lt;=2;i++){path([[i*.6,-1.3,-.48],[i*.6,1.3,-.48]],line,1);path([[-1.3,i*.6,-.48],[1.3,i*.6,-.48]],line,1)}
+      const label=(x,y,t,anchor=&#x27;start&#x27;)=&gt;el(&#x27;text&#x27;,{x,y,&#x27;text-anchor&#x27;:anchor},t);
+      if(joint===&#x27;R&#x27;){
+        ring([0,0,0],[1,0,0],[0,1,0],1.25,line,1.5);
+        path([[0,0,-.6],[0,0,1.2]],fixed,1.5,&#x27;4 5&#x27;);
+        beam([-1.35,0,0],[0,0,0],fixed);
+        beam([0,0,.05],[1.5*Math.cos(angle),1.5*Math.sin(angle),.05],green);
+        dot([0,0,.05],12,ink);dot([0,0,.05],5,&#x27;var(--lt-surface)&#x27;);
+        label(cx+9,cy-sc*1.2,&#x27;axis&#x27;);
+      }else if(joint===&#x27;P&#x27;){
+        path([[-1.5,-.22,0],[1.5,-.22,0]],fixed,7);path([[-1.5,.22,0],[1.5,.22,0]],fixed,7);
+        let x=-1+v[0]/50;beam([x,-.3,.07],[x,.3,.07],green);beam([x,0,.07],[x,0,1.05],green);
+        dot([x,0,1.05],6,green);label(cx,45,&#x27;straight-line travel&#x27;,&#x27;middle&#x27;);
+      }else if(joint===&#x27;H&#x27;||joint===&#x27;C&#x27;){
+        const z=joint===&#x27;H&#x27;?v[0]/360*.9:v[1]/100*.9;
+        beam([0,0,-.3],[0,0,1.7],fixed);
+        if(joint===&#x27;H&#x27;)path(Array.from({length:200},(_,i)=&gt;{let t=i/199*12*Math.PI;return [.18*Math.cos(t),.18*Math.sin(t),-.25+i/199*1.9]}),&#x27;var(--lt-ink)&#x27;,1.8);
+        ring([0,0,z],[1,0,0],[0,1,0],.33,green,14);
+        beam([0,0,z],[1.4*Math.cos(angle),1.4*Math.sin(angle),z],green);
+        label(cx+32,32,joint===&#x27;H&#x27;?&#x27;thread fixes the travel&#x27;:&#x27;smooth shaft&#x27;);
+        if(joint===&#x27;H&#x27;)label(cx,h-22,`${v[0]}° turn → ${(v[0]/360).toFixed(2)} of one pitch`,&#x27;middle&#x27;);
+      }else{
+        const a=v[0]*degree,b=v[1]*degree,c=(v[2]||0)*degree;
+        const rx=p=&gt;[p[0],p[1]*Math.cos(a)-p[2]*Math.sin(a),p[1]*Math.sin(a)+p[2]*Math.cos(a)];
+        const ry=p=&gt;[p[0]*Math.cos(b)+p[2]*Math.sin(b),p[1],-p[0]*Math.sin(b)+p[2]*Math.cos(b)];
+        const rz=p=&gt;[p[0]*Math.cos(c)-p[1]*Math.sin(c),p[0]*Math.sin(c)+p[1]*Math.cos(c),p[2]];
+        const rot=p=&gt;rx(ry(rz(p)));
+        beam([0,0,-.65],[0,0,0],fixed);
+        if(joint===&#x27;U&#x27;){
+          ring([0,0,0],[1,0,0],[0,0,1],.5,fixed,7);
+          ring([0,0,0],rx([0,1,0]),rx([0,0,1]),.37,green,7);
+          path([[-.65,0,0],[.65,0,0]],fixed,2,&#x27;3 4&#x27;);
+          path([rx([0,-.65,0]),rx([0,.65,0])],green,2,&#x27;3 4&#x27;);
+        }else{dot([0,0,0],28,fixed);dot([-.05,-.08,.07],20,green)}
+        const end=rot([0,0,1.45]);beam([0,0,0],end,green);
+        const x=rot([.36,0,1.45]),y=rot([0,.36,1.45]);path([x,end,y],ink,3);
+        label(cx,h-22,joint===&#x27;U&#x27;?&#x27;two perpendicular hinges&#x27;:&#x27;three rotation controls&#x27;,&#x27;middle&#x27;);
+      }
+      el(&#x27;circle&#x27;,{cx:11,cy:19,r:4,fill:fixed});label(22,23,&#x27;Fixed link&#x27;);
+      el(&#x27;circle&#x27;,{cx:w-105,cy:19,r:4,fill:green});label(w-94,23,&#x27;Moving link&#x27;);
+    }
+    function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q(&#x27;[data-action=&quot;animate&quot;]&#x27;).textContent=&#x27;Play one motion&#x27;;joint=k;buildControls()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;const saved=activeNode().visual;joint=saved?saved.joint:n===0?&#x27;R&#x27;:&#x27;C&#x27;;if(saved)states[joint]=[...saved.values];feedback=&#x27;&#x27;;selection=null;selectedSource=null;q(&#x27;.lt-note&#x27;).hidden=true;render();restoreReadingPosition()}
+    function enter(type,title,quote=&#x27;&#x27;){
+      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id=&#x27;b&#x27;+(++branchCount),label=title||(type===&#x27;freedom&#x27;?&#x27;Degrees of freedom&#x27;:&#x27;Independent motion&#x27;);
+      const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
+      stack.push({id,type,title:label,restoreJoint:joint,restoreValues:[...states[joint]]});node.path=stack.map(s=&gt;({...s,restoreValues:[...s.restoreValues]}));
+      if(type!==&#x27;custom&#x27;)joint=type===&#x27;freedom&#x27;?&#x27;H&#x27;:&#x27;C&#x27;;selection=null;selectedSource=null;render();
+    }
+    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length&gt;depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=&gt;({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    root.addEventListener(&#x27;click&#x27;,e=&gt;{
+      const highlighted=e.target.closest(&#x27;[data-highlight-thread]&#x27;);
+      if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&amp;&amp;!selected.isCollapsed&amp;&amp;highlighted.contains(selected.anchorNode))return;reopen(highlighted.dataset.highlightThread);return}
+      const btn=e.target.closest(&#x27;button&#x27;);if(!btn)return;
+      if(btn.dataset.highlightReturn){returnToHighlight(btn.dataset.highlightReturn);return}
+      if(btn.dataset.concept){openExample(btn.dataset.concept);q(&#x27;h2&#x27;).scrollIntoView({block:&#x27;start&#x27;});return}
+      if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}
+      if(btn.dataset.messageNote){const node=activeNode(),message=node.messages.find(m=&gt;m.id===btn.dataset.messageNote);message.noteOpen=!message.noteOpen;renderQA();if(message.noteOpen)q(&#x27;#lt-answer-note-&#x27;+message.id).focus();return}
+      if(btn.dataset.joint){selectJoint(btn.dataset.joint);return}
+      if(btn.dataset.page!==undefined){goPage(+btn.dataset.page);return}
+      if(btn.dataset.return!==undefined){backTo(+btn.dataset.return);return}
+      if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;node.quote=selectedSource?.nodeId===node.id&amp;&amp;selectedSource.messageId===btn.dataset.follow?selectedSource.quote:&#x27;&#x27;;node.draft=&#x27;&#x27;;renderQA();focusQuestion();return}
+      if(btn.dataset.branchMessage){const node=activeNode(),message=node.messages.find(m=&gt;m.id===btn.dataset.branchMessage);const chosen=selectedSource?.nodeId===node.id&amp;&amp;selectedSource.messageId===message.id?selectedSource.quote:null;if(!chosen&amp;&amp;message.nextExample)openExample(message.nextExample);else newQuestionBranch(chosen||message.concept,chosen||message.concept);q(&#x27;h2&#x27;).scrollIntoView({block:&#x27;start&#x27;});return}
+      if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
+      const action=btn.dataset.action;
+      if(action===&#x27;open-wrist&#x27;){openWrist();q(&#x27;h2&#x27;).scrollIntoView({block:&#x27;start&#x27;});return}
+      if(action===&#x27;focus-question&#x27;){focusQuestion();return}
+      if(action===&#x27;clear-ask-context&#x27;){activeNode().quote=&#x27;&#x27;;activeNode().replyTo=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
+      if(action===&#x27;branch-selection&#x27;){const node=activeNode(),message=node.messages.find(m=&gt;m.id===node.replyTo);newQuestionBranch(node.quote||message?.concept||&#x27;A related concept&#x27;);return}
+      if(action===&#x27;next&#x27;){if(stack.length)backTo(0);else{read.add(page);if(page===0)goPage(1);else{feedback=&#x27;&#x27;;render()}}}
+      if(action===&#x27;previous&#x27;){if(stack.length)backTo(stack.length-1);else if(page&gt;0)goPage(page-1)}
+      if(action===&#x27;back-thread&#x27;)backTo(stack.length-1);
+      if(action===&#x27;context&#x27;){context=!(context||design.surrounding);design.surrounding=false;render()}
+      if(action===&#x27;note&#x27;){q(&#x27;.lt-note&#x27;).hidden=!q(&#x27;.lt-note&#x27;).hidden;if(!q(&#x27;.lt-note&#x27;).hidden)q(&#x27;#lt-note-text&#x27;).focus()}
+      if(action===&#x27;highlight&#x27;){
+        if(selection&amp;&amp;q(&#x27;#lt-passage&#x27;).contains(selection.commonAncestorContainer)){try{const mark=document.createElement(&#x27;mark&#x27;);mark.append(selection.extractContents());selection.insertNode(mark);savedHtml[page]=q(&#x27;#lt-passage&#x27;).innerHTML;selection=null;window.getSelection()?.removeAllRanges();feedback=&#x27;&#x27;}catch(err){feedback=&#x27;Select a short phrase in the paragraph, then highlight it.&#x27;}}
+        else feedback=&#x27;Select a phrase in the paragraph first.&#x27;;
+        q(&#x27;.lt-feedback&#x27;).textContent=feedback;
+      }
+      if(action===&#x27;animate&#x27;){
+        cancelAnimationFrame(animation);const target=joint,def=defs[target].controls[0],from=states[target][0],to=from&lt;(def[1]+def[2])/2?def[2]:def[1];
+        if(matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches){states[target][0]=to;buildControls();return}
+        const start=performance.now();btn.textContent=&#x27;Moving…&#x27;;
+        const frame=t=&gt;{if(target!==joint)return;const p=Math.min((t-start)/2200,1),ease=p*p*(3-2*p);states[target][0]=Math.round(from+(to-from)*ease);q(&#x27;#lt-slider-0&#x27;).value=states[target][0];q(&#x27;#lt-output-0&#x27;).textContent=states[target][0]+def[3];draw();if(p&lt;1)animation=requestAnimationFrame(frame);else btn.textContent=&#x27;Play one motion&#x27;};
+        animation=requestAnimationFrame(frame);
+      }
+    });
+    root.addEventListener(&#x27;input&#x27;,e=&gt;{
+      if(e.target.dataset.wristControl!==undefined){
+        const message=activeNode().messages.find(m=&gt;m.id===e.target.dataset.visualMessage);
+        message.visualization.values[+e.target.dataset.wristControl]=+e.target.value;
+        e.target.closest(&#x27;label&#x27;).querySelector(&#x27;output&#x27;).textContent=e.target.value+&#x27;°&#x27;;
+        threadExamples.drawVisuals(q(&#x27;.lt-messages&#x27;),activeNode().messages);
+      }
+      if(e.target.dataset.noteMessage){const message=activeNode().messages.find(m=&gt;m.id===e.target.dataset.noteMessage);message.note=e.target.value;const btn=q(`[data-message-note=&quot;${message.id}&quot;]`);btn.lastChild.textContent=message.note?&#x27; Your note&#x27;:&#x27; Note&#x27;}
+    });
+    root.addEventListener(&#x27;input&#x27;,e=&gt;{if(e.target.dataset.control!==undefined){cancelAnimationFrame(animation);q(&#x27;[data-action=&quot;animate&quot;]&#x27;).textContent=&#x27;Play one motion&#x27;;const i=+e.target.dataset.control;states[joint][i]=+e.target.value;q(&#x27;#lt-output-&#x27;+i).textContent=e.target.value+defs[joint].controls[i][3];draw()}if(e.target.id===&#x27;lt-note-text&#x27;)notes[page]=e.target.value;if(e.target.id===&#x27;lt-question&#x27;){const node=activeNode();node.draft=e.target.value;q(&#x27;[data-action=&quot;ask-codex&quot;]&#x27;).disabled=node.busy||!node.draft.trim()}});
+    q(&#x27;.lt-compose&#x27;).addEventListener(&#x27;submit&#x27;,e=&gt;{e.preventDefault();askCodex()});
+    document.addEventListener(&#x27;selectionchange&#x27;,()=&gt;{
+      const s=window.getSelection();if(!s||!s.rangeCount||s.isCollapsed)return;
+      const range=s.getRangeAt(0),container=range.commonAncestorContainer,element=container.nodeType===1?container:container.parentElement;
+      if(!root.contains(element))return;
+      const message=element.closest(&#x27;.lt-message-content&#x27;),inPassage=q(&#x27;#lt-passage&#x27;).contains(container),inExplanation=q(&#x27;.lt-thread&#x27;).contains(container);
+      if(!inPassage&amp;&amp;!message&amp;&amp;!inExplanation)return;
+      const text=s.toString().trim().slice(0,1200);if(!text)return;
+      const node=activeNode(),messageId=message?.closest(&#x27;[data-message]&#x27;)?.dataset.message||null;
+      if(inPassage)selection=range.cloneRange();else selection=null;
+      selectedSource={quote:text,nodeId:node.id,messageId};node.quote=text;node.replyTo=messageId;renderAskContext();
+    });
+    function applyDesign(){root.classList.toggle(&#x27;lt-stacked&#x27;,design.layout===&#x27;Visual below&#x27;);root.style.setProperty(&#x27;--lt-reading-size&#x27;,design.textSize+&#x27;px&#x27;);render()}
+    render();new ResizeObserver(draw).observe(q(&#x27;.lt-diagram&#x27;));
+    new ResizeObserver(()=&gt;threadExamples.drawVisuals(q(&#x27;.lt-messages&#x27;),activeNode().messages)).observe(q(&#x27;.lt-messages&#x27;));
+    q(&#x27;#lt-layout&#x27;).addEventListener(&#x27;change&#x27;,e=&gt;{design.layout=e.target.value;applyDesign()});
+    q(&#x27;#lt-text-size&#x27;).addEventListener(&#x27;input&#x27;,e=&gt;{design.textSize=+e.target.value;q(&#x27;#lt-size-value&#x27;).textContent=e.target.value+&#x27; px&#x27;;applyDesign()});
+    q(&#x27;#lt-surrounding&#x27;).addEventListener(&#x27;change&#x27;,e=&gt;{design.surrounding=e.target.checked;context=false;applyDesign()});
+    if(new URLSearchParams(location.search).get(&#x27;example&#x27;)===&#x27;wrist&#x27;)openWrist();
+    if(new URLSearchParams(location.search).get(&#x27;example&#x27;)===&#x27;highlight&#x27;){openWrist();returnToHighlight(activeNode().id)}
+  })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerdown&quot;, handlePointer);
+    document.removeEventListener(&quot;pointercancel&quot;, handlePointer);
+    document.removeEventListener(&quot;click&quot;, handleTouchClick);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerdown&quot;, handlePointer);
+  document.addEventListener(&quot;pointercancel&quot;, handlePointer);
+  document.addEventListener(&quot;click&quot;, handleTouchClick);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>
