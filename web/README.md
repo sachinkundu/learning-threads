@@ -1,4 +1,4 @@
-# Learning Threads browser prototype
+# Learning Threads web app
 
 The full-page version of the approved reading experiment.
 
@@ -6,13 +6,16 @@ Includes two book paragraphs, movable joint diagrams, sample conversations,
 nested branches, text highlights, and notes. The reading-view menu changes
 layout, text size, and surrounding context.
 
-Notes and conversations last for the browser session only. Sample replies are
-prepared examples. Copy for Codex copies the question and its context; this
-page has no live model connection or token-cost tracking.
+Reading state is saved in this browser: the current paragraph or thread,
+highlights, notes, question drafts, replies, read marks, reading preferences,
+and visual controls. Closing the tab and opening the same origin resumes it.
+Browser data deletion removes this local copy. Cloud sync is not wired yet.
 
-`reading.html` is the editable source fragment. Render it with the visualization
-skill's `scripts/render.py` into `exported.html`, then run `unwrap_preview.py`
-to produce the normal full-viewport `index.html`.
+`reading.html` is the editable source. Build with `python3 web/build.py` from
+the repository root. This generates a normal `index.html`, with inline scripts
+covered by CSP hashes. It needs no chat runtime or visualization exporter.
+`exported.html` and `unwrap_preview.py` are the historical preview path; do not
+use them for current builds.
 
 Serve this folder with a local HTTP server to review it in a browser.
 
@@ -22,20 +25,32 @@ conversation. Actuation and Torque demonstrate two deeper branches, with
 direct return paths, answer notes, and retained visual controls.
 
 The original wrist answer is adapted from our chat; deeper replies and visuals
-are prepared examples. There are no automatic question suggestions. Notes,
-thread state, and reading positions remain in memory until the page reloads.
-No live model usage or cost figures are claimed.
+are prepared examples. There are no automatic question suggestions. Copy for
+Codex still copies a prompt and context. No live model connection, model usage,
+or cost figures are claimed. Example URLs seed a fresh session only; an
+existing saved place takes precedence when reopening.
 
 Open `/?example=highlight` to see the wrist discussion anchored to the exact
 spherical-joint sentence. Click the highlighted text to reopen the discussion;
 Back to highlight returns to that range. The source quote also appears with
 the original question. This demonstrates the required two-way connection.
-General highlight storage, revision history, and cross-device persistence are
-still requirements for the finished app, recorded in the Linear brief.
+General highlights now persist as text ranges, with exact source checks on
+load. General question-to-highlight links and note revision history are in
+SAC-192. Device sync is in SAC-193.
 
 `thread-examples.js` and `thread-examples.css` contain the thread-specific
-content and presentation. `unwrap_preview.py` bundles them into `index.html`
-to keep the export's content security policy intact.
+content and presentation. `study-store.js` validates and saves versioned
+snapshots under a book-specific localStorage key. Failed writes keep the last
+good copy. An error exposes a backup download containing both the current
+work and the stored copy. Corrupt or incompatible data is never reset silently.
+
+Run `node --test tests/study-store.test.cjs` from the repository root. These
+checks cover restoration, broken thread links, quota errors, stale tabs, corrupt
+data, and denied storage. They are local persistence checks, not cloud evidence.
+
+The local store detects a previously saved change from another tab and stops
+that stale tab from overwriting it. It is not a concurrent editing protocol;
+atomic cloud updates and conflict recovery belong to SAC-193.
 
 Follow the UI removal test in the root `AGENTS.md`. The reading interface has
 no permanent thread map, depth labels, walkthrough copy, or prototype status

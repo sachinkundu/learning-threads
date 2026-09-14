@@ -6,6 +6,7 @@
 - Keep technical decisions and verification evidence in `planning/workpad.md`.
 - Preserve the approved reading and thread UI while replacing temporary behavior.
 - Distinguish browser persistence from cloud sync, and sample replies from live assistant calls.
+- Build with `python3 web/build.py`; the old visualization export files are historical.
 
 ## UI removal test
 

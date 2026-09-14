@@ -1,6 +1,10 @@
 # Learning Threads planning
 
-The current discussion is tracked in Linear.
+Implementation is tracked in [Learning Threads — Build](https://linear.app/sachinkundu/project/learning-threads-build-57bd4eda67f8).
+See `build-backlog.md` for the prioritized issues and `workpad.md` for execution evidence.
+No OpenSpec is used for this project.
+
+The earlier discovery record is retained here:
 
 - [Project](https://linear.app/sachinkundu/project/learning-threads-33297b6ad1ad)
 - [Requirements and open decisions](https://linear.app/sachinkundu/document/learning-threads-requirements-and-open-decisions-5a3398c698f9)
