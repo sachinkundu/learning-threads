@@ -19,6 +19,23 @@ use them for current builds.
 
 Serve this folder with a local HTTP server to review it in a browser.
 
+Private Tailscale preview:
+`https://sachins-macbook-pro.tailde98db.ts.net:8443/`
+
+Deploy with `python3 scripts/deploy-tailscale.py` from the repository root.
+The script builds and copies only `index.html` into
+`~/Library/Application Support/LearningThreads/site`. A user LaunchAgent keeps
+the loopback server on port 63402 running, and Tailscale Serve exposes it on
+HTTPS port 8443. The Mac must be awake, signed in, and connected to Tailscale.
+Existing Tailscale routes are preserved. No Funnel or public endpoint is used.
+This is a private preview, not the planned Cloudflare deployment or device sync.
+Browser study storage remains separate for each origin and device.
+
+To stop this preview, run
+`/Applications/Tailscale.app/Contents/MacOS/Tailscale serve --https=8443 off`,
+then `launchctl bootout gui/$(id -u)/com.sachinkundu.learning-threads`.
+Its LaunchAgent is `~/Library/LaunchAgents/com.sachinkundu.learning-threads.plist`.
+
 Open `/?example=wrist` for the thread example based on the spherical-wrist
 question from our conversation. Visualize adds an explanation to the same
 conversation. Actuation and Torque demonstrate two deeper branches, with

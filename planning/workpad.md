@@ -1,5 +1,21 @@
 # Learning Threads workpad
 
+## Tailscale preview, 2026-09-14
+
+User requested phone/iPad access while away from the computer.
+
+- Live URL: https://sachins-macbook-pro.tailde98db.ts.net:8443/
+- Added `scripts/deploy-tailscale.py` for repeatable builds and publication.
+- A macOS user LaunchAgent runs the copied static artifact on loopback 63402.
+  Tailscale Serve runs persistently on private HTTPS 8443.
+- The existing HTTPS 443 route remains unchanged. Funnel is not enabled.
+- Verified LaunchAgent state `running`, read back the Tailscale route, fetched
+  HTTP 200 over the Tailscale HTTPS hostname with certificate verification,
+  and compared its bytes against the built app: identical.
+- This was verified from the hosting Mac; the user's phone/iPad has not been
+  tested. The Mac must remain awake and connected. Cloud storage, cross-device
+  state, and live assistant work are still queued.
+
 ## Delivery
 
 [Learning Threads — Build](https://linear.app/sachinkundu/project/learning-threads-build-57bd4eda67f8)
