@@ -92,5 +92,13 @@
       "cloud-sync"
     ],
     "description": "## What?\n\nAdd a second book with its own chapters, threads, notes, and progress.\n\n## Why?\n\nThis app is for learning across books, not only Modern Robotics.\n\n## Done when\n\n- A second book can be added and its reading order checked.\n- Each book keeps its own source links, history, and study work.\n- Switching books returns to the saved place in each one.\n- An updated source does not silently move an old highlight."
+  },
+  {
+    "key": "source-page",
+    "title": "Check the original PDF page while reading",
+    "priority": 2,
+    "description": "## What?\n\nOpen the exact book page from the PDF while reading a paragraph.\n\n## Why?\n\nThe learner may want to check the source text or see the whole page.\n\n## Done when\n\n- The source page stays hidden until the learner opens it.\n- The page matches the current paragraph, with the book's layout intact.\n- Closing the source leaves the reading place, question, and notes as they were.",
+    "issue": "SAC-203",
+    "uuid": "b321280c-28b8-407e-9ebe-db73db53aa33"
   }
 ]

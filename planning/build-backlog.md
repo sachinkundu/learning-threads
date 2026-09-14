@@ -19,3 +19,5 @@ No OpenSpec.
 | 10 | [SAC-200](https://linear.app/sachinkundu/issue/SAC-200/add-another-book-without-changing-the-learning-flow) | Low | Add another book without changing the learning flow |
 
 The first release must include both live replies and actual cost tracking before it is treated as complete.
+
+Added during the reading trial: [SAC-203](https://linear.app/sachinkundu/issue/SAC-203/check-the-original-pdf-page-while-reading), High — check the original PDF page on demand.

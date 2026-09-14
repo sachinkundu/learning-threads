@@ -27,6 +27,7 @@ DISABLED = ['apps', 'plugins', 'shell_tool', 'unified_exec', 'browser_use',
             'computer_use', 'in_app_browser', 'image_generation', 'multi_agent',
             'memories', 'hooks', 'skill_search', 'workspace_dependencies', 'view_image']
 TOKEN_FIELDS = ['input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_output_tokens']
+SOURCE_ASSETS = {'/source-pages/modern-robotics-p16.png'}
 
 
 def now():
@@ -179,6 +180,19 @@ def handler(site, jobs, origins):
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
                 self.send_header('Cache-Control', 'no-cache')
+                self.send_header('Content-Length', str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            if path in SOURCE_ASSETS:
+                asset = site / path.lstrip('/')
+                if not asset.is_file():
+                    return self.send_json({'error': 'Source page not found.'}, 404)
+                data = asset.read_bytes()
+                self.send_response(200)
+                self.send_header('Content-Type', 'image/png')
+                self.send_header('Cache-Control', 'private, max-age=86400')
+                self.send_header('X-Content-Type-Options', 'nosniff')
                 self.send_header('Content-Length', str(len(data)))
                 self.end_headers()
                 self.wfile.write(data)

@@ -64,6 +64,8 @@ class AssistantTests(unittest.TestCase):
     def test_http_origin_guard_and_private_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             site = Path(tmp); (site / 'index.html').write_text('Reader')
+            (site / 'source-pages').mkdir()
+            (site / 'source-pages/modern-robotics-p16.png').write_bytes(b'checked-page')
             jobs = assistant.Jobs(site / 'private.db', lambda p: {'text': 'Answer', 'usage': None})
             server = assistant.ThreadingHTTPServer(('127.0.0.1', 0), assistant.handler(site, jobs, set()))
             origin = f'http://127.0.0.1:{server.server_port}'
@@ -79,6 +81,13 @@ class AssistantTests(unittest.TestCase):
                 with self.assertRaises(HTTPError) as error:
                     urlopen(origin + '/private.db')
                 error.exception.close()
+                with urlopen(origin + '/source-pages/modern-robotics-p16.png') as response:
+                    self.assertEqual(response.read(), b'checked-page')
+                    self.assertEqual(response.headers.get_content_type(), 'image/png')
+                for path in ['/source-pages/', '/source-pages/../private.db', '/MR-v2.pdf']:
+                    with self.assertRaises(HTTPError) as error:
+                        urlopen(origin + path)
+                    error.exception.close()
                 with urlopen(Request(origin + '/api/replies', payload, {'Content-Type': 'application/json', 'X-Learning-Threads': '1', 'Origin': origin})) as response:
                     self.assertEqual(response.status, 202)
             finally:

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-gnXe6OFhtpWvbESQp3u4EeyxSXOWwVVCLm0zCZqDido=' 'sha256-cN6yFpOXqjB2Ry/eNVYi5QxMpXIYaIvNot67U70z2xU=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-dPwIFAq0pLloJHJRiZoNs/kZxCcmzNA3/XYS2rfgFpY=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-gnXe6OFhtpWvbESQp3u4EeyxSXOWwVVCLm0zCZqDido=' 'sha256-cN6yFpOXqjB2Ry/eNVYi5QxMpXIYaIvNot67U70z2xU=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-hmNHh7t4pzaevJTudCRbE0Hr7e2k5nQk9I8HDZjYp+M=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -34,6 +34,20 @@
     #lt-reading .lt-term{font:inherit!important;border:0;border-bottom:1px solid var(--lt-green);padding:0 2px;background:transparent;color:var(--lt-green);border-radius:3px;text-align:left;display:inline}
     #lt-reading .lt-term[aria-pressed="true"]{background:var(--lt-soft);border-bottom:2px solid var(--lt-green)}
     #lt-reading .lt-source{font-size:12px;color:var(--lt-muted);margin-top:18px}
+    #lt-reading .lt-book-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    #lt-reading .lt-source-page{grid-column:2;grid-row:1 / span 2;position:sticky;top:24px;min-width:0;border:1px solid var(--lt-line);border-radius:10px;overflow:hidden;background:var(--lt-surface)}
+    #lt-reading .lt-source-tools{display:flex;justify-content:flex-end;gap:10px;padding:8px 12px}
+    #lt-reading .lt-source-viewport{overflow:auto;max-height:calc(100dvh - 110px);overscroll-behavior:contain;background:#e9e9e6}
+    #lt-reading .lt-source-image{display:block;width:100%;height:auto;max-width:none;background:#fff}
+    #lt-reading .lt-source-image.lt-zoomed{width:200%}
+    #lt-reading .lt-source-error{padding:16px;margin:0}
+    #lt-reading.lt-stacked .lt-source-page{grid-column:1;grid-row:2;position:static;margin-top:25px}
+    #lt-reading.lt-in-thread.lt-source-open .lt-content{max-width:1440px}
+    #lt-reading.lt-in-thread.lt-source-open .lt-columns{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);column-gap:44px}
+    #lt-reading.lt-in-thread.lt-source-open.lt-stacked .lt-columns{grid-template-columns:1fr}
+    #lt-reading.lt-in-thread.lt-source-open.lt-stacked .lt-qa{grid-row:3}
+    @media(max-width:860px){#lt-reading .lt-source-page{grid-column:1;grid-row:2;position:static;margin-top:24px}}
+    @media(max-width:860px){#lt-reading.lt-in-thread.lt-source-open .lt-columns{grid-template-columns:1fr}#lt-reading.lt-in-thread.lt-source-open .lt-qa{grid-row:3}}
     #lt-reading .lt-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
     #lt-reading .lt-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--lt-line);border-radius:8px;background:var(--lt-surface);padding:9px 12px;min-height:42px;font-size:13px}
     #lt-reading .lt-action.lt-primary{background:var(--lt-green);color:var(--lt-bg);border-color:var(--lt-green)}
@@ -213,14 +227,14 @@
   </header>
   <div class="lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="export-study">Export backup</button> <button class="lt-action" type="button" data-action="retry-save">Retry save</button></div>
   <div class="lt-content">
-    <div class="lt-bookline"><strong>Modern Robotics</strong><span>Chapter 2 · Configuration space</span></div>
+    <div class="lt-bookline"><strong>Modern Robotics</strong><div class="lt-book-meta"><span>Chapter 2 · Configuration space</span><button class="lt-quiet" type="button" data-action="toggle-source" aria-expanded="false" aria-controls="lt-source-page">Source p. 16</button></div></div>
     <h2>How robot joints move</h2>
     <div class="lt-columns">
       <div class="lt-reading-pane">
         <section class="lt-book-section" aria-label="Current book paragraph">
           <div class="lt-sectionlabel lt-passagelabel">2.2.1 Robot joints · paragraph 1</div>
           <p class="lt-prose" id="lt-passage"></p>
-          <div class="lt-source">Lynch &amp; Park · §2.2.1 · source p. 16</div>
+          <div class="lt-source">Lynch &amp; Park · §2.2.1</div>
           <button class="lt-action lt-thread-entry" type="button" data-action="open-wrist" hidden><i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion</button>
           <div class="lt-actions">
             <button class="lt-action" type="button" data-action="focus-question"><i data-lucide="message-circle" aria-hidden="true"></i> Ask a question</button>
@@ -247,6 +261,11 @@
           <details class="lt-branches" hidden><summary>Discussions</summary><div class="lt-branch-list"></div></details>
         </section>
       </div>
+      <aside id="lt-source-page" class="lt-source-page" aria-label="Original PDF page" hidden>
+        <div class="lt-source-tools"><button class="lt-action" type="button" data-action="zoom-source" aria-pressed="false">Zoom in</button><button class="lt-action" type="button" data-action="close-source">Close</button></div>
+        <div class="lt-source-viewport" tabindex="0" aria-label="Source page, scroll to inspect"><img class="lt-source-image" alt="Modern Robotics, printed page 16, PDF page 36" width="1275" height="1651"></div>
+        <p class="lt-source-error" role="alert" hidden>Could not load this page. <button class="lt-action" type="button" data-action="retry-source">Retry</button></p>
+      </aside>
       <section class="lt-demo" aria-label="Interactive joint model">
         <div class="lt-demotop"><strong>Move the joint</strong><span>Schematic · live motion</span></div>
         <div class="lt-joints" aria-label="Joint type"></div>
@@ -656,6 +675,18 @@ window.LearningThreadExamples = (() => {
     let page=0,joint='R',stack=[],read=new Set(),notes=['',''],noteOpen=[false,false],highlights=[[],[]],feedback='',animation=0,context=false;
     let noteHistory=[[],[]],noteEdits=[null,null];
     let selection=null;
+    let sourceOpen=false;
+    // The current paragraphs share printed p. 16 (PDF page 36). Extend this
+    // mapping with checked page references when importing the next passages.
+    const sourcePages=[{printed:16,pdf:36,asset:'/source-pages/modern-robotics-p16.png'},{printed:16,pdf:36,asset:'/source-pages/modern-robotics-p16.png'}];
+    function showSource(open){
+      sourceOpen=open;root.classList.toggle('lt-source-open',open);q('.lt-source-page').hidden=!open;q('.lt-demo').hidden=open;
+      const source=sourcePages[page],button=q('[data-action="toggle-source"]'),img=q('.lt-source-image');
+      button.setAttribute('aria-expanded',String(open));button.textContent='Source p. '+source.printed;
+      if(open&&img.getAttribute('src')!==source.asset){img.src=source.asset;img.alt=`Modern Robotics, printed page ${source.printed}, PDF page ${source.pdf}`;img.classList.remove('lt-zoomed');q('[data-action="zoom-source"]').textContent='Zoom in';q('[data-action="zoom-source"]').setAttribute('aria-pressed','false')}
+    }
+    q('.lt-source-image').addEventListener('error',()=>{q('.lt-source-error').hidden=false;q('.lt-source-viewport').hidden=true});
+    q('.lt-source-image').addEventListener('load',()=>{q('.lt-source-error').hidden=true;q('.lt-source-viewport').hidden=false});
     let selectedSource=null,branchCount=0,messageCount=0;
     const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
     const conversations=new Map([['p0',makeNode('p0','Paragraph 1')],['p1',makeNode('p1','Paragraph 2')]]);
@@ -913,6 +944,7 @@ window.LearningThreadExamples = (() => {
     }
     function render(){
       flushNoteEdits();
+      showSource(sourceOpen);
       root.classList.toggle('lt-in-thread',!!stack.length);
       q('h2').textContent=stack.length?activeNode().title:'How robot joints move';
       q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
@@ -1040,6 +1072,10 @@ window.LearningThreadExamples = (() => {
       }
       if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
       const action=btn.dataset.action;
+      if(action==='toggle-source'){showSource(!sourceOpen);return}
+      if(action==='close-source'){showSource(false);q('[data-action="toggle-source"]').focus({preventScroll:true});return}
+      if(action==='zoom-source'){const zoom=q('.lt-source-image').classList.toggle('lt-zoomed');btn.setAttribute('aria-pressed',String(zoom));btn.textContent=zoom?'Fit page':'Zoom in';return}
+      if(action==='retry-source'){q('.lt-source-image').removeAttribute('src');showSource(true);return}
       if(action==='usage'){showUsage();return}
       if(action==='close-usage'){q('.lt-usage-dialog').close();return}
       if(action==='export-study'){exportStudy();return}

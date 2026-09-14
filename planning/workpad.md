@@ -218,3 +218,34 @@ Book study still resides in browser storage; the server reply ledger does not
 sync the full study state across devices.
 
 CLI documentation used: https://learn.chatgpt.com/docs/non-interactive-mode
+
+## SAC-203: original source page on demand
+
+The learner asked to check the original PDF page while reading a paragraph.
+Added Source p. 16 to the shared book bar, available in paragraphs and threads.
+It opens a reference panel beside the web content (below it on narrow screens),
+with Zoom in / Fit page and Close. It replaces the joint visual only while open.
+It starts closed on every reload; drafts, notes, replies, and highlight links
+remain in their existing saved state. No new explanatory UI copy.
+
+Source: MR-v2.pdf printed page 16 is PDF page 36 (index 35). Reused the exact
+1275 x 1651 render verified against the source, retaining page margins, figure,
+type, and footer. Both current paragraphs occur on this page. The server serves
+only the explicit checked image route, not a PDF or a directory listing.
+
+Verification, 2026-09-14:
+- Deployed through the existing LaunchAgent on http://100.117.88.81:8080/.
+- Browser: hidden by default; open/zoom/close; draft survives reload; source
+  opens in the wrist thread; Back to highlight returns to the exact text.
+- Responsive check at 390 x 844: no document overflow; the page panel sits
+  between the excerpt and conversation. Desktop shows both columns. This is
+  viewport testing, not a physical iPad test. Browser console had no errors.
+- All 15 Node and 4 Python tests passed. Extended the existing HTTP guard test
+  to check the image route and deny directory traversal, PDF, and private data.
+- Served PNG bytes match the verified render; SHA-256
+  4b76644aa3e49f984315693200caa8d306b3d0f3da6832b255aace729a52cae0.
+- Linear description readability passed: ease 83.27, grade 4.63.
+
+SAC-193 remains in progress. Dependencies installed for Cloudflare Workers;
+account, zone, and owner identity verified. No cloud sync or public deployment
+has been claimed or released at this point.

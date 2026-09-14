@@ -73,7 +73,7 @@ try:
     LOGS.mkdir(parents=True, exist_ok=True)
     PLIST.parent.mkdir(parents=True, exist_ok=True)
     # Keep the previous artifact and Serve config for recovery. Copy only the
-    # self-contained page; project documents and the PDF are never served.
+    # built page and its checked source renders; no directory listing or PDF.
     if (SITE / 'index.html').exists():
         shutil.copy2(SITE / 'index.html', APP / 'previous-index.html')
     (APP / 'previous-serve.json').write_text(json.dumps(current, indent=2))
@@ -83,6 +83,9 @@ try:
     (APP / 'assistant.next').replace(APP / 'assistant.py')
     shutil.copy2(ROOT / 'web/index.html', SITE / 'index.next')
     (SITE / 'index.next').replace(SITE / 'index.html')
+    (SITE / 'source-pages').mkdir(exist_ok=True)
+    for asset in (ROOT / 'web/source-pages').glob('*.png'):
+        shutil.copy2(asset, SITE / 'source-pages' / asset.name)
     PLIST.write_bytes(plistlib.dumps({
         'Label': LABEL,
         'ProgramArguments': arguments,
