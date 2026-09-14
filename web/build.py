@@ -8,7 +8,7 @@ folder = Path(__file__).resolve().parent
 content = (folder / 'reading.html').read_text()
 for filename in ['thread-examples.css']:
     content = content.replace(f'<link rel="stylesheet" href="./{filename}">', '<style>' + (folder / filename).read_text() + '</style>')
-for filename in ['study-store.js', 'study-links.js', 'thread-examples.js']:
+for filename in ['study-store.js', 'study-links.js', 'assistant-client.js', 'thread-examples.js']:
     content = content.replace(f'<script src="./{filename}"></script>', '<script>' + (folder / filename).read_text() + '</script>')
 # Keep the same pinned icon set as the approved prototype.
 content += '''

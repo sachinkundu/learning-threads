@@ -60,3 +60,15 @@
 #lt-reading .lt-feedback:empty,#lt-reading .lt-qa-status:empty{display:none}
 @media(max-width:540px){#lt-reading .lt-wrist-pair{grid-template-columns:1fr;gap:22px}#lt-reading .lt-wrist-pair small{min-height:0}#lt-reading .lt-wrist-controls{grid-template-columns:1fr;gap:8px}#lt-reading .lt-wrist-controls output{display:inline;margin-left:10px}#lt-reading .lt-message{padding:14px 12px}#lt-reading .lt-message.lt-user{margin-left:0}}
 @media(pointer:coarse){#lt-reading .lt-concept{padding:4px 0}}
+#lt-reading .lt-rich h3{font-size:1.1em;margin:22px 0 10px}
+#lt-reading .lt-rich pre{max-width:100%;overflow:auto;padding:14px;background:var(--lt-bg);border-radius:7px;font-size:14px;line-height:1.5}
+#lt-reading .lt-rich code{font-size:.85em}
+#lt-reading .lt-rich li{margin:8px 0}
+#lt-reading .lt-request-status{font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;white-space:pre-wrap;margin:12px 0;color:var(--lt-muted)}
+#lt-reading .lt-call-usage{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:14px 0;color:var(--lt-muted)}
+#lt-reading .lt-call-usage summary{cursor:pointer}
+#lt-reading .lt-call-usage dl,#lt-reading .lt-usage-body>dl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:13px}
+#lt-reading .lt-call-usage dd,#lt-reading .lt-usage-body dd{margin:0;text-align:right}
+#lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-panel);color:var(--lt-ink)}
+#lt-reading .lt-usage-dialog::backdrop{background:rgba(0,0,0,.6)}
+#lt-reading .lt-usage-dialog>button{float:right}

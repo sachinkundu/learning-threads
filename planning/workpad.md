@@ -143,3 +143,78 @@ Release verification, 2026-09-14:
   user's acceptance above applies to the previous build.
 - Read back Tailscale configuration: the 8080 forward and both existing HTTPS
   routes on 443 and 8443 remain intact.
+
+## SAC-194 / SAC-195: live Codex replies and usage
+
+The user asked to wrap the button in the Codex CLI so the learning flow could
+be tested. Brought SAC-194 ahead of Cloudflare sync and removed SAC-193 as its
+prerequisite. This is a host-backed private preview; SAC-193 remains open.
+No OpenSpec.
+
+Implemented on `feat/sac-194-codex-replies`:
+
+- Replaced Copy for Codex with Ask Codex. Replies use the current passage,
+  exact selected source, ancestor conversations, and earlier replies. Ordinary
+  follow-ups stay in their thread. Live answer text supports highlighting,
+  child threads, notes, and safe Markdown/text-diagram rendering.
+- Use `codex exec --json` with existing ChatGPT authentication. The standalone
+  CLI 0.150.1 failed with the provider error that gpt-6-astra needs a newer CLI.
+  The app-bundled executable at
+  `/Applications/ChatGPT.app/Contents/Resources/codex` is 0.153.4 and passed.
+  It uses gpt-6-astra at low reasoning effort. No user config or credentials
+  were changed. No API key was introduced.
+- Run in an empty temporary workspace with read-only sandboxing. Disable
+  shell, apps, plugins, browser, image generation, and delegation features.
+  The request is passed over stdin as data, never interpolated into a shell.
+- The private Python server keeps request IDs, replies, errors, and usage in
+  SQLite outside the served directory. One model call runs at a time; up to
+  four may be queued/running. Reusing a request ID does not launch a new call.
+- Reload and tab closure recover pending replies. Failed calls can be retried
+  on the same question, with each new attempt retained in the ledger. Network
+  reconnects keep the original ID. Server restarts mark interrupted work as
+  failed rather than silently rerunning it.
+- Usage shows provider-reported input, cached input, output, and reasoning
+  tokens per call and in total. Dollar charges are not reported by this CLI
+  login and remain unknown in the UI. No API-price estimate or zero cost is
+  presented. The ledger retains failed attempts with unknown usage.
+- API calls require the app header and allowed host/origin. The server binds
+  only to loopback and serves only the built page and its API. Tailscale
+  access remains on 8080/8443; the unrelated 443 route remains unchanged.
+
+Verification, 2026-09-14:
+
+- 15 Node tests and four Python tests passed. Checks cover source persistence,
+  safe rendering, unknown usage, call idempotency, separate retry accounting,
+  interrupted work, origin rejection, and keeping private files unserved.
+  All six inline scripts parsed and matched CSP hashes.
+- In the real browser on the isolated QA origin, submitted a wrist follow-up
+  and reloaded while it ran. It returned one live answer with a text diagram,
+  with exactly one server call: 11,578 input / 6,912 cached / 249 output tokens.
+- Selected a phrase inside that answer and opened a child discussion. Closed
+  the tab during its request, reopened it, and received the answer. Back to
+  highlight focused the exact parent phrase. Usage: 12,070 input / 0 cached /
+  135 output tokens. These two calls had no browser or storage errors.
+- Induced a missing-executable failure in the QA server. The original error
+  and Retry appeared beside the saved question. Restored the executable and
+  retried through the UI: one question, one new answer, with the failed and
+  successful attempts separately retained. The QA ledger had four attempts:
+  three completed, one failed. The successful retry reported 11,906 input /
+  6,912 cached / 37 output tokens.
+- Upgraded the persistent LaunchAgent from a static server to the bridge.
+  The first upgrade hit a launchd unload timing race; fixed bootstrap handling
+  and redeployed successfully. Future deploys refuse to interrupt active work.
+- On the deployed address http://100.117.88.81:8080/, used the actual Ask Codex
+  button for a helical-joint question. The LaunchAgent called Codex, the answer
+  appeared in the page, and Usage recorded 10,996 input / 6,912 cached / 94
+  output tokens. Browser console was clean. This is a browser-to-deployed-
+  server-to-provider check from the host, not a claim of physical iPad testing.
+- The deployed page returned HTTP 200 and matched the build, SHA-256
+  `b9900d39d5fb407e094660dfe48e681e63a3501aaa94fc7bb3dcd460bd5c564c`.
+
+Remaining: private Cloudflare hosting and device sync (SAC-193), full chapter
+content (SAC-196), generated images and interactive live visuals (SAC-197), and
+physical iPad polish (SAC-198). The Mac must remain awake and on Tailscale.
+Book study still resides in browser storage; the server reply ledger does not
+sync the full study state across devices.
+
+CLI documentation used: https://learn.chatgpt.com/docs/non-interactive-mode

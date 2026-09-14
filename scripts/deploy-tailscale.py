@@ -1,9 +1,10 @@
-"""Publish the built reader on this Mac's private Tailscale HTTPS endpoint."""
+"""Publish the reader and its Codex bridge on this Mac's private tailnet."""
 import json
 import os
 from pathlib import Path
 import plistlib
 import shutil
+import sqlite3
 import subprocess
 import sys
 import time
@@ -42,11 +43,30 @@ try:
         raise RuntimeError(f'Tailscale port {HTTPS_PORT} is public; choose a private port.')
 
     python = shutil.which('python3') or sys.executable
-    arguments = [python, '-u', '-m', 'http.server', str(PORT), '--bind', '127.0.0.1', '--directory', str(SITE)]
+    database = APP / 'data/assistant.sqlite3'
+    if database.exists():
+        with sqlite3.connect(database) as db:
+            if db.execute("SELECT count(*) FROM calls WHERE status IN ('queued','running')").fetchone()[0]:
+                raise RuntimeError('A reply is still running. Deploy after it finishes.')
+    codex = '/Applications/ChatGPT.app/Contents/Resources/codex'
+    if not Path(codex).is_file():
+        raise RuntimeError('The configured app-bundled Codex executable is missing.')
+    login = run(codex, 'login', 'status')
+    if 'ChatGPT' not in login.stdout + login.stderr:
+        raise RuntimeError('This bridge requires the existing ChatGPT Codex login.')
+    old_arguments = [python, '-u', '-m', 'http.server', str(PORT), '--bind', '127.0.0.1', '--directory', str(SITE)]
+    arguments = [python, '-u', str(APP / 'assistant.py'), '--site', str(SITE),
+                 '--data', str(APP / 'data'), '--codex', codex, '--port', str(PORT),
+                 '--origin', f'https://{origin}']
+    for address in status['Self'].get('TailscaleIPs', []):
+        if ':' not in address:
+            arguments += ['--origin', f'http://{address}:8080']
+    reload_agent = False
     if PLIST.exists():
         old = plistlib.loads(PLIST.read_bytes())
-        if old.get('Label') != LABEL or old.get('ProgramArguments') != arguments:
+        if old.get('Label') != LABEL or old.get('ProgramArguments') not in [arguments, old_arguments]:
             raise RuntimeError('The existing launch agent does not match this app.')
+        reload_agent = old.get('ProgramArguments') != arguments
 
     run(python, str(ROOT / 'web/build.py'))
     SITE.mkdir(parents=True, exist_ok=True)
@@ -57,6 +77,10 @@ try:
     if (SITE / 'index.html').exists():
         shutil.copy2(SITE / 'index.html', APP / 'previous-index.html')
     (APP / 'previous-serve.json').write_text(json.dumps(current, indent=2))
+    if PLIST.exists():
+        shutil.copy2(PLIST, APP / 'previous-launch-agent.plist')
+    shutil.copy2(ROOT / 'server/assistant.py', APP / 'assistant.next')
+    (APP / 'assistant.next').replace(APP / 'assistant.py')
     shutil.copy2(ROOT / 'web/index.html', SITE / 'index.next')
     (SITE / 'index.next').replace(SITE / 'index.html')
     PLIST.write_bytes(plistlib.dumps({
@@ -68,8 +92,19 @@ try:
         'StandardOutPath': str(LOGS / 'server.log'),
         'StandardErrorPath': str(LOGS / 'server-error.log'),
     }))
-    if run('launchctl', 'print', TARGET, check=False).returncode:
-        run('launchctl', 'bootstrap', f'gui/{os.getuid()}', str(PLIST))
+    loaded = run('launchctl', 'print', TARGET, check=False).returncode == 0
+    if reload_agent and loaded:
+        run('launchctl', 'bootout', TARGET)
+        loaded = False
+    if not loaded:
+        # launchd may finish removing the old service just after bootout returns.
+        for attempt in range(20):
+            launched = run('launchctl', 'bootstrap', f'gui/{os.getuid()}', str(PLIST), check=False)
+            if launched.returncode == 0:
+                break
+            if attempt == 19:
+                raise subprocess.CalledProcessError(launched.returncode, launched.args, launched.stdout, launched.stderr)
+            time.sleep(0.25)
     else:
         run('launchctl', 'kickstart', '-k', TARGET)
 

@@ -47,6 +47,8 @@
         checkHistory(m.noteHistory);checkHistory(m.history);
         check(m.noteEditBase===undefined||typeof m.noteEditBase==='string','Saved note edit is invalid.');
         check(m.editDraft===undefined||typeof m.editDraft==='string','Saved question edit is invalid.');
+        if(m.request)check(isObject(m.request)&&validId(m.request.id)&&['connecting','queued','running','completed','failed','waiting'].includes(m.request.state)&&isObject(m.request.payload)&&m.request.payload.id===m.request.id&&typeof m.request.payload.question==='string'&&isObject(m.request.payload.context),'Saved assistant request is invalid.');
+        if(m.requestId)check(validId(m.requestId),'Saved assistant reply identity is invalid.');
         if(m.sourceAnchor)checkAnchor(m.sourceAnchor,node.page);
         check(m.example===undefined || ['wrist','actuation','torque'].includes(m.example), 'Saved reply example is unknown.');
         if (m.visualization) check(['wrist','actuation','torque'].includes(m.visualization.type) && validId(m.visualization.sourceMessage) && Array.isArray(m.visualization.values) && m.visualization.values.length===3 && m.visualization.values.every(v=>Number.isFinite(v) && Math.abs(v)<=180), 'Saved reply visual is invalid.');

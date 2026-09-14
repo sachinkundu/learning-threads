@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hKeqOnbyXO8G9VT2JEuUjA1y9jYEOCJXGfBLqndosqs=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-UbGTCslikq5/IZqfDH1dp7htVWGLKDBREI0xRFKa3bY=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-gnXe6OFhtpWvbESQp3u4EeyxSXOWwVVCLm0zCZqDido=' 'sha256-cN6yFpOXqjB2Ry/eNVYi5QxMpXIYaIvNot67U70z2xU=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-dPwIFAq0pLloJHJRiZoNs/kZxCcmzNA3/XYS2rfgFpY=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -120,8 +120,6 @@
     #lt-reading .lt-view-options select{font:inherit;color:var(--lt-ink);background:var(--lt-bg);border:1px solid var(--lt-line);border-radius:5px;min-height:38px;width:100%;margin-top:5px;padding:5px}
     #lt-reading .lt-view-options .lt-view-check{display:flex;gap:9px;align-items:center}
     #lt-reading .lt-view-check input{accent-color:var(--lt-green)}
-    #lt-reading .lt-copy-fallback{margin-top:12px}
-    #lt-reading .lt-copy-fallback textarea{font-size:13px;min-height:130px}
     #lt-reading .lt-storage-error{margin:0;padding:12px clamp(20px,4vw,64px);border-bottom:1px solid var(--lt-line);background:var(--lt-mark);font-size:13px}
     #lt-reading .lt-storage-error p{margin:0 0 8px}
     
@@ -196,10 +194,22 @@
 #lt-reading .lt-feedback:empty,#lt-reading .lt-qa-status:empty{display:none}
 @media(max-width:540px){#lt-reading .lt-wrist-pair{grid-template-columns:1fr;gap:22px}#lt-reading .lt-wrist-pair small{min-height:0}#lt-reading .lt-wrist-controls{grid-template-columns:1fr;gap:8px}#lt-reading .lt-wrist-controls output{display:inline;margin-left:10px}#lt-reading .lt-message{padding:14px 12px}#lt-reading .lt-message.lt-user{margin-left:0}}
 @media(pointer:coarse){#lt-reading .lt-concept{padding:4px 0}}
+#lt-reading .lt-rich h3{font-size:1.1em;margin:22px 0 10px}
+#lt-reading .lt-rich pre{max-width:100%;overflow:auto;padding:14px;background:var(--lt-bg);border-radius:7px;font-size:14px;line-height:1.5}
+#lt-reading .lt-rich code{font-size:.85em}
+#lt-reading .lt-rich li{margin:8px 0}
+#lt-reading .lt-request-status{font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;white-space:pre-wrap;margin:12px 0;color:var(--lt-muted)}
+#lt-reading .lt-call-usage{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:14px 0;color:var(--lt-muted)}
+#lt-reading .lt-call-usage summary{cursor:pointer}
+#lt-reading .lt-call-usage dl,#lt-reading .lt-usage-body>dl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:13px}
+#lt-reading .lt-call-usage dd,#lt-reading .lt-usage-body dd{margin:0;text-align:right}
+#lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-panel);color:var(--lt-ink)}
+#lt-reading .lt-usage-dialog::backdrop{background:rgba(0,0,0,.6)}
+#lt-reading .lt-usage-dialog>button{float:right}
 </style>
   <header class="lt-top">
     <div class="lt-brand"><i data-lucide="git-branch" aria-hidden="true"></i> Learning Threads</div>
-    <div class="lt-top-right"><details class="lt-view-menu"><summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Reading view</summary><div class="lt-view-options"><label for="lt-layout">Layout<select id="lt-layout"><option>Side by side</option><option>Visual below</option></select></label><label for="lt-text-size">Text size <output id="lt-size-value">19 px</output><input id="lt-text-size" type="range" min="17" max="24" value="19"></label><label class="lt-view-check"><input id="lt-surrounding" type="checkbox"> Show surrounding text</label></div></details></div>
+    <div class="lt-top-right"><button class="lt-action" type="button" data-action="usage">Usage</button><details class="lt-view-menu"><summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Reading view</summary><div class="lt-view-options"><label for="lt-layout">Layout<select id="lt-layout"><option>Side by side</option><option>Visual below</option></select></label><label for="lt-text-size">Text size <output id="lt-size-value">19 px</output><input id="lt-text-size" type="range" min="17" max="24" value="19"></label><label class="lt-view-check"><input id="lt-surrounding" type="checkbox"> Show surrounding text</label></div></details></div>
   </header>
   <div class="lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="export-study">Export backup</button> <button class="lt-action" type="button" data-action="retry-save">Retry save</button></div>
   <div class="lt-content">
@@ -230,9 +240,8 @@
             <div class="lt-ask-context" hidden></div>
             <textarea id="lt-question" rows="3" placeholder="What would you like to understand?"></textarea>
             <div class="lt-actions">
-              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="copy" aria-hidden="true"></i> Copy for Codex</button>
+              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="send" aria-hidden="true"></i> Ask Codex</button>
             </div>
-            <div class="lt-copy-fallback" hidden><label for="lt-copy-text">Question and context to copy</label><textarea id="lt-copy-text" readonly></textarea></div>
           </form>
           <div class="lt-qa-status" role="status" aria-live="polite"></div>
           <details class="lt-branches" hidden><summary>Discussions</summary><div class="lt-branch-list"></div></details>
@@ -253,6 +262,7 @@
     </footer>
   </div>
   <dialog class="lt-link-picker" aria-label="Choose a discussion"></dialog>
+  <dialog class="lt-usage-dialog" aria-label="Assistant usage"><button class="lt-action" type="button" data-action="close-usage">Close</button><div class="lt-usage-body"></div></dialog>
   <script>/* Browser persistence for one book. Cloud storage will sit behind this boundary. */
 (function (scope) {
   'use strict';
@@ -302,6 +312,8 @@
         checkHistory(m.noteHistory);checkHistory(m.history);
         check(m.noteEditBase===undefined||typeof m.noteEditBase==='string','Saved note edit is invalid.');
         check(m.editDraft===undefined||typeof m.editDraft==='string','Saved question edit is invalid.');
+        if(m.request)check(isObject(m.request)&&validId(m.request.id)&&['connecting','queued','running','completed','failed','waiting'].includes(m.request.state)&&isObject(m.request.payload)&&m.request.payload.id===m.request.id&&typeof m.request.payload.question==='string'&&isObject(m.request.payload.context),'Saved assistant request is invalid.');
+        if(m.requestId)check(validId(m.requestId),'Saved assistant reply identity is invalid.');
         if(m.sourceAnchor)checkAnchor(m.sourceAnchor,node.page);
         check(m.example===undefined || ['wrist','actuation','torque'].includes(m.example), 'Saved reply example is unknown.');
         if (m.visualization) check(['wrist','actuation','torque'].includes(m.visualization.type) && validId(m.visualization.sourceMessage) && Array.isArray(m.visualization.values) && m.visualization.values.length===3 && m.visualization.values.every(v=>Number.isFinite(v) && Math.abs(v)<=180), 'Saved reply visual is invalid.');
@@ -375,6 +387,59 @@
   const api={create,validate,KEY,BOOK,StudyStorageError};
   if (typeof module!=='undefined' && module.exports) module.exports=api;
   else scope.LearningStudyStore=api;
+})(globalThis);
+</script>
+  <script>(function(scope){
+  'use strict';
+  const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function inline(text){
+    const pattern=/(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g;
+    return text.split(pattern).map(part=>{
+      if(part.startsWith('`')&&part.endsWith('`'))return '<code>'+escape(part.slice(1,-1))+'</code>';
+      if(part.startsWith('**')&&part.endsWith('**'))return '<strong>'+escape(part.slice(2,-2))+'</strong>';
+      const link=part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+      if(link)return `<a href="${escape(link[2])}" target="_blank" rel="noopener noreferrer">${escape(link[1])}</a>`;
+      return escape(part);
+    }).join('');
+  }
+  function renderText(text){
+    const lines=String(text).split('\n'),blocks=[];let paragraph=[],list=[],code=null;
+    const flush=()=>{if(paragraph.length){blocks.push('<p>'+inline(paragraph.join('\n'))+'</p>');paragraph=[]}if(list.length){blocks.push('<ul>'+list.map(x=>'<li>'+inline(x)+'</li>').join('')+'</ul>');list=[]}};
+    for(const line of lines){
+      if(line.trimStart().startsWith('```')){flush();if(code!==null){blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');code=null}else code=[];continue}
+      if(code!==null){code.push(line);continue}
+      if(!line.trim()){flush();continue}
+      const heading=line.match(/^#{1,6}\s+(.+)$/),item=line.match(/^\s*(?:[-*]|\d+\.)\s+(.+)$/);
+      if(heading){flush();blocks.push('<h3>'+inline(heading[1])+'</h3>')}
+      else if(item){if(paragraph.length)flush();list.push(item[1])}
+      else{if(list.length)flush();paragraph.push(line)}
+    }
+    flush();if(code!==null)blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');return blocks.join('');
+  }
+  async function request(path,body){
+    let response;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+    try{response=await fetch(path,{method:body?'POST':'GET',headers:{'X-Learning-Threads':'1',...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store',signal:controller.signal})}
+    catch(error){throw new Error('Could not reach the assistant: '+error.message,{cause:error})}
+    finally{clearTimeout(timeout)}
+    const text=await response.text();let data;
+    try{data=JSON.parse(text)}catch{throw new Error('The assistant endpoint did not return JSON (HTTP '+response.status+'). Open the deployed preview.')}
+    if(!response.ok)throw new Error(data.error||'Assistant request failed (HTTP '+response.status+').');
+    return data;
+  }
+  async function run(payload,onUpdate){
+    let job=await request('/api/replies',payload);onUpdate(job);
+    while(['queued','running'].includes(job.status)){
+      await new Promise(resolve=>setTimeout(resolve,1500));
+      job=await request('/api/replies/'+encodeURIComponent(payload.id));onUpdate(job);
+    }
+    return job;
+  }
+  function usageHtml(call){
+    const u=call?.usage, count=k=>u?.[k]===null||u?.[k]===undefined?'Not reported':u[k].toLocaleString();
+    return `<dl><dt>Input tokens</dt><dd>${count('input_tokens')}</dd><dt>Cached input</dt><dd>${count('cached_input_tokens')}</dd><dt>Output tokens</dt><dd>${count('output_tokens')}</dd><dt>Reasoning output</dt><dd>${count('reasoning_output_tokens')}</dd><dt>Cost</dt><dd>Not reported</dd>${call?.model?`<dt>Model</dt><dd>${escape(call.model)}</dd>`:''}</dl>`;
+  }
+  const api={renderText,run,request,usageHtml};
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;
 })(globalThis);
 </script>
   <script>/* Exact source ranges and reversible edit records. No model calls. */
@@ -570,6 +635,8 @@ window.LearningThreadExamples = (() => {
     const q=s=>root.querySelector(s), qa=s=>[...root.querySelectorAll(s)];
     const threadExamples=window.LearningThreadExamples;
     const links=window.LearningStudyLinks;
+    const assistant=window.LearningAssistant;
+    const runningRequests=new Set();
     const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
     const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
     const paragraphs=[
@@ -597,7 +664,7 @@ window.LearningThreadExamples = (() => {
     const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
     const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
     const isMessageAnchor=a=>a?.kind==='message';
-    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.text}
+    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text)):message.text}
     function sourceText(anchor,nodes=conversations){return isMessageAnchor(anchor)?messageText(nodes.get(anchor.nodeId).messages.find(m=>m.id===anchor.messageId)):clean(paragraphs[anchor.page])}
     function allAnchors(){
       const entries=new Map();
@@ -676,6 +743,7 @@ window.LearningThreadExamples = (() => {
     function renderQA(){
       flushNoteEdits();
       const node=activeNode();
+      node.busy=node.messages.some(m=>m.request&&['queued','running','connecting'].includes(m.request.state));
       q('.lt-compose label').textContent=node.messages.length?'Ask a follow-up':stack.length?'Ask about '+node.title.toLowerCase():'Ask about this paragraph';
       q('.lt-messages').innerHTML=node.messages.map(renderMessage).join('');
       q('#lt-question').value=node.draft;
@@ -690,19 +758,21 @@ window.LearningThreadExamples = (() => {
     function renderMessage(m){
       const example=m.example?threadExamples.examples[m.example]:null;
       const label=m.role==='user'?'You':'Assistant';
-      const content=example?example.html():escapeText(m.text);
+      const content=example?example.html():m.kind==='live'?assistant.renderText(m.text):escapeText(m.text);
       const hasVisual=activeNode().messages.some(other=>other.visualization?.sourceMessage===m.id);
       return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}">
         <div class="lt-message-meta"><span>${label}</span></div>
         ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
-        ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example?'lt-rich':''}">${content}</div>`}
+        ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example||m.kind==='live'?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
+        ${m.usageRecord?`<details class="lt-call-usage"><summary>Usage</summary>${assistant.usageHtml(m.usageRecord)}</details>`:''}
+        ${m.request&&['connecting','queued','running','waiting','failed'].includes(m.request.state)?`<div class="lt-request-status" role="status">${m.request.error?escapeText(m.request.error):m.request.state==='queued'?'Queued…':'Thinking…'}</div>`:''}
         ${m.role==='assistant'?`<div class="lt-actions">
           ${m.visualKey?`<button class="lt-action" type="button" data-visualize="${m.id}"><i data-lucide="shapes" aria-hidden="true"></i>${hasVisual?'View visual':'Visualize'}</button>`:''}
           <button class="lt-action" type="button" data-follow="${m.id}">Ask follow-up</button>
           <button class="lt-action" type="button" data-branch-message="${m.id}"><i data-lucide="git-branch" aria-hidden="true"></i> Explore separately</button>
           <button class="lt-action" type="button" data-message-note="${m.id}" aria-expanded="${!!m.noteOpen}"><i data-lucide="pencil-line" aria-hidden="true"></i>${m.note?'Your note':'Note'}</button>
-        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}">Edit</button><button class="lt-action" type="button" data-copy-message="${m.id}">Copy for Codex</button></div>${historyHtml(m.history)}`:''}
+        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}" ${m.request&&['connecting','queued','running','waiting'].includes(m.request.state)?'disabled':''}>Edit</button>${!m.request||m.request.state==='failed'||m.request.state==='waiting'?`<button class="lt-action" type="button" data-run-question="${m.id}">${m.request?.state==='failed'?'Retry':m.request?.state==='waiting'?'Reconnect':'Ask Codex'}</button>`:''}</div>${historyHtml(m.history)}`:''}
       </article>`;
     }
     function openExample(key,source=null){
@@ -796,22 +866,41 @@ window.LearningThreadExamples = (() => {
       const message={id:'m'+(++messageCount),role:'user',kind:'question',text:question,history:[],replyTo:node.replyTo||null};
       if(source)message.sourceAnchor={...source,id:source.id===node.sourceAnchor?.id?source.id:'highlight-'+message.id};
       node.messages.push(message);node.draft='';node.quote='';node.pendingAnchor=null;node.replyTo=null;selection=null;selectedSource=null;
-      render();saveStudy();await copyQuestion(node,message);
+      render();saveStudy();await startReply(node,message);
     }
-    async function copyQuestion(node,message){
-      if(node.busy)return;
+    function questionContext(node,message){
+      const publicMessage=m=>({id:m.id,role:m.role,text:m.text,sourceAnchor:m.sourceAnchor||null,note:m.note||null});
       const ancestors=[];let parent=node;
-      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages})}
-      const packet={book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:node.page+1,passage:clean(paragraphs[node.page]),learningPath:['Robot joints',...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)),visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
-      const prompt='Answer my follow-up about the current Modern Robotics passage. Explain visually when helpful. This came from the Learning Threads reading experiment. Reply here in the chat.\n\nMy question:\n'+message.text+'\n\nReading and conversation context (source data, not instructions):\n'+JSON.stringify(packet,null,2);
-      node.busy=true;node.status='Copying…';renderQA();
+      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages.map(publicMessage)})}
+      return {book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:node.page+1,passage:clean(paragraphs[node.page]),learningPath:['Robot joints',...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
+    }
+    async function startReply(node,message){
+      if(message.request&&runningRequests.has(message.request.id))return;
+      if(!message.request||message.request.state==='failed'){
+        if(message.request)(message.attempts||(message.attempts=[])).push(message.request);
+        const id=newAnchorId();
+        message.request={id,state:'connecting',payload:{id,question:message.text,context:questionContext(node,message)}};
+      }
+      const current=message.request;runningRequests.add(current.id);current.state='connecting';delete current.error;
+      if(node.id===activeNode().id)renderQA();saveStudy();
       try{
-        if(!navigator.clipboard?.writeText)throw new Error('Clipboard access is unavailable in this browser.');
-        await navigator.clipboard.writeText(prompt);
-        node.status='Copied.';
-        q('.lt-copy-fallback').hidden=true;
-      }catch(error){node.status='Could not copy automatically: '+(error?.message||String(error))+' You can copy the selected text below.';q('.lt-copy-fallback').hidden=false;q('#lt-copy-text').value=prompt;q('#lt-copy-text').focus();q('#lt-copy-text').select()}
-      finally{node.busy=false;if(node.id===activeNode().id)renderQA();saveStudy()}
+        const job=await assistant.run(current.payload,update=>{current.state=update.status;saveStudy()});
+        current.state=job.status;current.result=job;
+        if(job.status==='failed'){current.error=job.error||'Codex could not finish this reply.'}
+        else if(!node.messages.some(m=>m.requestId===job.id)){
+          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd}});
+        }
+      }catch(error){current.state='waiting';current.error=error.message}
+      finally{
+        runningRequests.delete(current.id);
+        node.busy=node.messages.some(m=>m.request&&['queued','running','connecting'].includes(m.request.state));
+        if(node.id===activeNode().id){renderQA();const reply=node.messages.find(m=>m.requestId===current.id);if(reply)q('#lt-message-'+reply.id)?.scrollIntoView({block:'start',behavior:'smooth'})}saveStudy();
+      }
+    }
+    async function showUsage(){
+      const dialog=q('.lt-usage-dialog'),body=q('.lt-usage-body');body.textContent='Loading…';dialog.showModal();
+      try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
+      catch(error){body.textContent=error.message}
     }
     const design={layout:'Side by side',textSize:19,surrounding:false};
     function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
@@ -931,10 +1020,10 @@ window.LearningThreadExamples = (() => {
       if(q('.lt-link-picker').contains(btn))q('.lt-link-picker').close();
       if(btn.dataset.openSourceThread){openSourceThread(btn.dataset.openSourceThread);return}
       if(btn.dataset.sourceReturn){returnToSource(btn.dataset.sourceReturn);return}
-      if(btn.dataset.editMessage){const m=activeNode().messages.find(m=>m.id===btn.dataset.editMessage);m.editing=true;m.editDraft=m.text;renderQA();q('#lt-edit-'+m.id).focus();return}
+      if(btn.dataset.editMessage){const m=activeNode().messages.find(m=>m.id===btn.dataset.editMessage);if(m.request&&['connecting','queued','running','waiting'].includes(m.request.state))return;m.editing=true;m.editDraft=m.text;renderQA();q('#lt-edit-'+m.id).focus();return}
       if(btn.dataset.cancelQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.cancelQuestion);m.editing=false;delete m.editDraft;renderQA();return}
-      if(btn.dataset.saveQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.saveQuestion),text=m.editDraft.trim();if(!text)return;m.text=links.revise(m.history||(m.history=[]),m.text,text);m.editing=false;delete m.editDraft;renderQA();return}
-      if(btn.dataset.copyMessage){copyQuestion(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.copyMessage));return}
+      if(btn.dataset.saveQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.saveQuestion),text=m.editDraft.trim();if(!text)return;if(m.text!==text&&m.request){(m.attempts||(m.attempts=[])).push(m.request);delete m.request}m.text=links.revise(m.history||(m.history=[]),m.text,text);m.editing=false;delete m.editDraft;renderQA();return}
+      if(btn.dataset.runQuestion){startReply(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.runQuestion));return}
       if(btn.dataset.highlightReturn){returnToHighlight(btn.dataset.highlightReturn);return}
       if(btn.dataset.concept){const content=btn.closest('.lt-message-content');let source=null;if(content){const range=document.createRange();range.selectNodeContents(btn);source=captureSource(content,range,btn.closest('[data-message]').dataset.message)}openExample(btn.dataset.concept,source);q('h2').scrollIntoView({block:'start'});return}
       if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}
@@ -951,6 +1040,8 @@ window.LearningThreadExamples = (() => {
       }
       if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
       const action=btn.dataset.action;
+      if(action==='usage'){showUsage();return}
+      if(action==='close-usage'){q('.lt-usage-dialog').close();return}
       if(action==='export-study'){exportStudy();return}
       if(action==='retry-save'){saveStudy();return}
       if(action==='open-wrist'){openWrist();q('h2').scrollIntoView({block:'start'});return}
@@ -1024,7 +1115,7 @@ window.LearningThreadExamples = (() => {
     if(!resumed&&new URLSearchParams(location.search).get('example')==='wrist')openWrist();
     if(!resumed&&new URLSearchParams(location.search).get('example')==='highlight'){openWrist();returnToHighlight(activeNode().id)}
     restoreReadingPosition();
-    requestAnimationFrame(()=>{studyReady=true;if(studyLoaded)saveStudy()});
+    requestAnimationFrame(()=>{studyReady=true;if(studyLoaded){saveStudy();for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
     // Save each edit synchronously after the existing action handler has run.
     for(const event of ['click','input','change','submit'])root.addEventListener(event,()=>queueMicrotask(saveStudy));
     let scrollSave=0;window.addEventListener('scroll',()=>{cancelAnimationFrame(scrollSave);scrollSave=requestAnimationFrame(saveStudy)},{passive:true});
