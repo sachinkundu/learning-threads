@@ -48,7 +48,7 @@ test('a stale tab cannot silently overwrite a newer saved session',()=>{
   assert.equal(b.backup(bState).state.notes[1],'Other tab edit');
 });
 test('corruption and future formats are not silently reset',()=>{
-  for(const raw of ['{broken',JSON.stringify({version:2,book:BOOK,state:fixture()})]){
+  for(const raw of ['{broken',JSON.stringify({version:3,book:BOOK,state:fixture()})]){
     const disk=storage();disk.setItem(KEY,raw);const store=create(()=>disk);
     assert.throws(()=>store.load(),/left untouched/);
     assert.throws(()=>store.save(fixture()),/could not be opened/);
@@ -64,4 +64,23 @@ test('blocked browser storage reports the original error and still permits a bac
   const cause=new DOMException('Denied','SecurityError');const store=create(()=>{throw cause});
   assert.throws(()=>store.load(),e=>e.cause===cause && /Export a backup/.test(e.message));
   const backup=store.backup(fixture());assert.match(backup.storageError,/unavailable/);assert.deepEqual(backup.state,fixture());
+});
+
+test('version 1 study opens without a reset and upgrades only on a successful save',()=>{
+  const disk=storage(),state=fixture();
+  const original=JSON.stringify({version:1,book:BOOK,revision:7,state});disk.setItem(KEY,original);
+  const store=create(()=>disk);assert.deepEqual(store.load(),state);assert.equal(disk.getItem(KEY),original);
+  state.noteHistory=[[],[]];state.noteEdits=[null,null];store.save(state);
+  assert.equal(JSON.parse(disk.getItem(KEY)).version,2);
+  assert.equal(JSON.parse(disk.getItem(KEY)).revision,8);
+  assert.deepEqual(create(()=>disk).load().conversations,state.conversations);
+});
+test('reply anchors and revision histories survive reopening and reject missing source replies',()=>{
+  const disk=storage(),store=create(()=>disk),state=fixture();store.load();
+  state.conversations[3].sourceAnchor={id:'highlight-b2',book:BOOK,page:1,kind:'message',nodeId:'b1',messageId:'m2',sourceRevision:0,start:0,end:3,quote:'One'};
+  state.noteHistory=[[{text:'My first thought',at:'2026-09-14T10:00:00.000Z'}],[]];state.noteEdits=[state.notes[0],null];
+  state.conversations[2].messages[0].history=[{text:'An earlier question',at:'2026-09-14T10:01:00.000Z'}];
+  store.save(state);assert.deepEqual(create(()=>disk).load(),state);
+  state.conversations[3].sourceAnchor.messageId='missing';assert.throws(()=>store.save(state),/lost its reply/);
+  assert.equal(create(()=>disk).load().conversations[3].sourceAnchor.messageId,'m2');
 });

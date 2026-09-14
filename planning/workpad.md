@@ -81,5 +81,65 @@ Limits:
 - Answers remain prepared examples and the question action is still a copy
   handoff. SAC-194 and SAC-195 must ship together before the assistant release
   is complete. No token cost is claimed for this sample content.
-- General selected-text thread anchors and revision history are SAC-192.
+- General selected-text thread anchors and revision history followed in SAC-192.
 - Two paragraphs remain loaded. Full chapter/source checking is SAC-196.
+
+User acceptance: after testing the working Tailscale address on sixsac, the user
+confirmed "all this works and looks good." This accepts the SAC-191 reading and
+saved-study flow. Continued with the next prioritized issue, SAC-192.
+
+## SAC-192: exact highlights and revision history
+
+Implemented on `feat/sac-192-source-linked-threads`.
+
+- Book and answer selections store exact offsets, source identity, the selected
+  quote, and surrounding text. Repeated phrases remain distinct. Each saved
+  question carries its source link; a thread returns to that exact range.
+- Book selections open a dedicated question thread. Ordinary answer follow-ups
+  stay in the same thread. Explore separately keeps a parent link to the answer.
+- Overlapping highlights retain every question. A chooser appears only where
+  more than one discussion or an original joint/citation action shares the text.
+  No nested buttons or links are introduced.
+- Copy for Codex now saves the question before handing it off. Saved questions
+  can be edited or copied again. Earlier wording remains in History. Paragraph
+  and answer notes record earlier text when an edit ends; unfinished edits also
+  survive a reload.
+- Version 2 snapshots accept existing version 1 data without resetting it.
+  Missing reply sources and changed source text fail visibly before any saved
+  copy is overwritten.
+
+Browser validation used a separate origin on port 63403, leaving the user's
+saved study untouched:
+
+- Selected a book phrase, saved a question, edited its wording, and reopened
+  History after reload. The original question remained.
+- Created a second overlapping selection. Its chooser opened the intended
+  question. DOM inspection found no nested links or buttons.
+- Edited a paragraph note and reloaded. Both the current note and its earlier
+  version remained.
+- Selected a phrase in the wrist answer, opened a separate thread, saved a
+  question, returned to the exact answer highlight, and reopened the question.
+  Reload preserved the source link and question. The copied context contained
+  its exact answer source and ancestor conversations.
+- Followed Wrist -> Actuation -> Torque. Back to highlight returned to each
+  source word. The torque visual and edited answer note survived reload.
+- Saved a selected-text follow-up inside Actuation. It stayed in that thread,
+  and its source-return action focused the matching answer highlight.
+- The highlighted spherical-joint term retained both its discussion and its
+  original joint control. The browser reported no errors or storage failures.
+
+Scope remains browser storage and the copy handoff. Live replies and usage are
+SAC-194/SAC-195; private Cloudflare hosting and device sync are next in SAC-193.
+
+Release verification, 2026-09-14:
+
+- All 12 Node checks passed. All five generated inline scripts parsed and
+  matched their CSP hashes. `git diff --check` passed.
+- Published the built artifact with `scripts/deploy-tailscale.py`. The working
+  address http://100.117.88.81:8080/ returned HTTP 200 and bytes identical to
+  the build (SHA-256 `aad789b13fd799a433ecfd62144d3db9a66fd9eefd794eb98541d5d5b3499f11`).
+- Opened the deployed direct address in the in-app browser and confirmed the
+  reading page rendered. This update has host-side browser verification; the
+  user's acceptance above applies to the previous build.
+- Read back Tailscale configuration: the 8080 forward and both existing HTTPS
+  routes on 443 and 8443 remain intact.

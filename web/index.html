@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-4X9qWhi8hl3vqB0spxbMcGLLq4TP9iH5xgrbGcPwoIY=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-73JwQEAFc6wIlndpcR0W+yQllArb4be0ayDopRNFlmI=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hKeqOnbyXO8G9VT2JEuUjA1y9jYEOCJXGfBLqndosqs=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-UbGTCslikq5/IZqfDH1dp7htVWGLKDBREI0xRFKa3bY=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -155,6 +155,17 @@
 #lt-reading .lt-highlight-origin mark{padding:2px 0;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 #lt-reading .lt-highlight-origin:hover mark{filter:brightness(1.1)}
 #lt-reading .lt-highlight-origin:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px;border-radius:3px}
+#lt-reading .lt-rich a.lt-highlight-origin{font:inherit;color:inherit;text-decoration:none}
+#lt-reading .lt-link-picker{max-width:min(460px,90vw);max-height:75vh;overflow:auto;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-surface);color:var(--lt-ink);padding:16px}
+#lt-reading .lt-link-picker::backdrop{background:#0006}
+#lt-reading .lt-link-picker .lt-action{display:block;text-align:left;margin:8px 0;width:100%;white-space:normal}
+#lt-reading .lt-revisions{margin-top:12px;font-size:12px;color:var(--lt-muted)}
+#lt-reading .lt-revisions summary{cursor:pointer;padding:6px 0}
+#lt-reading .lt-revisions time{display:block;margin-top:10px}
+#lt-reading .lt-revisions blockquote{margin:6px 0 16px;padding-left:10px;border-left:2px solid var(--lt-line);white-space:pre-wrap;font-size:15px;color:var(--lt-ink)}
+#lt-reading .lt-question-edit label{display:block;font-size:12px;margin-bottom:8px}
+#lt-reading .lt-question-edit textarea{width:100%;min-height:90px;font-size:16px;line-height:1.5;padding:10px;border:1px solid var(--lt-line);border-radius:7px;background:var(--lt-bg);color:var(--lt-ink)}
+#lt-reading .lt-quote-return{background:none;border:0;border-left:2px solid var(--lt-teal);text-align:left;font:inherit;text-decoration:underline;text-underline-offset:3px}
 #lt-reading .lt-linked-origin{border:1px solid var(--lt-line);border-radius:8px;padding:10px 13px}
 #lt-reading .lt-linked-origin blockquote{border:0;padding:0;margin-bottom:4px}
 #lt-reading .lt-message.lt-visual-message{background:transparent;border:1px solid var(--lt-line)}
@@ -206,7 +217,7 @@
             <button class="lt-action" type="button" data-action="note"><i data-lucide="pencil-line" aria-hidden="true"></i> Note</button>
             <button class="lt-action" type="button" data-action="highlight">Highlight selection</button>
           </div>
-          <div class="lt-note" hidden><label for="lt-note-text">Note on this paragraph</label><textarea id="lt-note-text" placeholder="Write what you want to return to…"></textarea></div>
+          <div class="lt-note" hidden><label for="lt-note-text">Note on this paragraph</label><textarea id="lt-note-text" placeholder="Write what you want to return to…"></textarea><div class="lt-paragraph-history"></div></div>
           <div class="lt-feedback" aria-live="polite"></div>
           <button class="lt-quiet" type="button" data-action="context" aria-expanded="false">Show surrounding text</button>
           <div class="lt-context" hidden><div class="lt-sectionlabel">Next paragraph</div><div class="lt-context-text"></div></div>
@@ -241,6 +252,7 @@
       <div class="lt-nav"><button class="lt-action" type="button" data-action="previous">Previous</button><button class="lt-action lt-primary" type="button" data-action="next">Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
     </footer>
   </div>
+  <dialog class="lt-link-picker" aria-label="Choose a discussion"></dialog>
   <script>/* Browser persistence for one book. Cloud storage will sit behind this boundary. */
 (function (scope) {
   'use strict';
@@ -253,6 +265,12 @@
   const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
   const isPage = value => value === 0 || value === 1;
   const validId = value => typeof value === 'string' && /^[a-z][a-z0-9-]*$/i.test(value);
+  const checkHistory = history => check(history===undefined || (Array.isArray(history) && history.every(r=>isObject(r)&&typeof r.text==='string'&&typeof r.at==='string'&&Number.isFinite(Date.parse(r.at)))), 'Saved revision history is invalid.');
+  function checkAnchor(a,page){
+    check(isObject(a)&&validId(a.id)&&a.book===BOOK&&a.page===page&&typeof a.quote==='string'&&Number.isInteger(a.start)&&a.start>=0&&a.end===a.start+a.quote.length&&a.quote.length>0,'Saved source highlight is invalid.');
+    check(a.kind===undefined||['book','message'].includes(a.kind),'Saved source type is invalid.');
+    if(a.kind==='message')check(validId(a.nodeId)&&validId(a.messageId)&&a.sourceRevision===0,'Saved reply source is invalid.');
+  }
   const limits = {R:[[-140,140]],P:[[0,100]],H:[[0,360]],C:[[-140,140],[0,100]],U:[[-60,60],[-60,60]],S:[[-60,60],[-60,60],[-140,140]]};
   function checkVisual(visual) {
     check(isObject(visual) && Object.hasOwn(limits, visual.joint), 'Saved joint is invalid.');
@@ -262,6 +280,8 @@
   function validate(state) {
     check(isObject(state) && isPage(state.page), 'Saved reading place is invalid.');
     check(Array.isArray(state.notes) && state.notes.length===2 && state.notes.every(n=>typeof n==='string'), 'Saved notes are invalid.');
+    if(state.noteHistory!==undefined){check(Array.isArray(state.noteHistory)&&state.noteHistory.length===2,'Saved note history is invalid.');state.noteHistory.forEach(checkHistory)}
+    if(state.noteEdits!==undefined)check(Array.isArray(state.noteEdits)&&state.noteEdits.length===2&&state.noteEdits.every(n=>n===null||typeof n==='string'),'Saved note edit is invalid.');
     check(Array.isArray(state.noteOpen) && state.noteOpen.length===2 && state.noteOpen.every(n=>typeof n==='boolean'), 'Saved note view is invalid.');
     check(Array.isArray(state.read) && state.read.every(isPage), 'Saved read marks are invalid.');
     check(Array.isArray(state.highlights) && state.highlights.length===2 && state.highlights.every(list=>Array.isArray(list) && list.every(h=>isObject(h) && Number.isInteger(h.start) && h.start>=0 && Number.isInteger(h.end) && h.end>h.start && typeof h.quote==='string' && h.quote.length===h.end-h.start)), 'Saved highlights are invalid.');
@@ -274,13 +294,15 @@
       check(isObject(node) && validId(node.id) && !nodes.has(node.id) && isPage(node.page), 'Saved thread identity is invalid.');
       check(typeof node.title==='string' && typeof node.draft==='string' && typeof node.quote==='string' && Array.isArray(node.messages) && Array.isArray(node.path), 'Saved thread content is invalid.');
       if (node.visual) checkVisual(node.visual);
-      if (node.sourceAnchor) {
-        const a=node.sourceAnchor;
-        check(validId(a.id) && a.book===BOOK && a.page===node.page && typeof a.quote==='string' && Number.isInteger(a.start) && a.start>=0 && a.end===a.start+a.quote.length && a.quote.length>0, 'Saved source highlight is invalid.');
-      }
+      if(node.sourceAnchor)checkAnchor(node.sourceAnchor,node.page);
+      if(node.pendingAnchor)checkAnchor(node.pendingAnchor,node.page);
       for (const m of node.messages) {
         check(isObject(m) && validId(m.id) && !messageIds.has(m.id) && ['user','assistant'].includes(m.role) && typeof m.text==='string', 'Saved reply is invalid.');
         check(m.note===undefined || typeof m.note==='string', 'Saved reply note is invalid.');
+        checkHistory(m.noteHistory);checkHistory(m.history);
+        check(m.noteEditBase===undefined||typeof m.noteEditBase==='string','Saved note edit is invalid.');
+        check(m.editDraft===undefined||typeof m.editDraft==='string','Saved question edit is invalid.');
+        if(m.sourceAnchor)checkAnchor(m.sourceAnchor,node.page);
         check(m.example===undefined || ['wrist','actuation','torque'].includes(m.example), 'Saved reply example is unknown.');
         if (m.visualization) check(['wrist','actuation','torque'].includes(m.visualization.type) && validId(m.visualization.sourceMessage) && Array.isArray(m.visualization.values) && m.visualization.values.length===3 && m.visualization.values.every(v=>Number.isFinite(v) && Math.abs(v)<=180), 'Saved reply visual is invalid.');
         messageIds.add(m.id);
@@ -289,6 +311,12 @@
     }
     check(nodes.get('p0')?.page===0 && !nodes.get('p0').parent && nodes.get('p1')?.page===1 && !nodes.get('p1').parent, 'Saved paragraph threads are missing.');
     for (const node of nodes.values()) {
+      for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean)){
+        if(a.kind==='message'){
+          const source=nodes.get(a.nodeId),message=source?.messages.find(m=>m.id===a.messageId);
+          check(source?.page===node.page&&message?.role==='assistant','A saved highlight has lost its reply.');
+        }
+      }
       const seen=new Set(); let cursor=node;
       while (cursor.parent) {
         check(!seen.has(cursor.id), 'Saved threads contain a cycle.'); seen.add(cursor.id);
@@ -320,7 +348,7 @@
         if (raw===null) { baseline=null;loaded=true;return null; }
         try {
           const envelope=JSON.parse(raw);
-          check(envelope.version===1 && envelope.book===BOOK && Number.isSafeInteger(envelope.revision) && envelope.revision>0, 'Saved study format is not supported.');
+          check([1,2].includes(envelope.version) && envelope.book===BOOK && Number.isSafeInteger(envelope.revision) && envelope.revision>0, 'Saved study format is not supported.');
           const state=validate(envelope.state);
           baseline=raw;revision=envelope.revision;previousState=JSON.stringify(state);loaded=true;
           return state;
@@ -332,7 +360,7 @@
         check(read()===baseline, 'Study changed in another tab. Export this tab’s work before reloading.');
         const serialized=JSON.stringify(state);
         if (serialized===previousState) return revision;
-        const next=JSON.stringify({version:1,book:BOOK,revision:revision+1,updatedAt:new Date().toISOString(),state});
+        const next=JSON.stringify({version:2,book:BOOK,revision:revision+1,updatedAt:new Date().toISOString(),state});
         try { getStorage().setItem(KEY,next); }
         catch(error) { throw new StudyStorageError('Could not save study in this browser. Your changes are still on this page. Export a backup and free some storage, then retry.',error); }
         baseline=next;previousState=serialized;revision++;return revision;
@@ -340,13 +368,79 @@
       backup(state) {
         let stored=null,error=null;
         try { stored=read(); } catch(e) { error=e.message; }
-        return {version:1,book:BOOK,exportedAt:new Date().toISOString(),state,stored,storageError:error};
+        return {version:2,book:BOOK,exportedAt:new Date().toISOString(),state,stored,storageError:error};
       }
     };
   }
   const api={create,validate,KEY,BOOK,StudyStorageError};
   if (typeof module!=='undefined' && module.exports) module.exports=api;
   else scope.LearningStudyStore=api;
+})(globalThis);
+</script>
+  <script>/* Exact source ranges and reversible edit records. No model calls. */
+(function(scope){
+  'use strict';
+  function anchor(text,start,end,source){
+    if(typeof text!=='string'||!Number.isInteger(start)||!Number.isInteger(end)||start<0||end>text.length||end<=start)throw new Error('Select text within one passage or reply.');
+    const quote=text.slice(start,end);
+    return {...source,start,end,quote,prefix:text.slice(Math.max(0,start-40),start),suffix:text.slice(end,end+40)};
+  }
+  function capture(container,range,source){
+    if(!container.contains(range.startContainer)||!container.contains(range.endContainer))throw new Error('Select text within one passage or reply.');
+    const before=range.cloneRange();before.selectNodeContents(container);before.setEnd(range.startContainer,range.startOffset);
+    const raw=range.toString(),start=before.toString().length+raw.length-raw.trimStart().length;
+    return anchor(container.textContent,start,start+raw.trim().length,source);
+  }
+  function segments(length,entries){
+    const points=[...new Set([0,length,...entries.flatMap(e=>[e.anchor.start,e.anchor.end])])].sort((a,b)=>a-b);
+    return points.slice(0,-1).map((start,i)=>({start,end:points[i+1],entries:entries.filter(e=>e.anchor.start<=start&&e.anchor.end>=points[i+1])})).filter(s=>s.end>s.start);
+  }
+  function revise(history,before,after,at=new Date().toISOString()){
+    if(before!==after&&before.trim()&&history.at(-1)?.text!==before)history.push({text:before,at});
+    return after;
+  }
+  function decorate(container,entries){
+    if(!entries.length)return;
+    const text=container.textContent;
+    for(const entry of entries)if(text.slice(entry.anchor.start,entry.anchor.end)!==entry.anchor.quote)throw new Error('A thread highlight no longer matches its source.');
+    const controls=[];
+    for(const control of [...container.querySelectorAll('a,button')]){
+      const before=document.createRange();before.selectNodeContents(container);before.setEndBefore(control);
+      const start=before.toString().length,end=start+control.textContent.length;
+      if(!entries.some(e=>e.anchor.start<end&&e.anchor.end>start))continue;
+      const action=control.dataset.joint?{joint:control.dataset.joint}:control.dataset.concept?{concept:control.dataset.concept}:control.tagName==='A'?{href:control.getAttribute('href')}:null;
+      controls.push({start,end,element:control.cloneNode(false),action});
+      control.replaceWith(...control.childNodes);
+    }
+    // Split text nodes at all boundaries. Overlapping highlights share one link
+    // segment instead of creating nested links or damaging the source markup.
+    const boundaries=new Set(segments(text.length,entries).flatMap(s=>[s.start,s.end]));
+    for(const c of controls){boundaries.add(c.start);boundaries.add(c.end)}
+    const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT),nodes=[];
+    let node,offset=0;while((node=walker.nextNode())){nodes.push({node,start:offset,end:offset+node.length});offset+=node.length}
+    for(const part of nodes){
+      const cuts=[part.start,...[...boundaries].filter(p=>p>part.start&&p<part.end).sort((a,b)=>a-b),part.end];
+      const fragment=document.createDocumentFragment();
+      for(let i=0;i<cuts.length-1;i++){
+        const start=cuts[i],end=cuts[i+1],value=text.slice(start,end);
+        if(end<=start)continue;
+        const linked=entries.filter(e=>e.anchor.start<=start&&e.anchor.end>=end);
+        const control=controls.find(c=>c.start<=start&&c.end>=end);
+        let element;
+        if(linked.length){
+          element=document.createElement('a');element.href='#'+linked[0].anchor.id;element.draggable=false;element.className='lt-highlight-origin';element.dataset.sourceLinks=linked.map(e=>e.anchor.id).join(' ');
+          element.setAttribute('aria-label','Highlighted text: '+value+'. '+linked.map(e=>e.title).join('; '));
+          if(control?.action)element.dataset.sourceAction=JSON.stringify(control.action);
+          const mark=document.createElement('mark');mark.textContent=value;element.append(mark);
+        }else if(control){element=control.element.cloneNode(false);element.removeAttribute('id');element.textContent=value}
+        else element=document.createTextNode(value);
+        fragment.append(element);
+      }
+      part.node.replaceWith(fragment);
+    }
+  }
+  const api={anchor,capture,segments,revise,decorate};
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningStudyLinks=api;
 })(globalThis);
 </script>
   <script>/* Prepared content for reviewing the thread experience. No model calls. */
@@ -475,6 +569,7 @@ window.LearningThreadExamples = (() => {
     const root=document.getElementById('lt-reading');
     const q=s=>root.querySelector(s), qa=s=>[...root.querySelectorAll(s)];
     const threadExamples=window.LearningThreadExamples;
+    const links=window.LearningStudyLinks;
     const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
     const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
     const paragraphs=[
@@ -492,6 +587,7 @@ window.LearningThreadExamples = (() => {
       S:{controls:[['Tilt',-60,60,'°'],['Swing',-60,60,'°'],['Twist',-140,140,'°']],caption:'The link can turn about three axes through the joint.',dof:3}
     };
     let page=0,joint='R',stack=[],read=new Set(),notes=['',''],noteOpen=[false,false],highlights=[[],[]],feedback='',animation=0,context=false;
+    let noteHistory=[[],[]],noteEdits=[null,null];
     let selection=null;
     let selectedSource=null,branchCount=0,messageCount=0;
     const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
@@ -499,12 +595,29 @@ window.LearningThreadExamples = (() => {
     conversations.get('p1').page=1;
     const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
     const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+    const isMessageAnchor=a=>a?.kind==='message';
+    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.text}
+    function sourceText(anchor,nodes=conversations){return isMessageAnchor(anchor)?messageText(nodes.get(anchor.nodeId).messages.find(m=>m.id===anchor.messageId)):clean(paragraphs[anchor.page])}
+    function allAnchors(){
+      const entries=new Map();
+      for(const node of conversations.values()){
+        if(node.sourceAnchor)entries.set(node.sourceAnchor.id,{anchor:node.sourceAnchor,nodeId:node.id,title:node.title});
+        for(const m of node.messages)if(m.sourceAnchor)entries.set(m.sourceAnchor.id,{anchor:m.sourceAnchor,nodeId:node.id,messageId:m.id,title:m.text});
+      }
+      return [...entries.values()];
+    }
+    function historyHtml(history){return history?.length?`<details class="lt-revisions"><summary>History</summary>${[...history].reverse().map(r=>`<time datetime="${escapeText(r.at)}">${escapeText(new Date(r.at).toLocaleString())}</time><blockquote>${escapeText(r.text)}</blockquote>`).join('')}</details>`:''}
+    function flushNoteEdits(){
+      for(let i=0;i<notes.length;i++)if(noteEdits[i]!==null){links.revise(noteHistory[i],noteEdits[i],notes[i]);noteEdits[i]=null}
+      for(const node of conversations.values())for(const m of node.messages)if(m.noteEditBase!==undefined){links.revise(m.noteHistory||(m.noteHistory=[]),m.noteEditBase,m.note||'');delete m.noteEditBase}
+    }
     function rememberVisual(){activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
     function restoreReadingPosition(){const y=activeNode().scrollY||0;requestAnimationFrame(()=>window.scrollTo(0,y))}
     const studyStore=LearningStudyStore.create(()=>window.localStorage);
     let studyReady=false,studyLoaded=false,lastStorageError='';
     function studySnapshot(){
-      return {page,activeId:activeNode().id,joint,states,read:[...read],notes,noteOpen,highlights,design,
+      return {page,activeId:activeNode().id,joint,states,read:[...read],notes,noteOpen,noteHistory,noteEdits,highlights,design,
         conversations:[...conversations.values()].map(node=>({...node,busy:false,status:''}))};
     }
     function showStorageError(error){
@@ -524,8 +637,10 @@ window.LearningThreadExamples = (() => {
         const saved=studyStore.load();studyLoaded=true;if(!saved)return false;
         // Never reattach an old highlight if a source passage has changed.
         for(let p=0;p<paragraphs.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
-        for(const node of saved.conversations)if(node.sourceAnchor){const a=node.sourceAnchor;if(clean(paragraphs[a.page]).slice(a.start,a.end)!==a.quote)throw new Error('A saved thread no longer matches its source. Export a backup.');}
+        const savedNodes=new Map(saved.conversations.map(n=>[n.id,n]));
+        for(const node of saved.conversations)for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean))if(sourceText(a,savedNodes).slice(a.start,a.end)!==a.quote)throw new Error('A saved thread no longer matches its source. Export a backup.');
         page=saved.page;joint=saved.joint;Object.assign(states,saved.states);read=new Set(saved.read);notes=saved.notes;noteOpen=saved.noteOpen;highlights=saved.highlights;Object.assign(design,saved.design);
+        noteHistory=saved.noteHistory||[[],[]];noteEdits=saved.noteEdits||[null,null];
         conversations.clear();for(const node of saved.conversations)conversations.set(node.id,{...node,busy:false,status:''});
         stack=conversations.get(saved.activeId).path.map(step=>({...step,restoreValues:[...step.restoreValues]}));
         branchCount=Math.max(0,...[...conversations.keys()].map(id=>/^b\d+$/.test(id)?+id.slice(1):0));
@@ -534,7 +649,7 @@ window.LearningThreadExamples = (() => {
       }catch(error){studyLoaded=false;showStorageError(error);return false}
     }
     function exportStudy(){
-      rememberVisual();
+      flushNoteEdits();rememberVisual();
       const blob=new Blob([JSON.stringify(studyStore.backup(studySnapshot()),null,2)],{type:'application/json'});
       const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='learning-threads-'+new Date().toISOString().slice(0,10)+'.json';link.click();
       setTimeout(()=>URL.revokeObjectURL(url),30000);
@@ -559,6 +674,7 @@ window.LearningThreadExamples = (() => {
       box.innerHTML=(node.quote?`<span>Selected text</span><blockquote>${escapeText(node.quote)}</blockquote>`:message?'<span>Following up on the selected reply</span>':'')+`<div class="lt-context-actions"><button type="button" data-action="clear-ask-context">Clear selection</button><button type="button" data-action="branch-selection">Explore separately <span aria-hidden="true">↗</span></button></div>`;
     }
     function renderQA(){
+      flushNoteEdits();
       const node=activeNode();
       q('.lt-compose label').textContent=node.messages.length?'Ask a follow-up':stack.length?'Ask about '+node.title.toLowerCase():'Ask about this paragraph';
       q('.lt-messages').innerHTML=node.messages.map(renderMessage).join('');
@@ -569,6 +685,7 @@ window.LearningThreadExamples = (() => {
       q('.lt-branches').hidden=!children.length||!!stack.length;
       q('.lt-branch-list').innerHTML=children.map(n=>`<button type="button" data-reopen="${n.id}" style="padding-left:${8+Math.min(n.path.length-1,4)*14}px"><i data-lucide="git-branch" aria-hidden="true"></i>${escapeText(n.title)}${n.id===node.id?' · here':''}</button>`).join('');
       renderAskContext();icons();threadExamples.drawVisuals(q('.lt-messages'),node.messages);
+      for(const m of node.messages){const content=q(`#lt-message-${m.id} .lt-message-content`);if(content)links.decorate(content,allAnchors().filter(e=>isMessageAnchor(e.anchor)&&e.anchor.nodeId===node.id&&e.anchor.messageId===m.id));}
     }
     function renderMessage(m){
       const example=m.example?threadExamples.examples[m.example]:null;
@@ -577,18 +694,18 @@ window.LearningThreadExamples = (() => {
       const hasVisual=activeNode().messages.some(other=>other.visualization?.sourceMessage===m.id);
       return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}">
         <div class="lt-message-meta"><span>${label}</span></div>
-        ${m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
-        ${m.visualization?'':`<div class="lt-message-content ${example?'lt-rich':''}">${content}</div>`}
+        ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
+        ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
         ${m.role==='assistant'?`<div class="lt-actions">
           ${m.visualKey?`<button class="lt-action" type="button" data-visualize="${m.id}"><i data-lucide="shapes" aria-hidden="true"></i>${hasVisual?'View visual':'Visualize'}</button>`:''}
           <button class="lt-action" type="button" data-follow="${m.id}">Ask follow-up</button>
           <button class="lt-action" type="button" data-branch-message="${m.id}"><i data-lucide="git-branch" aria-hidden="true"></i> Explore separately</button>
           <button class="lt-action" type="button" data-message-note="${m.id}" aria-expanded="${!!m.noteOpen}"><i data-lucide="pencil-line" aria-hidden="true"></i>${m.note?'Your note':'Note'}</button>
-        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea></div>`:''}
+        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}">Edit</button><button class="lt-action" type="button" data-copy-message="${m.id}">Copy for Codex</button></div>${historyHtml(m.history)}`:''}
       </article>`;
     }
-    function openExample(key){
+    function openExample(key,source=null){
       const example=threadExamples.examples[key];if(!example)return;
       const parent=activeNode();
       const existing=[...conversations.values()].find(n=>n.parent===parent.id&&n.example===key);
@@ -596,6 +713,7 @@ window.LearningThreadExamples = (() => {
       enter('custom',example.title,example.quote);
       const node=activeNode();node.example=key;
       if(key==='wrist')node.sourceAnchor=makeBookAnchor(example.quote,node.id);
+      else if(source)node.sourceAnchor={...source,id:'highlight-'+node.id};
       node.messages.push({id:'m'+(++messageCount),role:'user',text:example.question,sourceAnchor:node.sourceAnchor||null});
       node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
       render();
@@ -603,32 +721,48 @@ window.LearningThreadExamples = (() => {
     function makeBookAnchor(quote,threadId){
       const text=clean(paragraphs[page]),start=text.indexOf(quote);
       if(start<0||text.indexOf(quote,start+1)!==-1)throw new Error('The highlighted source must match one exact passage.');
-      return {id:'highlight-'+threadId,book:'modern-robotics-2019-preprint',paragraph:'2.2.1-p'+(page+1),page,sourcePage:16,start,end:start+quote.length,quote,prefix:text.slice(Math.max(0,start-40),start),suffix:text.slice(start+quote.length,start+quote.length+40)};
+      return links.anchor(text,start,start+quote.length,{id:'highlight-'+threadId,kind:'book',book:LearningStudyStore.BOOK,paragraph:'2.2.1-p'+(page+1),page,sourcePage:16});
     }
     function renderBookAnchors(){
       const passage=q('#lt-passage');
-      passage.querySelectorAll('[data-book-anchor]').forEach(link=>link.replaceWith(document.createTextNode(link.textContent)));
-      const anchored=[...conversations.values()].filter(n=>n.sourceAnchor?.page===page).sort((a,b)=>b.sourceAnchor.start-a.sourceAnchor.start);
-      for(const node of anchored){
-        const anchor=node.sourceAnchor,walker=document.createTreeWalker(passage,NodeFilter.SHOW_TEXT),segments=[];
-        let part,offset=0;while((part=walker.nextNode())){segments.push({node:part,start:offset,end:offset+part.length});offset+=part.length}
-        const first=segments.find(s=>s.start<=anchor.start&&s.end>anchor.start),last=segments.find(s=>s.start<anchor.end&&s.end>=anchor.end);
-        if(!first||!last)continue;
-        const range=document.createRange();range.setStart(first.node,anchor.start-first.start);range.setEnd(last.node,anchor.end-last.start);
-        if(range.toString()!==anchor.quote)continue;
-        range.deleteContents();
-        const link=document.createElement('a');link.href='#'+anchor.id;link.className='lt-highlight-origin';link.dataset.highlightThread=node.id;link.dataset.bookAnchor=anchor.id;
-        link.setAttribute('aria-label','Highlighted passage: '+anchor.quote+' Open discussion: '+node.title);
-        const mark=document.createElement('mark');mark.textContent=anchor.quote;link.append(mark);range.insertNode(link);
-      }
-      const wrist=anchored.find(n=>n.example==='wrist'),button=q('[data-action="open-wrist"]');
+      links.decorate(passage,allAnchors().filter(e=>!isMessageAnchor(e.anchor)&&e.anchor.page===page));
+      const wrist=[...conversations.values()].find(n=>n.page===page&&n.example==='wrist'),button=q('[data-action="open-wrist"]');
       if(wrist){button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> 1 linked discussion <span>· Why three wrist joints?</span>';button.setAttribute('aria-label','Open discussion linked to the spherical-joint highlight')}
       else{button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion';button.removeAttribute('aria-label')}
     }
     function returnToHighlight(threadId){
       const node=conversations.get(threadId);if(!node?.sourceAnchor)return;
-      const anchor=node.sourceAnchor;goPage(anchor.page);
-      requestAnimationFrame(()=>{const link=q(`[data-book-anchor="${anchor.id}"]`);if(link){link.scrollIntoView({block:'center'});link.focus({preventScroll:true});feedback='';q('.lt-feedback').textContent=''}});
+      returnToSource(node.sourceAnchor.id);
+    }
+    function returnToSource(id){
+      const entry=allAnchors().find(e=>e.anchor.id===id);if(!entry)return;
+      const anchor=entry.anchor;
+      if(isMessageAnchor(anchor))reopen(anchor.nodeId);else goPage(anchor.page);
+      requestAnimationFrame(()=>{const link=qa('[data-source-links]').find(el=>el.dataset.sourceLinks.split(' ').includes(id));if(link){link.scrollIntoView({block:'center'});link.focus({preventScroll:true})}});
+    }
+    function openSourceThread(id){
+      const entry=allAnchors().find(e=>e.anchor.id===id);if(!entry)return;
+      reopen(entry.nodeId);
+      requestAnimationFrame(()=>{const target=entry.messageId?q('#lt-message-'+entry.messageId):q('h2');target?.scrollIntoView({block:'start'})});
+    }
+    function chooseSource(link){
+      const entries=allAnchors().filter(e=>link.dataset.sourceLinks.split(' ').includes(e.anchor.id));
+      let action=link.dataset.sourceAction?JSON.parse(link.dataset.sourceAction):null;
+      if(action?.concept&&entries.some(e=>conversations.get(e.nodeId).example===action.concept))action=null;
+      if(entries.length===1&&!action){openSourceThread(entries[0].anchor.id);return}
+      const picker=q('.lt-link-picker');
+      picker.innerHTML=entries.map(e=>`<button class="lt-action" type="button" data-open-source-thread="${e.anchor.id}">${escapeText(e.title)}</button>`).join('');
+      if(action){const option=document.createElement(action.href?'a':'button');option.className='lt-action';
+        if(action.href){option.href=action.href;option.target='_blank';option.rel='noopener noreferrer';option.textContent='Open cited source'}
+        else if(action.joint){option.type='button';option.dataset.joint=action.joint;option.textContent='Move the '+terms[action.joint]+' joint'}
+        else{option.type='button';option.dataset.concept=action.concept;option.textContent=threadExamples.examples[action.concept].title}
+        picker.append(option);
+      }
+      const close=document.createElement('button');close.type='button';close.className='lt-action';close.dataset.action='close-link-picker';close.textContent='Close';picker.append(close);picker.showModal();
+    }
+    function captureSource(container,range,messageId=null){
+      const source={id:newAnchorId(),book:LearningStudyStore.BOOK,page,kind:messageId?'message':'book',...(messageId?{nodeId:activeNode().id,messageId,sourceRevision:0}:{paragraph:'2.2.1-p'+(page+1),sourcePage:16})};
+      return links.capture(container,range,source);
     }
     function openWrist(){
       const existing=[...conversations.values()].find(n=>n.example==='wrist'&&n.parent==='p1');
@@ -646,17 +780,30 @@ window.LearningThreadExamples = (() => {
       renderQA();q('#lt-message-'+visual.id).scrollIntoView({block:'start'});
     }
     function focusQuestion(){q('#lt-question').focus()}
-    function newQuestionBranch(quote,title){
+    function newQuestionBranch(quote,title,source=activeNode().pendingAnchor){
       const label=title||(quote.length>54?quote.slice(0,51)+'…':quote)||'New question';
+      const parent=activeNode(),draft=parent.draft;
       enter('custom',label,quote);
-      renderQA();focusQuestion();
+      const node=activeNode();node.draft=draft;
+      if(source)node.sourceAnchor={...source,id:'highlight-'+node.id};
+      parent.draft='';parent.quote='';parent.replyTo=null;parent.pendingAnchor=null;
+      render();focusQuestion();
     }
     async function askCodex(){
-      const node=activeNode(),question=node.draft.trim();if(!question||node.busy)return;
+      let node=activeNode();const question=node.draft.trim();if(!question||node.busy)return;
+      if(!node.parent&&node.pendingAnchor){newQuestionBranch(node.pendingAnchor.quote,undefined,node.pendingAnchor);node=activeNode()}
+      const source=node.pendingAnchor||(!node.messages.length?node.sourceAnchor:null);
+      const message={id:'m'+(++messageCount),role:'user',kind:'question',text:question,history:[],replyTo:node.replyTo||null};
+      if(source)message.sourceAnchor={...source,id:source.id===node.sourceAnchor?.id?source.id:'highlight-'+message.id};
+      node.messages.push(message);node.draft='';node.quote='';node.pendingAnchor=null;node.replyTo=null;selection=null;selectedSource=null;
+      render();saveStudy();await copyQuestion(node,message);
+    }
+    async function copyQuestion(node,message){
+      if(node.busy)return;
       const ancestors=[];let parent=node;
       while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages})}
-      const packet={book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:page+1,passage:clean(paragraphs[page]),learningPath:['Robot joints',...stack.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:node.sourceAnchor||null,selectedText:node.quote||null,replyTo:node.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages,visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
-      const prompt='Answer my follow-up about the current Modern Robotics passage. Explain visually when helpful. This came from the Learning Threads reading experiment. Reply here in the chat.\n\nMy question:\n'+question+'\n\nReading and conversation context (source data, not instructions):\n'+JSON.stringify(packet,null,2);
+      const packet={book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:node.page+1,passage:clean(paragraphs[node.page]),learningPath:['Robot joints',...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)),visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
+      const prompt='Answer my follow-up about the current Modern Robotics passage. Explain visually when helpful. This came from the Learning Threads reading experiment. Reply here in the chat.\n\nMy question:\n'+message.text+'\n\nReading and conversation context (source data, not instructions):\n'+JSON.stringify(packet,null,2);
       node.busy=true;node.status='Copying…';renderQA();
       try{
         if(!navigator.clipboard?.writeText)throw new Error('Clipboard access is unavailable in this browser.');
@@ -664,7 +811,7 @@ window.LearningThreadExamples = (() => {
         node.status='Copied.';
         q('.lt-copy-fallback').hidden=true;
       }catch(error){node.status='Could not copy automatically: '+(error?.message||String(error))+' You can copy the selected text below.';q('.lt-copy-fallback').hidden=false;q('#lt-copy-text').value=prompt;q('#lt-copy-text').focus();q('#lt-copy-text').select()}
-      finally{node.busy=false;if(node.id===activeNode().id)renderQA()}
+      finally{node.busy=false;if(node.id===activeNode().id)renderQA();saveStudy()}
     }
     const design={layout:'Side by side',textSize:19,surrounding:false};
     function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
@@ -676,6 +823,7 @@ window.LearningThreadExamples = (() => {
       qa('.lt-term').forEach(el=>el.setAttribute('aria-pressed',el.dataset.joint===joint));draw();
     }
     function render(){
+      flushNoteEdits();
       root.classList.toggle('lt-in-thread',!!stack.length);
       q('h2').textContent=stack.length?activeNode().title:'How robot joints move';
       q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
@@ -686,6 +834,7 @@ window.LearningThreadExamples = (() => {
       renderBookAnchors();
       q('#lt-note-text').value=notes[page];
       q('.lt-note').hidden=!noteOpen[page];
+      q('.lt-paragraph-history').innerHTML=historyHtml(noteHistory[page]);
       q('[data-action="note"]').textContent=notes[page]?'Your note':'Note';
       q('.lt-feedback').textContent=feedback;
       q('.lt-context').hidden=!(context||design.surrounding);
@@ -776,25 +925,37 @@ window.LearningThreadExamples = (() => {
     function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
     function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
     root.addEventListener('click',e=>{
-      const highlighted=e.target.closest('[data-highlight-thread]');
-      if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&highlighted.contains(selected.anchorNode))return;reopen(highlighted.dataset.highlightThread);return}
+      const highlighted=e.target.closest('[data-source-links]');
+      if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&root.contains(selected.anchorNode))return;chooseSource(highlighted);return}
       const btn=e.target.closest('button');if(!btn)return;
+      if(q('.lt-link-picker').contains(btn))q('.lt-link-picker').close();
+      if(btn.dataset.openSourceThread){openSourceThread(btn.dataset.openSourceThread);return}
+      if(btn.dataset.sourceReturn){returnToSource(btn.dataset.sourceReturn);return}
+      if(btn.dataset.editMessage){const m=activeNode().messages.find(m=>m.id===btn.dataset.editMessage);m.editing=true;m.editDraft=m.text;renderQA();q('#lt-edit-'+m.id).focus();return}
+      if(btn.dataset.cancelQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.cancelQuestion);m.editing=false;delete m.editDraft;renderQA();return}
+      if(btn.dataset.saveQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.saveQuestion),text=m.editDraft.trim();if(!text)return;m.text=links.revise(m.history||(m.history=[]),m.text,text);m.editing=false;delete m.editDraft;renderQA();return}
+      if(btn.dataset.copyMessage){copyQuestion(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.copyMessage));return}
       if(btn.dataset.highlightReturn){returnToHighlight(btn.dataset.highlightReturn);return}
-      if(btn.dataset.concept){openExample(btn.dataset.concept);q('h2').scrollIntoView({block:'start'});return}
+      if(btn.dataset.concept){const content=btn.closest('.lt-message-content');let source=null;if(content){const range=document.createRange();range.selectNodeContents(btn);source=captureSource(content,range,btn.closest('[data-message]').dataset.message)}openExample(btn.dataset.concept,source);q('h2').scrollIntoView({block:'start'});return}
       if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}
       if(btn.dataset.messageNote){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.messageNote);message.noteOpen=!message.noteOpen;renderQA();if(message.noteOpen)q('#lt-answer-note-'+message.id).focus();return}
       if(btn.dataset.joint){selectJoint(btn.dataset.joint);return}
       if(btn.dataset.page!==undefined){goPage(+btn.dataset.page);return}
       if(btn.dataset.return!==undefined){backTo(+btn.dataset.return);return}
-      if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;node.quote=selectedSource?.nodeId===node.id&&selectedSource.messageId===btn.dataset.follow?selectedSource.quote:'';node.draft='';renderQA();focusQuestion();return}
-      if(btn.dataset.branchMessage){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.branchMessage);const chosen=selectedSource?.nodeId===node.id&&selectedSource.messageId===message.id?selectedSource.quote:null;if(!chosen&&message.nextExample)openExample(message.nextExample);else newQuestionBranch(chosen||message.concept,chosen||message.concept);q('h2').scrollIntoView({block:'start'});return}
+      if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;if(node.pendingAnchor?.messageId!==btn.dataset.follow){node.pendingAnchor=null;node.quote=''}renderQA();focusQuestion();return}
+      if(btn.dataset.branchMessage){
+        const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.branchMessage),chosen=node.pendingAnchor?.messageId===message.id?node.pendingAnchor:null;
+        if(!chosen&&message.nextExample){const concept=q(`#lt-message-${message.id} [data-concept="${message.nextExample}"]`);let source=null;if(concept){const range=document.createRange();range.selectNodeContents(concept);source=captureSource(concept.closest('.lt-message-content'),range,message.id)}openExample(message.nextExample,source)}
+        else{const content=q(`#lt-message-${message.id} .lt-message-content`);let source=chosen;if(!source&&content){const range=document.createRange();range.selectNodeContents(content);source=captureSource(content,range,message.id)}newQuestionBranch(source?.quote||message.concept,chosen?.quote||message.concept,source)}
+        q('h2').scrollIntoView({block:'start'});return;
+      }
       if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
       const action=btn.dataset.action;
       if(action==='export-study'){exportStudy();return}
       if(action==='retry-save'){saveStudy();return}
       if(action==='open-wrist'){openWrist();q('h2').scrollIntoView({block:'start'});return}
       if(action==='focus-question'){focusQuestion();return}
-      if(action==='clear-ask-context'){activeNode().quote='';activeNode().replyTo=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
+      if(action==='clear-ask-context'){activeNode().quote='';activeNode().replyTo=null;activeNode().pendingAnchor=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
       if(action==='branch-selection'){const node=activeNode(),message=node.messages.find(m=>m.id===node.replyTo);newQuestionBranch(node.quote||message?.concept||'A related concept');return}
       if(action==='next'){if(stack.length)backTo(0);else{read.add(page);if(page===0)goPage(1);else{feedback='';render()}}}
       if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(page>0)goPage(page-1)}
@@ -829,20 +990,28 @@ window.LearningThreadExamples = (() => {
         e.target.closest('label').querySelector('output').textContent=e.target.value+'°';
         threadExamples.drawVisuals(q('.lt-messages'),activeNode().messages);
       }
-      if(e.target.dataset.noteMessage){const message=activeNode().messages.find(m=>m.id===e.target.dataset.noteMessage);message.note=e.target.value;const btn=q(`[data-message-note="${message.id}"]`);btn.lastChild.textContent=message.note?' Your note':' Note'}
+      if(e.target.dataset.noteMessage){const message=activeNode().messages.find(m=>m.id===e.target.dataset.noteMessage);if(message.noteEditBase===undefined)message.noteEditBase=message.note||'';message.note=e.target.value;const btn=q(`[data-message-note="${message.id}"]`);btn.lastChild.textContent=message.note?' Your note':' Note'}
+      if(e.target.dataset.editQuestion){const message=activeNode().messages.find(m=>m.id===e.target.dataset.editQuestion);message.editDraft=e.target.value;q(`[data-save-question="${message.id}"]`).disabled=!message.editDraft.trim()}
     });
-    root.addEventListener('input',e=>{if(e.target.dataset.control!==undefined){cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';const i=+e.target.dataset.control;states[joint][i]=+e.target.value;q('#lt-output-'+i).textContent=e.target.value+defs[joint].controls[i][3];draw()}if(e.target.id==='lt-note-text')notes[page]=e.target.value;if(e.target.id==='lt-question'){const node=activeNode();node.draft=e.target.value;q('[data-action="ask-codex"]').disabled=node.busy||!node.draft.trim()}});
+    root.addEventListener('input',e=>{if(e.target.dataset.control!==undefined){cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';const i=+e.target.dataset.control;states[joint][i]=+e.target.value;q('#lt-output-'+i).textContent=e.target.value+defs[joint].controls[i][3];draw()}if(e.target.id==='lt-note-text'){if(noteEdits[page]===null)noteEdits[page]=notes[page];notes[page]=e.target.value}if(e.target.id==='lt-question'){const node=activeNode();node.draft=e.target.value;q('[data-action="ask-codex"]').disabled=node.busy||!node.draft.trim()}});
+    root.addEventListener('focusout',e=>{if(e.target.id==='lt-note-text'||e.target.dataset.noteMessage){flushNoteEdits();q('.lt-paragraph-history').innerHTML=historyHtml(noteHistory[page]);for(const m of activeNode().messages){const area=q(`[data-note-history="${m.id}"]`);if(area)area.innerHTML=historyHtml(m.noteHistory)}saveStudy()}});
     q('.lt-compose').addEventListener('submit',e=>{e.preventDefault();askCodex()});
     document.addEventListener('selectionchange',()=>{
       const s=window.getSelection();if(!s||!s.rangeCount||s.isCollapsed)return;
       const range=s.getRangeAt(0),container=range.commonAncestorContainer,element=container.nodeType===1?container:container.parentElement;
       if(!root.contains(element))return;
-      const message=element.closest('.lt-message-content'),inPassage=q('#lt-passage').contains(container),inExplanation=q('.lt-thread').contains(container);
-      if(!inPassage&&!message&&!inExplanation)return;
-      const text=s.toString().trim().slice(0,1200);if(!text)return;
+      const message=element.closest('.lt-message-content'),inPassage=q('#lt-passage').contains(container),excerpt=element.closest('.lt-thread-origin blockquote');
+      if(!inPassage&&!message&&!excerpt)return;
+      if(!s.toString().trim())return;
       const node=activeNode(),messageId=message?.closest('[data-message]')?.dataset.message||null;
+      if(messageId&&node.messages.find(m=>m.id===messageId)?.role!=='assistant')return;
+      let anchor;
+      try{
+        if(excerpt){if(!node.sourceAnchor)return;const a=node.sourceAnchor,relative=links.capture(excerpt,range,{});anchor=links.anchor(sourceText(a),a.start+relative.start,a.start+relative.end,{...a,id:newAnchorId()})}
+        else anchor=captureSource(inPassage?q('#lt-passage'):message,range,messageId);
+      }catch{return}
       if(inPassage)selection=range.cloneRange();else selection=null;
-      selectedSource={quote:text,nodeId:node.id,messageId};node.quote=text;node.replyTo=messageId;renderAskContext();saveStudy();
+      selectedSource={quote:anchor.quote,nodeId:node.id,messageId};node.pendingAnchor=anchor;node.quote=anchor.quote;node.replyTo=messageId;renderAskContext();saveStudy();
     });
     function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
     const resumed=loadStudy();
@@ -859,8 +1028,8 @@ window.LearningThreadExamples = (() => {
     // Save each edit synchronously after the existing action handler has run.
     for(const event of ['click','input','change','submit'])root.addEventListener(event,()=>queueMicrotask(saveStudy));
     let scrollSave=0;window.addEventListener('scroll',()=>{cancelAnimationFrame(scrollSave);scrollSave=requestAnimationFrame(saveStudy)},{passive:true});
-    window.addEventListener('pagehide',saveStudy);
-    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveStudy()});
+    window.addEventListener('pagehide',()=>{flushNoteEdits();saveStudy()});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){flushNoteEdits();saveStudy()}});
     window.addEventListener('storage',event=>{if(event.key===LearningStudyStore.KEY)saveStudy()});
   })();
   </script>

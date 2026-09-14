@@ -7,7 +7,7 @@ nested branches, text highlights, and notes. The reading-view menu changes
 layout, text size, and surrounding context.
 
 Reading state is saved in this browser: the current paragraph or thread,
-highlights, notes, question drafts, replies, read marks, reading preferences,
+highlights, notes, saved questions and drafts, replies, read marks, reading preferences,
 and visual controls. Closing the tab and opening the same origin resumes it.
 Browser data deletion removes this local copy. Cloud sync is not wired yet.
 
@@ -60,19 +60,29 @@ Open `/?example=highlight` to see the wrist discussion anchored to the exact
 spherical-joint sentence. Click the highlighted text to reopen the discussion;
 Back to highlight returns to that range. The source quote also appears with
 the original question. This demonstrates the required two-way connection.
-General highlights now persist as text ranges, with exact source checks on
-load. General question-to-highlight links and note revision history are in
-SAC-192. Device sync is in SAC-193.
+Select text in either book paragraph or an answer to ask about that exact
+range. Copy for Codex saves the question and its source link. A book selection
+starts its own thread; answer follow-ups stay in the current thread unless
+Explore separately is used. Overlapping highlights offer their linked
+questions, while highlighted joint terms and citations retain their actions.
+Back to highlight returns to the exact source and focuses it.
+
+Edit a saved question with Edit and Save question. Earlier wording is kept in
+History. Paragraph and answer notes also keep earlier versions when an edit
+ends. Reloading restores questions, note history, and unfinished edits. Existing
+version 1 study data upgrades without resetting it. Device sync is in SAC-193.
 
 `thread-examples.js` and `thread-examples.css` contain the thread-specific
-content and presentation. `study-store.js` validates and saves versioned
+content and presentation. `study-links.js` handles exact source ranges,
+overlapping highlights, and edit history. `study-store.js` validates and saves versioned
 snapshots under a book-specific localStorage key. Failed writes keep the last
 good copy. An error exposes a backup download containing both the current
 work and the stored copy. Corrupt or incompatible data is never reset silently.
 
-Run `node --test tests/study-store.test.cjs` from the repository root. These
-checks cover restoration, broken thread links, quota errors, stale tabs, corrupt
-data, and denied storage. They are local persistence checks, not cloud evidence.
+Run `node --test tests/study-store.test.cjs tests/study-links.test.cjs` from
+the repository root. These checks cover restoration, source identity, overlapping
+ranges, revision history, migration, broken thread links, quota errors, stale
+tabs, corrupt data, and denied storage. They are local checks, not cloud evidence.
 
 The local store detects a previously saved change from another tab and stops
 that stale tab from overwriting it. It is not a concurrent editing protocol;
