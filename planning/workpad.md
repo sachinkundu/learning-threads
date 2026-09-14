@@ -16,6 +16,21 @@ User requested phone/iPad access while away from the computer.
   tested. The Mac must remain awake and connected. Cloud storage, cross-device
   state, and live assistant work are still queued.
 
+Connection follow-up:
+
+- User's sixsac device is online on the same tailnet. Both discovery and
+  encrypted TSMP pings from the Mac received replies.
+- Local app and Tailscale HTTPS both still returned HTTP 200. Incoming traffic
+  is allowed by the Mac and the tailnet's compiled access rules.
+- The user supplied `ERR_NAME_NOT_RESOLVED` for the Tailscale hostname. This
+  identifies a DNS lookup failure on the client/browser path; a host-side
+  HTTPS check alone did not prove phone access.
+- Added a private TCP forward on port 8080. Direct address:
+  http://100.117.88.81:8080/. Host-side HTTP 200 matched the built page exactly.
+  The original HTTPS route and the unrelated route on 443 remain unchanged.
+- Asked the user to open the direct address in Safari on sixsac. Confirmation
+  from that device is still pending.
+
 ## Delivery
 
 [Learning Threads — Build](https://linear.app/sachinkundu/project/learning-threads-build-57bd4eda67f8)

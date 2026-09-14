@@ -22,6 +22,13 @@ Serve this folder with a local HTTP server to review it in a browser.
 Private Tailscale preview:
 `https://sachins-macbook-pro.tailde98db.ts.net:8443/`
 
+Direct address when the device cannot resolve the Tailscale hostname:
+`http://100.117.88.81:8080/`. This is a private Tailscale TCP forward to the same
+loopback server. It avoids DNS and does not enable public access. Configure it
+with `/Applications/Tailscale.app/Contents/MacOS/Tailscale serve --bg --tcp=8080 127.0.0.1:63402`.
+The copy action uses its manual-copy fallback if the browser requires HTTPS
+for clipboard access. Each origin has its own browser study storage.
+
 Deploy with `python3 scripts/deploy-tailscale.py` from the repository root.
 The script builds and copies only `index.html` into
 `~/Library/Application Support/LearningThreads/site`. A user LaunchAgent keeps
@@ -33,6 +40,7 @@ Browser study storage remains separate for each origin and device.
 
 To stop this preview, run
 `/Applications/Tailscale.app/Contents/MacOS/Tailscale serve --https=8443 off`,
+`/Applications/Tailscale.app/Contents/MacOS/Tailscale serve --tcp=8080 off`,
 then `launchctl bootout gui/$(id -u)/com.sachinkundu.learning-threads`.
 Its LaunchAgent is `~/Library/LaunchAgents/com.sachinkundu.learning-threads.plist`.
 
