@@ -142,6 +142,7 @@
     <div class="lt-top-right"><button class="lt-action" type="button" data-action="usage">Usage</button><details class="lt-view-menu"><summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Reading view</summary><div class="lt-view-options"><label for="lt-layout">Layout<select id="lt-layout"><option>Side by side</option><option>Visual below</option></select></label><label for="lt-text-size">Text size <output id="lt-size-value">19 px</output><input id="lt-text-size" type="range" min="17" max="24" value="19"></label><label class="lt-view-check"><input id="lt-surrounding" type="checkbox"> Show surrounding text</label></div></details></div>
   </header>
   <div class="lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="export-study">Export backup</button> <button class="lt-action" type="button" data-action="retry-save">Retry save</button></div>
+  <div class="lt-sync-error lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="keep-local">Use this device</button> <button class="lt-action" type="button" data-action="keep-cloud">Use cloud copy</button> <button class="lt-action" type="button" data-action="retry-sync">Retry sync</button></div>
   <div class="lt-content">
     <div class="lt-bookline"><strong>Modern Robotics</strong><div class="lt-book-meta"><span>Chapter 2 · Configuration space</span><button class="lt-quiet" type="button" data-action="toggle-source" aria-expanded="false" aria-controls="lt-source-page">Source p. 16</button></div></div>
     <h2>How robot joints move</h2>
@@ -198,7 +199,10 @@
   </div>
   <dialog class="lt-link-picker" aria-label="Choose a discussion"></dialog>
   <dialog class="lt-usage-dialog" aria-label="Assistant usage"><button class="lt-action" type="button" data-action="close-usage">Close</button><div class="lt-usage-body"></div></dialog>
+  <dialog class="lt-usage-dialog lt-copies-dialog" aria-label="Saved study copies"><button class="lt-action" type="button" data-action="close-copies">Close</button><div class="lt-copies-body"></div></dialog>
+  <input id="lt-restore-file" type="file" accept="application/json,.json" hidden>
   <script src="./study-store.js"></script>
+  <script src="./study-sync.js"></script>
   <script src="./assistant-client.js"></script>
   <script src="./study-links.js"></script>
   <script src="./thread-examples.js"></script>
@@ -210,6 +214,7 @@
     const links=window.LearningStudyLinks;
     const assistant=window.LearningAssistant;
     const runningRequests=new Set();
+    let cloudSync=null,applyingCloud=false;
     const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
     const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
     const paragraphs=[
@@ -281,16 +286,20 @@
     function saveStudy(){
       if(!studyReady||!studyLoaded)return;
       rememberVisual();
-      try{studyStore.save(studySnapshot());q('.lt-storage-error').hidden=true;lastStorageError=''}
+      try{const state=studySnapshot();studyStore.save(state);q('.lt-storage-error').hidden=true;lastStorageError='';if(!applyingCloud)cloudSync?.observe(state)}
       catch(error){showStorageError(error)}
     }
-    function loadStudy(){
+    function validateSourceLinks(saved){
+      LearningStudyStore.validate(saved);
+      for(let p=0;p<paragraphs.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
+      const savedNodes=new Map(saved.conversations.map(n=>[n.id,n]));
+      for(const node of saved.conversations)for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean))if(sourceText(a,savedNodes).slice(a.start,a.end)!==a.quote)throw new Error('A saved thread no longer matches its source. Export a backup.');
+    }
+    function loadStudy(provided){
       try{
-        const saved=studyStore.load();studyLoaded=true;if(!saved)return false;
+        const saved=provided||studyStore.load();studyLoaded=true;if(!saved)return false;
         // Never reattach an old highlight if a source passage has changed.
-        for(let p=0;p<paragraphs.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
-        const savedNodes=new Map(saved.conversations.map(n=>[n.id,n]));
-        for(const node of saved.conversations)for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean))if(sourceText(a,savedNodes).slice(a.start,a.end)!==a.quote)throw new Error('A saved thread no longer matches its source. Export a backup.');
+        validateSourceLinks(saved);
         page=saved.page;joint=saved.joint;Object.assign(states,saved.states);read=new Set(saved.read);notes=saved.notes;noteOpen=saved.noteOpen;highlights=saved.highlights;Object.assign(design,saved.design);
         noteHistory=saved.noteHistory||[[],[]];noteEdits=saved.noteEdits||[null,null];
         conversations.clear();for(const node of saved.conversations)conversations.set(node.id,{...node,busy:false,status:''});
@@ -300,11 +309,33 @@
         return true;
       }catch(error){studyLoaded=false;showStorageError(error);return false}
     }
-    function exportStudy(){
+    function exportStudy(target){
       flushNoteEdits();rememberVisual();
       const blob=new Blob([JSON.stringify(studyStore.backup(studySnapshot()),null,2)],{type:'application/json'});
-      const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='learning-threads-'+new Date().toISOString().slice(0,10)+'.json';link.click();
+      const url=URL.createObjectURL(blob),link=target||document.createElement('a');link.href=url;link.download='learning-threads-'+new Date().toISOString().slice(0,10)+'.json';
+      if(!target){link.hidden=true;root.append(link);link.click();link.remove()}
       setTimeout(()=>URL.revokeObjectURL(url),30000);
+    }
+    async function savedCopies(before){
+      const dialog=q('.lt-copies-dialog'),body=q('.lt-copies-body');if(!dialog.open)dialog.showModal();
+      try{const result=await cloudSync.versions(before);body.innerHTML=result.versions.map(v=>`<div class="lt-actions"><button class="lt-action" type="button" data-open-copy="${v.version}">${escapeText(new Date(v.created).toLocaleString())}${v.accepted?'':' · other copy'}</button></div>`).join('')||(before?'No older copies.':'No saved copies.');if(result.versions.length===50)body.innerHTML+=`<button class="lt-quiet" type="button" data-older-copies="${result.versions.at(-1).version}">Older copies</button>`}
+      catch(error){body.textContent=error.message}
+    }
+    async function previewCopy(version){
+      const body=q('.lt-copies-body');
+      try{
+        const copy=await cloudSync.copy(version),state=copy.state;validateSourceLinks(state);
+        const notes=state.notes.filter(Boolean).map(text=>`<blockquote>${escapeText(text)}</blockquote>`).join('');
+        const work=state.conversations.filter(n=>n.messages.length||n.draft).map(n=>`<details><summary>${escapeText(n.title)}</summary>${n.messages.map(m=>`<p>${escapeText(m.text)}</p>${m.note?`<blockquote>${escapeText(m.note)}</blockquote>`:''}`).join('')}${n.draft?`<blockquote>${escapeText(n.draft)}</blockquote>`:''}</details>`).join('');
+        body.innerHTML=`<p>${escapeText(new Date(copy.created).toLocaleString())} · Paragraph ${state.page+1}</p>${notes}${work}<div class="lt-actions"><button class="lt-action" type="button" data-restore-copy="${version}">Restore this copy</button><button class="lt-action" type="button" data-action="saved-copies">All copies</button></div>`;
+      }catch(error){body.textContent=error.message}
+    }
+    let syncConflict=false;
+    function syncStatus({error,conflict=syncConflict}){
+      syncConflict=conflict;
+      const box=q('.lt-sync-error');box.hidden=!error&&!conflict;
+      box.querySelector('p').textContent=error||'Study changed on another device. Both copies are saved.';
+      q('[data-action="keep-local"]').hidden=!conflict;q('[data-action="keep-cloud"]').hidden=!conflict;q('[data-action="retry-sync"]').hidden=conflict;
     }
     function passageRange(start,end){
       const walker=document.createTreeWalker(q('#lt-passage'),NodeFilter.SHOW_TEXT),segments=[];
@@ -475,7 +506,7 @@
         else if(!node.messages.some(m=>m.requestId===job.id)){
           node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd}});
         }
-      }catch(error){current.state='waiting';current.error=error.message}
+      }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
         runningRequests.delete(current.id);
         node.busy=node.messages.some(m=>m.request&&['queued','running','connecting'].includes(m.request.state));
@@ -600,9 +631,13 @@
     function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
     function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
     root.addEventListener('click',e=>{
+      const download=e.target.closest('[data-export-study]');if(download){exportStudy(download);return}
       const highlighted=e.target.closest('[data-source-links]');
       if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&root.contains(selected.anchorNode))return;chooseSource(highlighted);return}
       const btn=e.target.closest('button');if(!btn)return;
+      if(btn.dataset.openCopy){previewCopy(+btn.dataset.openCopy);return}
+      if(btn.dataset.olderCopies){savedCopies(+btn.dataset.olderCopies);return}
+      if(btn.dataset.restoreCopy){cloudSync.copy(+btn.dataset.restoreCopy).then(copy=>{validateSourceLinks(copy.state);return cloudSync.restore(copy.state)}).then(()=>q('.lt-copies-dialog').close()).catch(error=>syncStatus({error:error.message}));return}
       if(q('.lt-link-picker').contains(btn))q('.lt-link-picker').close();
       if(btn.dataset.openSourceThread){openSourceThread(btn.dataset.openSourceThread);return}
       if(btn.dataset.sourceReturn){returnToSource(btn.dataset.sourceReturn);return}
@@ -626,6 +661,11 @@
       }
       if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
       const action=btn.dataset.action;
+      if(action==='keep-local'||action==='keep-cloud'){cloudSync.resolve(action==='keep-local'?'local':'cloud');return}
+      if(action==='retry-sync'){cloudSync.refresh();return}
+      if(action==='saved-copies'){savedCopies();return}
+      if(action==='close-copies'){q('.lt-copies-dialog').close();return}
+      if(action==='restore-study'){q('#lt-restore-file').click();return}
       if(action==='toggle-source'){showSource(!sourceOpen);return}
       if(action==='close-source'){showSource(false);q('[data-action="toggle-source"]').focus({preventScroll:true});return}
       if(action==='zoom-source'){const zoom=q('.lt-source-image').classList.toggle('lt-zoomed');btn.setAttribute('aria-pressed',String(zoom));btn.textContent=zoom?'Fit page':'Zoom in';return}
@@ -696,6 +736,18 @@
     });
     function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
     const resumed=loadStudy();
+    q('.lt-view-options').insertAdjacentHTML('beforeend','<div class="lt-actions"><a class="lt-action" href="#" data-export-study download style="text-decoration:none">Export</a><button class="lt-action" type="button" data-action="restore-study">Restore</button><button class="lt-action" type="button" data-action="saved-copies">Saved copies</button></div>');
+    cloudSync=LearningStudySync.create({book:LearningStudyStore.BOOK,storage:()=>window.localStorage,status:syncStatus,canApply:()=>studyLoaded&&!runningRequests.size&&!document.activeElement?.matches('input,textarea'),apply:saved=>{
+      validateSourceLinks(saved);applyingCloud=true;
+      try{studyStore.save(saved);loadStudy(saved);q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;applyDesign();restoreReadingPosition();saveStudy()}
+      finally{applyingCloud=false}
+      for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m);
+    }});
+    q('#lt-restore-file').addEventListener('change',async event=>{
+      const file=event.target.files[0];if(!file)return;
+      try{if(file.size>2_000_000)throw new Error('This backup exceeds 2 MB.');const backup=JSON.parse(await file.text());if(backup.book!==LearningStudyStore.BOOK)throw new Error('This backup belongs to another book.');validateSourceLinks(backup.state);await cloudSync.restore(backup.state)}
+      catch(error){syncStatus({error:error.message})}finally{event.target.value=''}
+    });
     q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;
     applyDesign();new ResizeObserver(draw).observe(q('.lt-diagram'));
     new ResizeObserver(()=>threadExamples.drawVisuals(q('.lt-messages'),activeNode().messages)).observe(q('.lt-messages'));
@@ -705,7 +757,9 @@
     if(!resumed&&new URLSearchParams(location.search).get('example')==='wrist')openWrist();
     if(!resumed&&new URLSearchParams(location.search).get('example')==='highlight'){openWrist();returnToHighlight(activeNode().id)}
     restoreReadingPosition();
-    requestAnimationFrame(()=>{studyReady=true;if(studyLoaded){saveStudy();for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
+    requestAnimationFrame(()=>{studyReady=true;if(studyLoaded){saveStudy();cloudSync.start(studySnapshot(),resumed);for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
+    setInterval(()=>{if(document.visibilityState==='visible')cloudSync.refresh()},15000);
+    window.addEventListener('online',()=>cloudSync.refresh());
     // Save each edit synchronously after the existing action handler has run.
     for(const event of ['click','input','change','submit'])root.addEventListener(event,()=>queueMicrotask(saveStudy));
     let scrollSave=0;window.addEventListener('scroll',()=>{cancelAnimationFrame(scrollSave);scrollSave=requestAnimationFrame(saveStudy)},{passive:true});

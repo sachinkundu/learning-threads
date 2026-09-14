@@ -4,9 +4,11 @@ from pathlib import Path
 import tempfile
 import threading
 import unittest
+import sys
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'server'))
 spec = importlib.util.spec_from_file_location('assistant', Path(__file__).resolve().parents[1] / 'server/assistant.py')
 assistant = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(assistant)

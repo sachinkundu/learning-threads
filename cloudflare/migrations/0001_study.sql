@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS study_versions (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT NOT NULL UNIQUE,
+  book TEXT NOT NULL,
+  base INTEGER NOT NULL,
+  state TEXT NOT NULL,
+  created TEXT NOT NULL,
+  accepted INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS study_versions_book ON study_versions(book, seq DESC);
+CREATE TABLE IF NOT EXISTS study_heads (book TEXT PRIMARY KEY, seq INTEGER NOT NULL);

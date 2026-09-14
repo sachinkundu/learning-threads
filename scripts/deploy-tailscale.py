@@ -81,6 +81,7 @@ try:
         shutil.copy2(PLIST, APP / 'previous-launch-agent.plist')
     shutil.copy2(ROOT / 'server/assistant.py', APP / 'assistant.next')
     (APP / 'assistant.next').replace(APP / 'assistant.py')
+    shutil.copy2(ROOT / 'server/cloud_sync.py', APP / 'cloud_sync.py')
     shutil.copy2(ROOT / 'web/index.html', SITE / 'index.next')
     (SITE / 'index.next').replace(SITE / 'index.html')
     (SITE / 'source-pages').mkdir(exist_ok=True)

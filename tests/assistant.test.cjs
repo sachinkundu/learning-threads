@@ -7,6 +7,15 @@ test('model text cannot insert HTML, scripts, or unsafe links',()=>{
   assert.ok(html.includes('<strong>Torque</strong>'));assert.ok(html.includes('x &lt; y'));
   assert.ok(html.includes('&quot;y&quot;'));assert.ok(html.includes('noopener noreferrer'));
 });
+test('rejected questions can be edited while uncertain network outcomes retain their ID',async()=>{
+  const client=require('../web/assistant-client.js'),original=global.fetch;
+  try{
+    global.fetch=async()=>({ok:false,status:400,text:async()=>JSON.stringify({error:'Question is too long.'})});
+    await assert.rejects(()=>client.request('/api/replies',{question:'Invalid'}),error=>error.definitiveFailure===true&&error.message==='Question is too long.');
+    global.fetch=async()=>({ok:false,status:503,text:async()=>JSON.stringify({error:'The Mac is offline.'})});
+    await assert.rejects(()=>client.request('/api/replies/existing-id'),error=>error.definitiveFailure===false);
+  }finally{global.fetch=original}
+});
 test('text diagrams preserve whitespace without executing markup',()=>{
   const html=renderText('```text\n motor  -->  joint\n <img src=x>\n```');
   assert.equal(html,'<pre><code> motor  --&gt;  joint\n &lt;img src=x&gt;</code></pre>');

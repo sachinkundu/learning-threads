@@ -2,6 +2,7 @@
 
 ## Delivery
 
+- Use the external Brave browser for sign-in, review, and browser testing.
 - No OpenSpec for this project. Work directly from the prioritized Linear backlog.
 - Keep technical decisions and verification evidence in `planning/workpad.md`.
 - Preserve the approved reading and thread UI while replacing temporary behavior.

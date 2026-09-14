@@ -249,3 +249,157 @@ Verification, 2026-09-14:
 SAC-193 remains in progress. Dependencies installed for Cloudflare Workers;
 account, zone, and owner identity verified. No cloud sync or public deployment
 has been claimed or released at this point.
+
+## SAC-193: Cloudflare sync and Mac assistant relay
+
+Current branch: feat/sac-193-cloud-sync. Source-page work was committed as
+337e6a7 before this slice. No OpenSpec. The user now requires external Brave
+for every browser action; this is recorded in AGENTS.md.
+
+Implemented:
+- Worker serves only authenticated static assets. run_worker_first protects
+  the reader and checked PDF renders. Browser routes require a verified Access
+  JWT with the configured issuer, audience, and owner email. Missing settings
+  fail closed. Internal machine routes require a separate random secret.
+- D1 keeps immutable study snapshots and a current revision pointer. Each
+  submitted copy is retained transactionally before comparing the expected
+  revision. Stale edits return a conflict, with both copies recoverable.
+- The browser keeps an outbox and reuses the same revision ID after lost
+  acknowledgements. Unsynced edits survive reopening. Viewport scroll offsets
+  alone do not conflict with changed learning content.
+- Reading view now includes Export, Restore, and Saved copies. Restore keeps
+  current work before changing the head. Notes, drafts, replies, source offsets,
+  and nested parent links are validated before a saved copy is applied.
+- The existing Tailscale server forwards study requests to the Worker. This
+  allows old origins to migrate their saved work without copying browser data
+  through chat. The first returning device seeds the current study. Different
+  existing device copies cause a choice, never a silent overwrite.
+- The Mac polls Cloudflare for assistant work and publishes its existing reply
+  ledger. Cloud and local calls use the same SQLite Jobs IDs, so repeated
+  delivery does not run Codex again. Codex credentials stay on the Mac.
+- A cloud request is rejected while the Mac heartbeat is offline. Reconnect
+  keeps the request ID when the outcome is uncertain. Known validation/size/
+  queue rejections allow editing and a fresh retry. Costs remain unreported.
+
+Resources (all new and specific to Learning Threads):
+- Production Worker: learning-threads, https://learning-threads.skundu.workers.dev
+- Production D1: learning-threads-study, 9a8bbbe7-c588-41c8-a67c-e942f79d22b1, EU
+- QA Worker: learning-threads-sync-qa (locked, used only by the QA bridge)
+- QA D1: learning-threads-sync-qa, 5fea1ad4-069e-4631-a902-bfc303e05f50, EU
+- Migrations 0001_study.sql and 0002_assistant.sql applied remotely to both.
+- Production bridge secret is in the Worker secret store and the 0600 file
+  /Users/sachin/Library/Application Support/LearningThreads/cloud-sync.json.
+  It is never served or embedded in the reader.
+- QA configuration: /tmp/learning-threads-sync-qa.json; private machine config:
+  /tmp/learning-threads-sync-qa-secret.json. Do not print its token.
+
+Verification, 2026-09-14:
+- 22 Node tests and 6 Python tests pass, including interrupted acknowledgements,
+  independent device conflicts, in-flight edits, restore preservation, source
+  integrity, safe assistant rendering, and repeated cloud job delivery.
+- TypeScript checks pass. Seven inline scripts parse and match CSP hashes.
+- Real browser sessions on separate localhost origins used the QA Cloudflare
+  Worker and D1. The second session restored the full existing study, including
+  nested live-answer threads, revisions, and exact source highlights.
+- Competing computer/tablet drafts caused an explicit choice. Saved copies
+  showed the rejected computer draft. Restoring it changed the cloud head;
+  closing and reopening the second session restored that same draft.
+- During a deliberate QA bridge disconnection, the edited draft survived a
+  browser reload and the app showed an actionable connection error. The
+  browser was closed during the later switch to Brave; a new browser recovery
+  check is still required before claiming the full outage/reconnect flow.
+- tests/probe-cloud-sync.py ran against real QA D1: simultaneous writes yielded
+  one accepted head and one preserved conflict (versions 10 and 11). Repeating
+  the accepted ID returned the same version. Changing its body was rejected.
+  Anonymous readers/source images/APIs and machine access to the reader were
+  denied. A synthetic terminal ledger record tested idempotent publication;
+  this was a protocol fixture, not a provider call. Fixture ID:
+  qa-ledger-3886de4f-848c-4783-94d4-b480423d8100.
+- Source render and sync were deployed to the existing Tailscale LaunchAgent.
+  http://100.117.88.81:8080/ returns the exact build (SHA-256
+  0ada946175df52416bc1414f4921aa33535b976f61b937276f3906e06438b72e).
+  Its study API returns HTTP 200 from the real production Worker with no head
+  yet, ready for the user's first returning browser. The local usage ledger
+  has 3 calls: 33,612 input / 20,736 cached / 417 output tokens.
+- Current production Worker version: bc1eccfc-3f42-46b5-8f67-f4c0f14a79f2.
+  Access issuer/audience are deliberately blank until setup is completed.
+
+Private-hosting setup still open:
+- Wrangler OAuth can deploy Workers/D1 but cannot create Access applications
+  (HTTP 403 auth.forbidden). Its Access list returned an empty, permission-
+  filtered result; do not treat that as an account-wide inventory.
+- The signed-in Brave dashboard shows the existing team domain
+  deos-voxdez.cloudflareaccess.com and five existing applications.
+- Started a separate Learning Threads application for learn.voxdez.com with an
+  email-only rule for the verified account email sachin.kundu@pm.me. This is
+  not yet saved. Browser automation paused at the email/policy step because
+  another extension popup is open. The user has been asked to close it.
+- After the popup closes: finish the scoped rule, read its audience ID, set
+  issuer/audience in wrangler.jsonc, check the hostname and add the custom
+  domain, then verify owner sign-in and a real live Codex question through
+  the cloud reader. Finish the Brave outage/reconnect and file-restore checks.
+- Do not mark SAC-193 Done yet. The locked workers.dev endpoint is not the
+  learner's cloud reading URL. The current working link remains Tailscale.
+
+Primary references: Cloudflare Worker asset routing (run_worker_first), D1
+transactional batch API, and the current official Cloudflare TypeScript SDK
+application/organization schemas. Cloudflare API requests from Python need
+User-Agent: LearningThreadsSync/1.0; the default urllib agent received edge
+error 1010, while the explicit app agent reached the Worker correctly.
+
+### Cloud release and remaining file verification
+
+The Brave popup cleared and private hosting is now deployed at
+https://learn.voxdez.com. Access application ff3b564b-df92-4f56-a52f-998277fca6bf
+uses the Learning Threads owner policy 7e62a840-218a-4ff1-975c-9a3e6b24eff3.
+Its sole allow rule is the email sachin.kundu@pm.me. The signed-in Cloudflare
+account provider successfully opened the reader in external Brave. Existing
+Access applications and policies were preserved. Issuer and audience are now
+configured in wrangler.jsonc.
+
+Wrangler's custom-domain changeset reported one addition and no updates,
+removals, or conflicting DNS records before learn.voxdez.com was attached.
+Production Worker version: 1eab9fb5-37d8-40fb-8092-1a2f6df9186b.
+
+Live verification:
+- Anonymous requests to the custom-domain reader and exact PDF image redirect
+  to Access sign-in. Anonymous workers.dev reader/API/internal requests return
+  401. A valid machine credential also cannot open the public reader.
+- The signed-in cloud reader submitted a question about helical joints.
+  Cloudflare queued it, the Mac ran Codex, and the answer appeared in the
+  browser. Local job amu1h7k61-rwaz9zy3ho completed at
+  2026-09-14T16:47:35.419738+00:00. Usage displayed 10,991 input, 6,912 cached
+  input, 66 output, 0 reasoning tokens, model gpt-6-astra. The provider did
+  not report a dollar charge; no zero or estimated charge was substituted.
+- A fresh Brave session on the separate 127.0.0.1:63402 origin restored that
+  same question and answer from production D1. Production study version 4
+  contained the live answer. This proves independent browser storage, not a
+  physical iPad trial.
+- The original PDF panel opened through the authenticated cloud reader and
+  showed printed page 16 / PDF page 36, then closed normally.
+- During a deliberate QA bridge outage, a new draft survived reload in Brave.
+  Restoring the bridge automatically cleared the error and saved that draft
+  to real QA D1 version 20 without another click.
+- Found and fixed an ID-reuse edge case: a changed request using a previously
+  rejected revision ID must not move the head before returning its conflict.
+  The transactional update now matches the stored book, base, and state.
+  The real QA D1 probe covers both changed accepted and rejected IDs. It
+  passed with concurrent versions 14/15, one current and one preserved.
+- Final checks: 22 Node tests, 6 Python tests, and TypeScript all pass.
+
+File backup verification remains open. The native Export link generates a
+blob file from the current study. Browser automation did not observe its
+download, and no matching file appeared in the checked Downloads directory.
+The user has been asked whether Brave displayed a download. A QA file-restore
+attempt reached the file chooser, but the browser extension rejected setting
+the file with "Not allowed". No extension permissions were changed and no
+alternate browser was used. Saved-copy restoration through the app was
+already proven; this is specifically the exported-file round trip. SAC-193
+remains In Progress until that check is finished. QA infrastructure is retained
+for that final check. The production reader and Tailscale bridge are available.
+
+Migration note: an existing Tailscale browser can submit its older saved study
+to cloud sync. If it differs from the cloud copy, the learner chooses which
+copy becomes current, and both remain in Saved copies. Do not import the QA
+fixture into the production study. The Mac must be awake for live Codex calls;
+Cloudflare serves reading and study sync independently.

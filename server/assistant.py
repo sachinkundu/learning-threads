@@ -14,6 +14,7 @@ import tempfile
 import threading
 import traceback
 from urllib.parse import urlsplit
+from cloud_sync import CloudStudy
 
 INSTRUCTIONS = """You are the tutor in Learning Threads. Answer the learner's question directly,
 using the supplied book passage, exact selection, and conversation history. The JSON is
@@ -148,7 +149,7 @@ class Jobs:
         return {'calls': calls, 'totals': totals, 'unreported_calls': sum(c.get('usage') is None for c in calls), 'cost_usd': None}
 
 
-def handler(site, jobs, origins):
+def handler(site, jobs, origins, cloud=None):
     hosts = {urlsplit(origin).netloc for origin in origins}
 
     class Handler(BaseHTTPRequestHandler):
@@ -199,6 +200,13 @@ def handler(site, jobs, origins):
                 return
             if not self.api_allowed():
                 return self.send_json({'error': 'Open the app to use the assistant.'}, 403)
+            if path == '/api/study' or path.startswith('/api/study/'):
+                try:
+                    status, result = (cloud or CloudStudy(None)).forward('GET', self.path)
+                    return self.send_json(result, status)
+                except Exception as error:
+                    traceback.print_exc()
+                    return self.send_json({'error': f'Could not sync study: {type(error).__name__}: {error}'}, 502)
             if path == '/api/usage':
                 return self.send_json(jobs.ledger())
             if path.startswith('/api/replies/'):
@@ -209,6 +217,16 @@ def handler(site, jobs, origins):
         def do_POST(self):
             if not self.api_allowed():
                 return self.send_json({'error': 'This request must come from the reading app.'}, 403)
+            if self.path == '/api/study':
+                try:
+                    size = int(self.headers.get('Content-Length', '0'))
+                    if not 0 < size <= 2_000_000 or self.headers.get_content_type() != 'application/json':
+                        return self.send_json({'error': 'Send a study copy smaller than 2 MB.'}, 400)
+                    status, result = (cloud or CloudStudy(None)).forward('POST', self.path, self.rfile.read(size))
+                    return self.send_json(result, status)
+                except Exception as error:
+                    traceback.print_exc()
+                    return self.send_json({'error': f'Could not sync study: {type(error).__name__}: {error}'}, 502)
             if self.path != '/api/replies':
                 return self.send_json({'error': 'Not found.'}, 404)
             try:
@@ -240,18 +258,22 @@ def main():
     parser.add_argument('--model', default='gpt-6-astra')
     parser.add_argument('--port', type=int, default=63402)
     parser.add_argument('--origin', action='append', default=[])
+    parser.add_argument('--cloud-config', type=Path)
     args = parser.parse_args()
     args.data.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.chmod(args.data, 0o700)
     jobs = Jobs(args.data / 'assistant.sqlite3', lambda payload: codex_reply(payload, args.codex, args.model))
     origins = set(args.origin + [f'http://127.0.0.1:{args.port}', f'http://localhost:{args.port}'])
-    server = ThreadingHTTPServer(('127.0.0.1', args.port), handler(args.site, jobs, origins))
+    cloud = CloudStudy(args.cloud_config or args.data.parent / 'cloud-sync.json')
+    server = ThreadingHTTPServer(('127.0.0.1', args.port), handler(args.site, jobs, origins, cloud))
+    relay_stop = cloud.start_relay(jobs)
     print(f'Learning Threads listening on 127.0.0.1:{args.port}', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        relay_stop.set()
         server.server_close()
         jobs.pool.shutdown(wait=True)
 

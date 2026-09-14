@@ -31,8 +31,8 @@
     catch(error){throw new Error('Could not reach the assistant: '+error.message,{cause:error})}
     finally{clearTimeout(timeout)}
     const text=await response.text();let data;
-    try{data=JSON.parse(text)}catch{throw new Error('The assistant endpoint did not return JSON (HTTP '+response.status+'). Open the deployed preview.')}
-    if(!response.ok)throw new Error(data.error||'Assistant request failed (HTTP '+response.status+').');
+    try{data=JSON.parse(text)}catch{throw new Error('Could not read the assistant response (HTTP '+response.status+'). Reload and retry.')}
+    if(!response.ok){const error=new Error(data.error||'Assistant request failed (HTTP '+response.status+').');error.definitiveFailure=!!body&&[400,413,422,429].includes(response.status);throw error}
     return data;
   }
   async function run(payload,onUpdate){
