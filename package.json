@@ -12,10 +12,12 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260914.1",
+    "jsdom": "30.0.1",
     "typescript": "^7.0.2",
     "wrangler": "^4.131.2"
   },
   "dependencies": {
-    "jose": "^6.2.12"
+    "jose": "^6.2.12",
+    "katex": "0.18.7"
   }
 }

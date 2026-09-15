@@ -143,3 +143,20 @@ reader requires neither it nor Tailscale. The old local SQLite ledger is kept
 for recovery; the new server does not open or modify it.
 
 All browser review uses external Brave. Follow the UI removal test in AGENTS.md.
+
+## Math and discussion links
+
+The build copies pinned KaTeX assets from `node_modules` into `dist/vendor/katex`.
+Assistant answers support `\( ... \)`, `\[ ... \]`, and `$$ ... $$`. Code samples
+and invalid expressions stay as text. The renderer keeps the original delimited
+source in `data-math-source`; highlight capture and decoration count that source
+once, rather than the generated MathML and visual glyphs. Stored answer text and
+existing highlight offsets are unchanged. Formula selections cover the whole
+equation.
+
+Discussion links use `?book=<book-id>&thread=<thread-id>&message=<message-id>`.
+The message is optional. Existing IDs remain valid; new messages and branches use
+random unique IDs. The reader waits for initial cloud sync before resolving an
+incoming link, then focuses the requested question or answer. New questions set
+the address bar immediately; receiving an answer keeps that question URL.
+Links stay private behind the existing Cloudflare Access sign-in.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-rqCIT+/Xr+ExnRC74Xnw8hBDvujRJ4Xs1B4xdkYDLA4=' 'sha256-OvBUopxIUksvzJRam7CODbAyCgRqF+0ml+7/LkjsWAY=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-S0vVt1sADLQ6o+naOPsK3YUr/buC2X3CAxRIuMpFcLA=' 'sha256-1Nm13Ny444oEXfEjNbDh3zGaoQ7PYl2yi/pYgPt3dqg=' 'sha256-M3zfbe0tcRcKp2JccHUOzcJ/dPJn2qD7WzBE4Wo/Cr0=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-GRpZjYJvhseV6uhVLv6kJKJWQoUI1aGmkwexfaFTDkI=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-rqCIT+/Xr+ExnRC74Xnw8hBDvujRJ4Xs1B4xdkYDLA4=' 'sha256-OvBUopxIUksvzJRam7CODbAyCgRqF+0ml+7/LkjsWAY=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-bAi12/sTY1ClBFugrZBtrrg18Cv9RZme6OYowhGjcxg=' 'sha256-aP0NcjnRvI0PWjaOAYpeAVjcx9YgfTrpc3GCKu1GThg=' 'sha256-1Nm13Ny444oEXfEjNbDh3zGaoQ7PYl2yi/pYgPt3dqg=' 'sha256-M3zfbe0tcRcKp2JccHUOzcJ/dPJn2qD7WzBE4Wo/Cr0=' 'sha256-SieaqRXbd0WoNCkSpnOFkNDVy3m+LJUdQLuY0gYoG54=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-RQHNODuxOI+vzTMO/JAKC0QJknKLpeaJn+JwptvCqAg=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -92,6 +92,10 @@
     #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
     #lt-reading .lt-message{min-width:0;padding:15px 17px;border-radius:10px;background:var(--lt-surface);overflow-wrap:anywhere}
     #lt-reading .lt-message.lt-user{background:var(--lt-soft);margin-left:22px}
+    #lt-reading .lt-math-display{display:block;overflow-x:auto;max-width:100%}
+    #lt-reading .lt-math .katex-display{margin:1em 0}
+    #lt-reading .lt-message-link{color:inherit;text-underline-offset:3px;padding:4px 0}
+    #lt-reading .lt-message:focus-visible{outline:2px solid var(--lt-accent);outline-offset:6px}
     #lt-reading .lt-message-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--lt-muted);margin-bottom:6px}
     #lt-reading .lt-message-content{font:17px/1.65 Georgia,serif;white-space:pre-line}
     #lt-reading .lt-message .lt-actions{margin-top:12px;gap:6px}
@@ -241,6 +245,7 @@
     <div class="lt-top-right"><button class="lt-action" type="button" data-action="usage">Usage</button><details class="lt-view-menu"><summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Reading view</summary><div class="lt-view-options"><label for="lt-layout">Layout<select id="lt-layout"><option>Side by side</option><option>Visual below</option></select></label><label for="lt-text-size">Text size <output id="lt-size-value">19 px</output><input id="lt-text-size" type="range" min="17" max="24" value="19"></label><label class="lt-view-check"><input id="lt-surrounding" type="checkbox"> Show surrounding text</label></div></details></div>
   </header>
   <div class="lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="export-study">Export backup</button> <button class="lt-action" type="button" data-action="retry-save">Retry save</button></div>
+  <div class="lt-route-error lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="retry-route">Retry link</button> <button class="lt-action" type="button" data-action="leave-route">Back to reading</button></div>
   <div class="lt-sync-error lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="keep-local">Use this device</button> <button class="lt-action" type="button" data-action="keep-cloud">Use cloud copy</button> <button class="lt-action" type="button" data-action="retry-sync">Retry sync</button></div>
   <div class="lt-content">
     <div class="lt-bookline"><strong>Modern Robotics</strong><div class="lt-book-meta"><span>Chapter 2 · Configuration space</span><button class="lt-quiet" type="button" data-action="toggle-source" aria-expanded="false" aria-controls="lt-source-page">Source p. 16</button></div></div>
@@ -581,6 +586,8 @@
   const api={create};if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningStudySync=api;
 })(globalThis);
 </script>
+  <link rel="stylesheet" href="/vendor/katex/katex.min.css">
+  <script src="/vendor/katex/katex.min.js"></script>
   <script>(function(scope){
   'use strict';
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -594,7 +601,21 @@
       return escape(part);
     }).join('');
   }
-  function renderText(text){
+  const katex=typeof module!=='undefined'&&module.exports?require('katex'):scope.katex;
+  function renderMath(html){
+    // Work on escaped Markdown text, leaving tags and code samples intact. The
+    // original text is retained for existing source ranges and future highlights.
+    return html.replace(/<pre>[\s\S]*?<\/pre>|<code>[\s\S]*?<\/code>|<[^>]+>|\\\[[^<]*?\\\]|\\\([^<]*?\\\)|\$\$[^<]*?\$\$/g,part=>{
+      if(part.startsWith('<')||!katex)return part;
+      const source=part.replace(/&(?:amp|lt|gt|quot|#39);/g,e=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[e]));
+      const display=!source.startsWith('\\(');
+      try{
+        const math=katex.renderToString(source.slice(2,-2),{displayMode:display,output:'htmlAndMathml',throwOnError:true,trust:false,strict:'ignore',maxSize:10,maxExpand:1000,macros:{}});
+        return `<span class="lt-math${display?' lt-math-display':''}" data-math-source="${escape(source)}">${math}</span>`;
+      }catch{return part}
+    });
+  }
+  function renderText(text,options={}){
     const lines=String(text).split('\n'),blocks=[];let paragraph=[],list=[],code=null;
     const flush=()=>{if(paragraph.length){blocks.push('<p>'+inline(paragraph.join('\n'))+'</p>');paragraph=[]}if(list.length){blocks.push('<ul>'+list.map(x=>'<li>'+inline(x)+'</li>').join('')+'</ul>');list=[]}};
     for(const line of lines){
@@ -606,7 +627,7 @@
       else if(item){if(paragraph.length)flush();list.push(item[1])}
       else{if(list.length)flush();paragraph.push(line)}
     }
-    flush();if(code!==null)blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');return blocks.join('');
+    flush();if(code!==null)blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');const html=blocks.join('');return options.math===false?html:renderMath(html);
   }
   async function request(path,body){
     let response;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
@@ -634,6 +655,35 @@
   }
   const api={renderText,run,request,usageHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;
+})(globalThis);
+</script>
+  <script>(function(scope){
+  'use strict';
+  const validId=value=>typeof value==='string'&&/^[a-zA-Z][a-zA-Z0-9_-]{0,99}$/.test(value);
+  function parse(url){
+    const params=new URL(url).searchParams;
+    if(!['book','thread','message'].some(key=>params.has(key)))return null;
+    if(['book','thread','message'].some(key=>params.getAll(key).length>1))throw new Error('This discussion link is invalid.');
+    const route={book:params.get('book'),thread:params.get('thread'),message:params.get('message')};
+    if(!validId(route.book)||!validId(route.thread)||(route.message!==null&&!validId(route.message)))throw new Error('This discussion link is invalid.');
+    return route;
+  }
+  function href(base,route){
+    const url=new URL(base);url.search='';url.hash='';
+    url.searchParams.set('book',route.book);url.searchParams.set('thread',route.thread);
+    if(route.message)url.searchParams.set('message',route.message);
+    return url.href;
+  }
+  function resolve(route,book,nodes){
+    if(route.book!==book)throw new Error('This book is not available in this library.');
+    const node=nodes.get(route.thread);
+    if(!node)throw new Error('This thread was not found in your saved study.');
+    const message=route.message?node.messages.find(m=>m.id===route.message):null;
+    if(route.message&&!message)throw new Error('This question or answer was not found in the thread.');
+    return {node,message};
+  }
+  const api={parse,href,resolve};
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningStudyRoute=api;
 })(globalThis);
 </script>
   <script>/* The learning graph stays in our study store, independent of the model harness. */
@@ -687,11 +737,22 @@
     const quote=text.slice(start,end);
     return {...source,start,end,quote,prefix:text.slice(Math.max(0,start-40),start),suffix:text.slice(end,end+40)};
   }
+  function textOf(node){
+    if(node.nodeType===3)return node.data;
+    if(node.nodeType===1&&node.hasAttribute('data-math-source'))return node.getAttribute('data-math-source');
+    return [...node.childNodes].map(textOf).join('');
+  }
+  function boundary(container,node,offset,end){
+    const math=(node.nodeType===1?node:node.parentElement)?.closest('[data-math-source]');
+    const before=container.ownerDocument.createRange();before.selectNodeContents(container);
+    if(math&&container.contains(math)){before.setEndBefore(math);return textOf(before.cloneContents()).length+(end?textOf(math).length:0)}
+    before.setEnd(node,offset);return textOf(before.cloneContents()).length;
+  }
   function capture(container,range,source){
     if(!container.contains(range.startContainer)||!container.contains(range.endContainer))throw new Error('Select text within one passage or reply.');
-    const before=range.cloneRange();before.selectNodeContents(container);before.setEnd(range.startContainer,range.startOffset);
-    const raw=range.toString(),start=before.toString().length+raw.length-raw.trimStart().length;
-    return anchor(container.textContent,start,start+raw.trim().length,source);
+    const text=textOf(container),from=boundary(container,range.startContainer,range.startOffset,false),to=boundary(container,range.endContainer,range.endOffset,true);
+    const raw=text.slice(from,to),start=from+raw.length-raw.trimStart().length;
+    return anchor(text,start,start+raw.trim().length,source);
   }
   function segments(length,entries){
     const points=[...new Set([0,length,...entries.flatMap(e=>[e.anchor.start,e.anchor.end])])].sort((a,b)=>a-b);
@@ -701,14 +762,14 @@
     if(before!==after&&before.trim()&&history.at(-1)?.text!==before)history.push({text:before,at});
     return after;
   }
-  function decorate(container,entries){
+  function decorate(container,entries,href=entry=>'#'+entry.anchor.id){
     if(!entries.length)return;
-    const text=container.textContent;
+    const document=container.ownerDocument,text=textOf(container);
     for(const entry of entries)if(text.slice(entry.anchor.start,entry.anchor.end)!==entry.anchor.quote)throw new Error('A thread highlight no longer matches its source.');
     const controls=[];
     for(const control of [...container.querySelectorAll('a,button')]){
       const before=document.createRange();before.selectNodeContents(container);before.setEndBefore(control);
-      const start=before.toString().length,end=start+control.textContent.length;
+      const start=textOf(before.cloneContents()).length,end=start+textOf(control).length;
       if(!entries.some(e=>e.anchor.start<end&&e.anchor.end>start))continue;
       const action=control.dataset.joint?{joint:control.dataset.joint}:control.dataset.concept?{concept:control.dataset.concept}:control.tagName==='A'?{href:control.getAttribute('href')}:null;
       controls.push({start,end,element:control.cloneNode(false),action});
@@ -718,9 +779,19 @@
     // segment instead of creating nested links or damaging the source markup.
     const boundaries=new Set(segments(text.length,entries).flatMap(s=>[s.start,s.end]));
     for(const c of controls){boundaries.add(c.start);boundaries.add(c.end)}
-    const walker=document.createTreeWalker(container,NodeFilter.SHOW_TEXT),nodes=[];
-    let node,offset=0;while((node=walker.nextNode())){nodes.push({node,start:offset,end:offset+node.length});offset+=node.length}
+    const nodes=[];let offset=0;
+    function walk(node){
+      const math=node.nodeType===1&&node.hasAttribute('data-math-source');
+      if(math||node.nodeType===3){const length=textOf(node).length;nodes.push({node,math,start:offset,end:offset+length});offset+=length}
+      else for(const child of node.childNodes)walk(child);
+    }
+    walk(container);
     for(const part of nodes){
+      if(part.math){
+        const linked=entries.filter(e=>e.anchor.start<part.end&&e.anchor.end>part.start);
+        if(linked.length){const link=document.createElement('a'),mark=document.createElement('mark');link.href=href(linked[0]);link.className='lt-highlight-origin';link.dataset.sourceLinks=linked.map(e=>e.anchor.id).join(' ');link.setAttribute('aria-label','Highlighted equation: '+linked.map(e=>e.title).join('; '));part.node.replaceWith(link);mark.append(part.node);link.append(mark)}
+        continue;
+      }
       const cuts=[part.start,...[...boundaries].filter(p=>p>part.start&&p<part.end).sort((a,b)=>a-b),part.end];
       const fragment=document.createDocumentFragment();
       for(let i=0;i<cuts.length-1;i++){
@@ -730,7 +801,7 @@
         const control=controls.find(c=>c.start<=start&&c.end>=end);
         let element;
         if(linked.length){
-          element=document.createElement('a');element.href='#'+linked[0].anchor.id;element.draggable=false;element.className='lt-highlight-origin';element.dataset.sourceLinks=linked.map(e=>e.anchor.id).join(' ');
+          element=document.createElement('a');element.href=href(linked[0]);element.draggable=false;element.className='lt-highlight-origin';element.dataset.sourceLinks=linked.map(e=>e.anchor.id).join(' ');
           element.setAttribute('aria-label','Highlighted text: '+value+'. '+linked.map(e=>e.title).join('; '));
           if(control?.action)element.dataset.sourceAction=JSON.stringify(control.action);
           const mark=document.createElement('mark');mark.textContent=value;element.append(mark);
@@ -741,7 +812,7 @@
       part.node.replaceWith(fragment);
     }
   }
-  const api={anchor,capture,segments,revise,decorate};
+  const api={anchor,capture,segments,revise,decorate,textOf};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningStudyLinks=api;
 })(globalThis);
 </script>
@@ -913,14 +984,40 @@ window.LearningThreadExamples = (() => {
     q('#lt-source-select').addEventListener('change',event=>{sourceIndex=+event.target.value;showSource(true)});
     q('.lt-source-image').addEventListener('error',()=>{q('.lt-source-error').hidden=false;q('.lt-source-viewport').hidden=true});
     q('.lt-source-image').addEventListener('load',()=>{q('.lt-source-error').hidden=true;q('.lt-source-viewport').hidden=false});
-    let selectedSource=null,branchCount=0,messageCount=0;
+    let selectedSource=null;
+    const newId=prefix=>prefix+'-'+(crypto.randomUUID?.()||Date.now().toString(36)+'-'+Array.from(crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(36)).join('-'));
     const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
     const conversations=new Map(catalog.map((_,p)=>['p'+p,book.root(p)]));
     const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
 
+    const routes=LearningStudyRoute;
+    let routingReady=false,applyingRoute=false;
+    const discussionHref=(thread,message=null)=>routes.href(location.href,{book:LearningStudyStore.BOOK,thread,message});
+    const entryHref=entry=>discussionHref(entry.nodeId,entry.messageId);
+    function writeRoute(message=null,replace=false){
+      if(applyingRoute||applyingCloud)return;
+      const target=new URL(discussionHref(activeNode().id,message));
+      if(settingsOpen)target.hash='settings';
+      const url=target.href;
+      q('.lt-route-error').hidden=true;
+      if(location.href!==url)history[replace?'replaceState':'pushState'](null,'',url);
+    }
+    function applyRoute(focus=true){
+      try{
+        const route=routes.parse(location.href);
+        if(!route){writeRoute(null,true);return}
+        const {node,message}=routes.resolve(route,LearningStudyStore.BOOK,conversations);
+        applyingRoute=true;
+        try{if(node.id!==activeNode().id)reopen(node.id)}finally{applyingRoute=false}
+        q('.lt-route-error').hidden=true;
+        if(message&&focus&&!settingsOpen)requestAnimationFrame(()=>{const target=q('#lt-message-'+message.id);target?.scrollIntoView({block:'start'});target?.focus({preventScroll:true})});
+        saveStudy();
+      }catch(error){const box=q('.lt-route-error');box.querySelector('p').textContent=error.message;box.hidden=false}
+    }
+
     const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
     const isMessageAnchor=a=>a?.kind==='message';
-    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text)):message.text}
+    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text,{math:false})):message.text}
     function sourceText(anchor,nodes=conversations){return isMessageAnchor(anchor)?messageText(nodes.get(anchor.nodeId).messages.find(m=>m.id===anchor.messageId)):clean(paragraphs[anchor.page])}
     function allAnchors(){
       const entries=new Map();
@@ -971,8 +1068,6 @@ window.LearningThreadExamples = (() => {
         noteHistory=saved.noteHistory||blank(()=>[]);noteEdits=saved.noteEdits||blank(()=>null);visits=saved.visits||[];
         conversations.clear();for(const node of saved.conversations)conversations.set(node.id,{...node,busy:false,status:''});
         stack=conversations.get(saved.activeId).path.map(step=>({...step,restoreValues:[...step.restoreValues]}));
-        branchCount=Math.max(0,...[...conversations.keys()].map(id=>/^b\d+$/.test(id)?+id.slice(1):0));
-        messageCount=Math.max(0,...[...conversations.values()].flatMap(n=>n.messages.map(m=>/^m\d+$/.test(m.id)?+m.id.slice(1):0)));
         return true;
       }catch(error){studyLoaded=false;showStorageError(error);return false}
     }
@@ -1036,15 +1131,15 @@ window.LearningThreadExamples = (() => {
       q('.lt-branches').hidden=!children.length||!!stack.length;
       q('.lt-branch-list').innerHTML=children.map(n=>`<button type="button" data-reopen="${n.id}" style="padding-left:${8+Math.min(n.path.length-1,4)*14}px"><i data-lucide="git-branch" aria-hidden="true"></i>${escapeText(n.title)}${n.id===node.id?' · here':''}</button>`).join('');
       renderAskContext();icons();threadExamples.drawVisuals(q('.lt-messages'),node.messages);
-      for(const m of node.messages){const content=q(`#lt-message-${m.id} .lt-message-content`);if(content)links.decorate(content,allAnchors().filter(e=>isMessageAnchor(e.anchor)&&e.anchor.nodeId===node.id&&e.anchor.messageId===m.id));}
+      for(const m of node.messages){const content=q(`#lt-message-${m.id} .lt-message-content`);if(content)links.decorate(content,allAnchors().filter(e=>isMessageAnchor(e.anchor)&&e.anchor.nodeId===node.id&&e.anchor.messageId===m.id),entryHref);}
     }
     function renderMessage(m){
       const example=m.example?threadExamples.examples[m.example]:null;
       const label=m.role==='user'?'You':'Assistant';
       const content=example?example.html():m.kind==='live'?assistant.renderText(m.text):escapeText(m.text);
       const hasVisual=activeNode().messages.some(other=>other.visualization?.sourceMessage===m.id);
-      return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}">
-        <div class="lt-message-meta"><span>${label}</span></div>
+      return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}" tabindex="-1">
+        <div class="lt-message-meta"><span>${label}</span><a class="lt-message-link" data-discussion-link href="${escapeText(discussionHref(activeNode().id,m.id))}" aria-label="Link to this ${m.role==='user'?'question':'answer'}">Link</a></div>
         ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
         ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example||m.kind==='live'?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
@@ -1067,8 +1162,8 @@ window.LearningThreadExamples = (() => {
       const node=activeNode();node.example=key;
       if(key==='wrist')node.sourceAnchor=makeBookAnchor(example.quote,node.id);
       else if(source)node.sourceAnchor={...source,id:'highlight-'+node.id};
-      node.messages.push({id:'m'+(++messageCount),role:'user',text:example.question,sourceAnchor:node.sourceAnchor||null});
-      node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
+      node.messages.push({id:newId('m'),role:'user',text:example.question,sourceAnchor:node.sourceAnchor||null});
+      node.messages.push({id:newId('m'),role:'assistant',kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
       render();
     }
     function makeBookAnchor(quote,threadId){
@@ -1078,7 +1173,7 @@ window.LearningThreadExamples = (() => {
     }
     function renderBookAnchors(){
       const passage=q('#lt-passage');
-      links.decorate(passage,allAnchors().filter(e=>!isMessageAnchor(e.anchor)&&e.anchor.page===page));
+      links.decorate(passage,allAnchors().filter(e=>!isMessageAnchor(e.anchor)&&e.anchor.page===page),entryHref);
       const wrist=[...conversations.values()].find(n=>n.page===page&&n.example==='wrist'),button=q('[data-action="open-wrist"]');
       if(wrist){button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> 1 linked discussion <span>· Why three wrist joints?</span>';button.setAttribute('aria-label','Open discussion linked to the spherical-joint highlight')}
       else{button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion';button.removeAttribute('aria-label')}
@@ -1090,12 +1185,12 @@ window.LearningThreadExamples = (() => {
     function returnToSource(id){
       const entry=allAnchors().find(e=>e.anchor.id===id);if(!entry)return;
       const anchor=entry.anchor;
-      if(isMessageAnchor(anchor))reopen(anchor.nodeId);else goPage(anchor.page);
+      if(isMessageAnchor(anchor)){reopen(anchor.nodeId);writeRoute(anchor.messageId,true)}else goPage(anchor.page);
       requestAnimationFrame(()=>{const link=qa('[data-source-links]').find(el=>el.dataset.sourceLinks.split(' ').includes(id));if(link){link.scrollIntoView({block:'center'});link.focus({preventScroll:true})}});
     }
     function openSourceThread(id){
       const entry=allAnchors().find(e=>e.anchor.id===id);if(!entry)return;
-      reopen(entry.nodeId);
+      reopen(entry.nodeId);if(entry.messageId)writeRoute(entry.messageId,true);
       requestAnimationFrame(()=>{const target=entry.messageId?q('#lt-message-'+entry.messageId):q('h2');target?.scrollIntoView({block:'start'})});
     }
     function chooseSource(link){
@@ -1126,8 +1221,8 @@ window.LearningThreadExamples = (() => {
       const node=activeNode(),answer=node.messages.find(m=>m.id===id);if(!answer?.visualKey)return;
       let visual=node.messages.find(m=>m.visualization?.sourceMessage===id);
       if(!visual){
-        node.messages.push({id:'m'+(++messageCount),role:'user',text:'Show this visually.'});
-        visual={id:'m'+(++messageCount),role:'assistant',kind:'sample',text:answer.visualKey==='wrist'?'Move the three controls. Both mechanisms show the same tool orientation.':answer.visualKey==='torque'?'Moving the same force farther from the hinge increases its turning effect.':'Follow how the target angle becomes motion, then how the measured angle returns to the controller.',concept:answer.concept,nextExample:answer.nextExample,visualization:{type:answer.visualKey,sourceMessage:id,values:[35,55,20]}};
+        node.messages.push({id:newId('m'),role:'user',text:'Show this visually.'});
+        visual={id:newId('m'),role:'assistant',kind:'sample',text:answer.visualKey==='wrist'?'Move the three controls. Both mechanisms show the same tool orientation.':answer.visualKey==='torque'?'Moving the same force farther from the hinge increases its turning effect.':'Follow how the target angle becomes motion, then how the measured angle returns to the controller.',concept:answer.concept,nextExample:answer.nextExample,visualization:{type:answer.visualKey,sourceMessage:id,values:[35,55,20]}};
         node.messages.push(visual);
       }
       renderQA();q('#lt-message-'+visual.id).scrollIntoView({block:'start'});
@@ -1146,10 +1241,10 @@ window.LearningThreadExamples = (() => {
       let node=activeNode();const question=node.draft.trim();if(!question||node.busy)return;
       if(!node.parent&&node.pendingAnchor){newQuestionBranch(node.pendingAnchor.quote,undefined,node.pendingAnchor);node=activeNode()}
       const source=node.pendingAnchor||(!node.messages.length?node.sourceAnchor:null);
-      const message={id:'m'+(++messageCount),role:'user',kind:'question',text:question,history:[],replyTo:node.replyTo||null};
+      const message={id:newId('m'),role:'user',kind:'question',text:question,history:[],replyTo:node.replyTo||null};
       if(source)message.sourceAnchor={...source,id:source.id===node.sourceAnchor?.id?source.id:'highlight-'+message.id};
       node.messages.push(message);node.draft='';node.quote='';node.pendingAnchor=null;node.replyTo=null;selection=null;selectedSource=null;
-      render();saveStudy();await startReply(node,message);
+      render();writeRoute(message.id);saveStudy();await startReply(node,message);
     }
     function questionContext(node,message){
       const paragraph=catalog[node.page];
@@ -1171,7 +1266,7 @@ window.LearningThreadExamples = (() => {
         current.state=job.status;current.result=job;
         if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
+          node.messages.push({id:newId('m'),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -1225,7 +1320,7 @@ window.LearningThreadExamples = (() => {
       }catch(error){if(settingsOpen&&load===settingsLoad){q('.lt-settings-error').textContent=error.message;q('.lt-settings-error').hidden=false}}
       finally{if(load===settingsLoad){button.disabled=false;fieldset.disabled=false}}
     });
-    window.addEventListener('popstate',()=>{if(location.hash==='#settings')showSettings();else hideSettings()});
+    window.addEventListener('popstate',()=>{if(location.hash==='#settings')showSettings();else{hideSettings();if(routingReady)applyRoute()}});
     const design={layout:'Side by side',textSize:19,surrounding:false};
     function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
     function buildControls(){
@@ -1340,19 +1435,21 @@ window.LearningThreadExamples = (() => {
       q('.lt-reading-history').showModal();
     }
     function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';joint=k;buildControls()}
-    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;visit(n);const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;visit(n);const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition();writeRoute()}
     function enter(type,title,quote=''){
-      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id='b'+(++branchCount),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
+      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id=newId('b'),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
       const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
       stack.push({id,type,title:label,restoreJoint:joint,restoreValues:[...states[joint]]});node.path=stack.map(s=>({...s,restoreValues:[...s.restoreValues]}));
-      if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();
+      if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();writeRoute();
     }
-    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
-    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;visit(page);stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition();writeRoute()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;visit(page);stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition();writeRoute()}
     root.addEventListener('click',e=>{
+      const permalink=e.target.closest('[data-discussion-link]');
+      if(permalink){if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;e.preventDefault();if(location.href!==permalink.href)history.pushState(null,'',permalink.href);applyRoute();return}
       const download=e.target.closest('[data-export-study]');if(download){exportStudy(download);return}
       const highlighted=e.target.closest('[data-source-links]');
-      if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&root.contains(selected.anchorNode))return;chooseSource(highlighted);return}
+      if(highlighted){if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&root.contains(selected.anchorNode))return;chooseSource(highlighted);return}
       const btn=e.target.closest('button');if(!btn)return;
       if(btn.dataset.openCopy){previewCopy(+btn.dataset.openCopy);return}
       if(btn.dataset.olderCopies){savedCopies(+btn.dataset.olderCopies);return}
@@ -1380,6 +1477,8 @@ window.LearningThreadExamples = (() => {
       }
       if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
       const action=btn.dataset.action;
+      if(action==='retry-route'){cloudSync.refresh().then(()=>applyRoute());return}
+      if(action==='leave-route'){writeRoute(null,true);return}
       if(action==='keep-local'||action==='keep-cloud'){cloudSync.resolve(action==='keep-local'?'local':'cloud');return}
       if(action==='retry-sync'){cloudSync.refresh();return}
       if(action==='saved-copies'){savedCopies();return}
@@ -1466,6 +1565,13 @@ window.LearningThreadExamples = (() => {
       validateSourceLinks(saved);applyingCloud=true;
       try{studyStore.save(saved);loadStudy(saved);q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;applyDesign();restoreReadingPosition();saveStudy()}
       finally{applyingCloud=false}
+      if(routingReady)queueMicrotask(()=>{
+        // A later cloud copy already restores its reading place. Reflect that
+        // navigation without uploading our previous place over it again.
+        if(!q('.lt-route-error').hidden){applyRoute(false);return}
+        const route=routes.parse(location.href);
+        if(route?.thread!==activeNode().id)writeRoute(null,true);
+      });
       for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m);
     }});
     q('#lt-restore-file').addEventListener('change',async event=>{
@@ -1483,7 +1589,7 @@ window.LearningThreadExamples = (() => {
     if(!resumed&&new URLSearchParams(location.search).get('example')==='highlight'){openWrist();returnToHighlight(activeNode().id)}
     restoreReadingPosition();
     if(location.hash==='#settings')showSettings();
-    requestAnimationFrame(()=>{studyReady=true;if(studyLoaded){saveStudy();cloudSync.start(studySnapshot(),resumed);for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
+    requestAnimationFrame(async()=>{studyReady=true;if(studyLoaded){saveStudy();await cloudSync.start(studySnapshot(),resumed);routingReady=true;applyRoute();for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
     setInterval(()=>{if(document.visibilityState==='visible')cloudSync.refresh()},15000);
     window.addEventListener('online',()=>cloudSync.refresh());
     // Save each edit synchronously after the existing action handler has run.

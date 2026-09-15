@@ -82,6 +82,10 @@
     #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
     #lt-reading .lt-message{min-width:0;padding:15px 17px;border-radius:10px;background:var(--lt-surface);overflow-wrap:anywhere}
     #lt-reading .lt-message.lt-user{background:var(--lt-soft);margin-left:22px}
+    #lt-reading .lt-math-display{display:block;overflow-x:auto;max-width:100%}
+    #lt-reading .lt-math .katex-display{margin:1em 0}
+    #lt-reading .lt-message-link{color:inherit;text-underline-offset:3px;padding:4px 0}
+    #lt-reading .lt-message:focus-visible{outline:2px solid var(--lt-accent);outline-offset:6px}
     #lt-reading .lt-message-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--lt-muted);margin-bottom:6px}
     #lt-reading .lt-message-content{font:17px/1.65 Georgia,serif;white-space:pre-line}
     #lt-reading .lt-message .lt-actions{margin-top:12px;gap:6px}
@@ -157,6 +161,7 @@
     <div class="lt-top-right"><button class="lt-action" type="button" data-action="usage">Usage</button><details class="lt-view-menu"><summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Reading view</summary><div class="lt-view-options"><label for="lt-layout">Layout<select id="lt-layout"><option>Side by side</option><option>Visual below</option></select></label><label for="lt-text-size">Text size <output id="lt-size-value">19 px</output><input id="lt-text-size" type="range" min="17" max="24" value="19"></label><label class="lt-view-check"><input id="lt-surrounding" type="checkbox"> Show surrounding text</label></div></details></div>
   </header>
   <div class="lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="export-study">Export backup</button> <button class="lt-action" type="button" data-action="retry-save">Retry save</button></div>
+  <div class="lt-route-error lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="retry-route">Retry link</button> <button class="lt-action" type="button" data-action="leave-route">Back to reading</button></div>
   <div class="lt-sync-error lt-storage-error" role="alert" hidden><p></p><button class="lt-action" type="button" data-action="keep-local">Use this device</button> <button class="lt-action" type="button" data-action="keep-cloud">Use cloud copy</button> <button class="lt-action" type="button" data-action="retry-sync">Retry sync</button></div>
   <div class="lt-content">
     <div class="lt-bookline"><strong>Modern Robotics</strong><div class="lt-book-meta"><span>Chapter 2 · Configuration space</span><button class="lt-quiet" type="button" data-action="toggle-source" aria-expanded="false" aria-controls="lt-source-page">Source p. 16</button></div></div>
@@ -234,7 +239,10 @@
   <script src="./book.js"></script>
   <script src="./study-store.js"></script>
   <script src="./study-sync.js"></script>
+  <link rel="stylesheet" href="/vendor/katex/katex.min.css">
+  <script src="/vendor/katex/katex.min.js"></script>
   <script src="./assistant-client.js"></script>
+  <script src="./study-route.js"></script>
   <script src="./assistant-context.js"></script>
   <script src="./assistant-models.js"></script>
   <script src="./study-links.js"></script>
@@ -286,14 +294,40 @@
     q('#lt-source-select').addEventListener('change',event=>{sourceIndex=+event.target.value;showSource(true)});
     q('.lt-source-image').addEventListener('error',()=>{q('.lt-source-error').hidden=false;q('.lt-source-viewport').hidden=true});
     q('.lt-source-image').addEventListener('load',()=>{q('.lt-source-error').hidden=true;q('.lt-source-viewport').hidden=false});
-    let selectedSource=null,branchCount=0,messageCount=0;
+    let selectedSource=null;
+    const newId=prefix=>prefix+'-'+(crypto.randomUUID?.()||Date.now().toString(36)+'-'+Array.from(crypto.getRandomValues(new Uint32Array(4)),n=>n.toString(36)).join('-'));
     const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
     const conversations=new Map(catalog.map((_,p)=>['p'+p,book.root(p)]));
     const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
 
+    const routes=LearningStudyRoute;
+    let routingReady=false,applyingRoute=false;
+    const discussionHref=(thread,message=null)=>routes.href(location.href,{book:LearningStudyStore.BOOK,thread,message});
+    const entryHref=entry=>discussionHref(entry.nodeId,entry.messageId);
+    function writeRoute(message=null,replace=false){
+      if(applyingRoute||applyingCloud)return;
+      const target=new URL(discussionHref(activeNode().id,message));
+      if(settingsOpen)target.hash='settings';
+      const url=target.href;
+      q('.lt-route-error').hidden=true;
+      if(location.href!==url)history[replace?'replaceState':'pushState'](null,'',url);
+    }
+    function applyRoute(focus=true){
+      try{
+        const route=routes.parse(location.href);
+        if(!route){writeRoute(null,true);return}
+        const {node,message}=routes.resolve(route,LearningStudyStore.BOOK,conversations);
+        applyingRoute=true;
+        try{if(node.id!==activeNode().id)reopen(node.id)}finally{applyingRoute=false}
+        q('.lt-route-error').hidden=true;
+        if(message&&focus&&!settingsOpen)requestAnimationFrame(()=>{const target=q('#lt-message-'+message.id);target?.scrollIntoView({block:'start'});target?.focus({preventScroll:true})});
+        saveStudy();
+      }catch(error){const box=q('.lt-route-error');box.querySelector('p').textContent=error.message;box.hidden=false}
+    }
+
     const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
     const isMessageAnchor=a=>a?.kind==='message';
-    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text)):message.text}
+    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text,{math:false})):message.text}
     function sourceText(anchor,nodes=conversations){return isMessageAnchor(anchor)?messageText(nodes.get(anchor.nodeId).messages.find(m=>m.id===anchor.messageId)):clean(paragraphs[anchor.page])}
     function allAnchors(){
       const entries=new Map();
@@ -344,8 +378,6 @@
         noteHistory=saved.noteHistory||blank(()=>[]);noteEdits=saved.noteEdits||blank(()=>null);visits=saved.visits||[];
         conversations.clear();for(const node of saved.conversations)conversations.set(node.id,{...node,busy:false,status:''});
         stack=conversations.get(saved.activeId).path.map(step=>({...step,restoreValues:[...step.restoreValues]}));
-        branchCount=Math.max(0,...[...conversations.keys()].map(id=>/^b\d+$/.test(id)?+id.slice(1):0));
-        messageCount=Math.max(0,...[...conversations.values()].flatMap(n=>n.messages.map(m=>/^m\d+$/.test(m.id)?+m.id.slice(1):0)));
         return true;
       }catch(error){studyLoaded=false;showStorageError(error);return false}
     }
@@ -409,15 +441,15 @@
       q('.lt-branches').hidden=!children.length||!!stack.length;
       q('.lt-branch-list').innerHTML=children.map(n=>`<button type="button" data-reopen="${n.id}" style="padding-left:${8+Math.min(n.path.length-1,4)*14}px"><i data-lucide="git-branch" aria-hidden="true"></i>${escapeText(n.title)}${n.id===node.id?' · here':''}</button>`).join('');
       renderAskContext();icons();threadExamples.drawVisuals(q('.lt-messages'),node.messages);
-      for(const m of node.messages){const content=q(`#lt-message-${m.id} .lt-message-content`);if(content)links.decorate(content,allAnchors().filter(e=>isMessageAnchor(e.anchor)&&e.anchor.nodeId===node.id&&e.anchor.messageId===m.id));}
+      for(const m of node.messages){const content=q(`#lt-message-${m.id} .lt-message-content`);if(content)links.decorate(content,allAnchors().filter(e=>isMessageAnchor(e.anchor)&&e.anchor.nodeId===node.id&&e.anchor.messageId===m.id),entryHref);}
     }
     function renderMessage(m){
       const example=m.example?threadExamples.examples[m.example]:null;
       const label=m.role==='user'?'You':'Assistant';
       const content=example?example.html():m.kind==='live'?assistant.renderText(m.text):escapeText(m.text);
       const hasVisual=activeNode().messages.some(other=>other.visualization?.sourceMessage===m.id);
-      return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}">
-        <div class="lt-message-meta"><span>${label}</span></div>
+      return `<article class="lt-message ${m.role==='user'?'lt-user':''} ${m.visualization?'lt-visual-message':''}" data-message="${m.id}" id="lt-message-${m.id}" tabindex="-1">
+        <div class="lt-message-meta"><span>${label}</span><a class="lt-message-link" data-discussion-link href="${escapeText(discussionHref(activeNode().id,m.id))}" aria-label="Link to this ${m.role==='user'?'question':'answer'}">Link</a></div>
         ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
         ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example||m.kind==='live'?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
@@ -440,8 +472,8 @@
       const node=activeNode();node.example=key;
       if(key==='wrist')node.sourceAnchor=makeBookAnchor(example.quote,node.id);
       else if(source)node.sourceAnchor={...source,id:'highlight-'+node.id};
-      node.messages.push({id:'m'+(++messageCount),role:'user',text:example.question,sourceAnchor:node.sourceAnchor||null});
-      node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
+      node.messages.push({id:newId('m'),role:'user',text:example.question,sourceAnchor:node.sourceAnchor||null});
+      node.messages.push({id:newId('m'),role:'assistant',kind:example.kind,text:example.text,example:key,visualKey:example.visual,concept:example.concept,nextExample:example.next});
       render();
     }
     function makeBookAnchor(quote,threadId){
@@ -451,7 +483,7 @@
     }
     function renderBookAnchors(){
       const passage=q('#lt-passage');
-      links.decorate(passage,allAnchors().filter(e=>!isMessageAnchor(e.anchor)&&e.anchor.page===page));
+      links.decorate(passage,allAnchors().filter(e=>!isMessageAnchor(e.anchor)&&e.anchor.page===page),entryHref);
       const wrist=[...conversations.values()].find(n=>n.page===page&&n.example==='wrist'),button=q('[data-action="open-wrist"]');
       if(wrist){button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> 1 linked discussion <span>· Why three wrist joints?</span>';button.setAttribute('aria-label','Open discussion linked to the spherical-joint highlight')}
       else{button.innerHTML='<i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion';button.removeAttribute('aria-label')}
@@ -463,12 +495,12 @@
     function returnToSource(id){
       const entry=allAnchors().find(e=>e.anchor.id===id);if(!entry)return;
       const anchor=entry.anchor;
-      if(isMessageAnchor(anchor))reopen(anchor.nodeId);else goPage(anchor.page);
+      if(isMessageAnchor(anchor)){reopen(anchor.nodeId);writeRoute(anchor.messageId,true)}else goPage(anchor.page);
       requestAnimationFrame(()=>{const link=qa('[data-source-links]').find(el=>el.dataset.sourceLinks.split(' ').includes(id));if(link){link.scrollIntoView({block:'center'});link.focus({preventScroll:true})}});
     }
     function openSourceThread(id){
       const entry=allAnchors().find(e=>e.anchor.id===id);if(!entry)return;
-      reopen(entry.nodeId);
+      reopen(entry.nodeId);if(entry.messageId)writeRoute(entry.messageId,true);
       requestAnimationFrame(()=>{const target=entry.messageId?q('#lt-message-'+entry.messageId):q('h2');target?.scrollIntoView({block:'start'})});
     }
     function chooseSource(link){
@@ -499,8 +531,8 @@
       const node=activeNode(),answer=node.messages.find(m=>m.id===id);if(!answer?.visualKey)return;
       let visual=node.messages.find(m=>m.visualization?.sourceMessage===id);
       if(!visual){
-        node.messages.push({id:'m'+(++messageCount),role:'user',text:'Show this visually.'});
-        visual={id:'m'+(++messageCount),role:'assistant',kind:'sample',text:answer.visualKey==='wrist'?'Move the three controls. Both mechanisms show the same tool orientation.':answer.visualKey==='torque'?'Moving the same force farther from the hinge increases its turning effect.':'Follow how the target angle becomes motion, then how the measured angle returns to the controller.',concept:answer.concept,nextExample:answer.nextExample,visualization:{type:answer.visualKey,sourceMessage:id,values:[35,55,20]}};
+        node.messages.push({id:newId('m'),role:'user',text:'Show this visually.'});
+        visual={id:newId('m'),role:'assistant',kind:'sample',text:answer.visualKey==='wrist'?'Move the three controls. Both mechanisms show the same tool orientation.':answer.visualKey==='torque'?'Moving the same force farther from the hinge increases its turning effect.':'Follow how the target angle becomes motion, then how the measured angle returns to the controller.',concept:answer.concept,nextExample:answer.nextExample,visualization:{type:answer.visualKey,sourceMessage:id,values:[35,55,20]}};
         node.messages.push(visual);
       }
       renderQA();q('#lt-message-'+visual.id).scrollIntoView({block:'start'});
@@ -519,10 +551,10 @@
       let node=activeNode();const question=node.draft.trim();if(!question||node.busy)return;
       if(!node.parent&&node.pendingAnchor){newQuestionBranch(node.pendingAnchor.quote,undefined,node.pendingAnchor);node=activeNode()}
       const source=node.pendingAnchor||(!node.messages.length?node.sourceAnchor:null);
-      const message={id:'m'+(++messageCount),role:'user',kind:'question',text:question,history:[],replyTo:node.replyTo||null};
+      const message={id:newId('m'),role:'user',kind:'question',text:question,history:[],replyTo:node.replyTo||null};
       if(source)message.sourceAnchor={...source,id:source.id===node.sourceAnchor?.id?source.id:'highlight-'+message.id};
       node.messages.push(message);node.draft='';node.quote='';node.pendingAnchor=null;node.replyTo=null;selection=null;selectedSource=null;
-      render();saveStudy();await startReply(node,message);
+      render();writeRoute(message.id);saveStudy();await startReply(node,message);
     }
     function questionContext(node,message){
       const paragraph=catalog[node.page];
@@ -544,7 +576,7 @@
         current.state=job.status;current.result=job;
         if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
+          node.messages.push({id:newId('m'),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -598,7 +630,7 @@
       }catch(error){if(settingsOpen&&load===settingsLoad){q('.lt-settings-error').textContent=error.message;q('.lt-settings-error').hidden=false}}
       finally{if(load===settingsLoad){button.disabled=false;fieldset.disabled=false}}
     });
-    window.addEventListener('popstate',()=>{if(location.hash==='#settings')showSettings();else hideSettings()});
+    window.addEventListener('popstate',()=>{if(location.hash==='#settings')showSettings();else{hideSettings();if(routingReady)applyRoute()}});
     const design={layout:'Side by side',textSize:19,surrounding:false};
     function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
     function buildControls(){
@@ -713,19 +745,21 @@
       q('.lt-reading-history').showModal();
     }
     function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';joint=k;buildControls()}
-    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;visit(n);const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;visit(n);const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition();writeRoute()}
     function enter(type,title,quote=''){
-      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id='b'+(++branchCount),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
+      cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id=newId('b'),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
       const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
       stack.push({id,type,title:label,restoreJoint:joint,restoreValues:[...states[joint]]});node.path=stack.map(s=>({...s,restoreValues:[...s.restoreValues]}));
-      if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();
+      if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();writeRoute();
     }
-    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
-    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;visit(page);stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition();writeRoute()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;visit(page);stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition();writeRoute()}
     root.addEventListener('click',e=>{
+      const permalink=e.target.closest('[data-discussion-link]');
+      if(permalink){if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;e.preventDefault();if(location.href!==permalink.href)history.pushState(null,'',permalink.href);applyRoute();return}
       const download=e.target.closest('[data-export-study]');if(download){exportStudy(download);return}
       const highlighted=e.target.closest('[data-source-links]');
-      if(highlighted){e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&root.contains(selected.anchorNode))return;chooseSource(highlighted);return}
+      if(highlighted){if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;e.preventDefault();const selected=window.getSelection();if(selected&&!selected.isCollapsed&&root.contains(selected.anchorNode))return;chooseSource(highlighted);return}
       const btn=e.target.closest('button');if(!btn)return;
       if(btn.dataset.openCopy){previewCopy(+btn.dataset.openCopy);return}
       if(btn.dataset.olderCopies){savedCopies(+btn.dataset.olderCopies);return}
@@ -753,6 +787,8 @@
       }
       if(btn.dataset.reopen){reopen(btn.dataset.reopen);return}
       const action=btn.dataset.action;
+      if(action==='retry-route'){cloudSync.refresh().then(()=>applyRoute());return}
+      if(action==='leave-route'){writeRoute(null,true);return}
       if(action==='keep-local'||action==='keep-cloud'){cloudSync.resolve(action==='keep-local'?'local':'cloud');return}
       if(action==='retry-sync'){cloudSync.refresh();return}
       if(action==='saved-copies'){savedCopies();return}
@@ -839,6 +875,13 @@
       validateSourceLinks(saved);applyingCloud=true;
       try{studyStore.save(saved);loadStudy(saved);q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;applyDesign();restoreReadingPosition();saveStudy()}
       finally{applyingCloud=false}
+      if(routingReady)queueMicrotask(()=>{
+        // A later cloud copy already restores its reading place. Reflect that
+        // navigation without uploading our previous place over it again.
+        if(!q('.lt-route-error').hidden){applyRoute(false);return}
+        const route=routes.parse(location.href);
+        if(route?.thread!==activeNode().id)writeRoute(null,true);
+      });
       for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m);
     }});
     q('#lt-restore-file').addEventListener('change',async event=>{
@@ -856,7 +899,7 @@
     if(!resumed&&new URLSearchParams(location.search).get('example')==='highlight'){openWrist();returnToHighlight(activeNode().id)}
     restoreReadingPosition();
     if(location.hash==='#settings')showSettings();
-    requestAnimationFrame(()=>{studyReady=true;if(studyLoaded){saveStudy();cloudSync.start(studySnapshot(),resumed);for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
+    requestAnimationFrame(async()=>{studyReady=true;if(studyLoaded){saveStudy();await cloudSync.start(studySnapshot(),resumed);routingReady=true;applyRoute();for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
     setInterval(()=>{if(document.visibilityState==='visible')cloudSync.refresh()},15000);
     window.addEventListener('online',()=>cloudSync.refresh());
     // Save each edit synchronously after the existing action handler has run.

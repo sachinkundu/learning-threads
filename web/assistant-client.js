@@ -11,7 +11,21 @@
       return escape(part);
     }).join('');
   }
-  function renderText(text){
+  const katex=typeof module!=='undefined'&&module.exports?require('katex'):scope.katex;
+  function renderMath(html){
+    // Work on escaped Markdown text, leaving tags and code samples intact. The
+    // original text is retained for existing source ranges and future highlights.
+    return html.replace(/<pre>[\s\S]*?<\/pre>|<code>[\s\S]*?<\/code>|<[^>]+>|\\\[[^<]*?\\\]|\\\([^<]*?\\\)|\$\$[^<]*?\$\$/g,part=>{
+      if(part.startsWith('<')||!katex)return part;
+      const source=part.replace(/&(?:amp|lt|gt|quot|#39);/g,e=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[e]));
+      const display=!source.startsWith('\\(');
+      try{
+        const math=katex.renderToString(source.slice(2,-2),{displayMode:display,output:'htmlAndMathml',throwOnError:true,trust:false,strict:'ignore',maxSize:10,maxExpand:1000,macros:{}});
+        return `<span class="lt-math${display?' lt-math-display':''}" data-math-source="${escape(source)}">${math}</span>`;
+      }catch{return part}
+    });
+  }
+  function renderText(text,options={}){
     const lines=String(text).split('\n'),blocks=[];let paragraph=[],list=[],code=null;
     const flush=()=>{if(paragraph.length){blocks.push('<p>'+inline(paragraph.join('\n'))+'</p>');paragraph=[]}if(list.length){blocks.push('<ul>'+list.map(x=>'<li>'+inline(x)+'</li>').join('')+'</ul>');list=[]}};
     for(const line of lines){
@@ -23,7 +37,7 @@
       else if(item){if(paragraph.length)flush();list.push(item[1])}
       else{if(list.length)flush();paragraph.push(line)}
     }
-    flush();if(code!==null)blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');return blocks.join('');
+    flush();if(code!==null)blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');const html=blocks.join('');return options.math===false?html:renderMath(html);
   }
   async function request(path,body){
     let response;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);

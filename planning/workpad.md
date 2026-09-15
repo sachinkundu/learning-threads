@@ -732,3 +732,45 @@ full history to `main`. GitHub readback confirmed `main` as the default branch
 and commit `9d6dbf90956ec818c64fbb2c6bb2a187411f682e`. The final 15-commit history
 scan and a separate scan of the committed public file tree both passed with no
 findings. Only the empty `.env.example` is included; `.env` remains ignored.
+
+## Equations and fixed discussion links — SAC-214 / SAC-215 (2026-09-15)
+
+Added pinned KaTeX 0.18.7 with local assets, MathML, inline/display delimiters,
+strict resource limits, and no trusted LaTeX commands. Invalid expressions and
+code fences remain escaped text. The presentation retains the original source
+text for highlight offsets; old messages and anchors need no migration.
+Formula selections expand to the complete formula. A saved highlight after the
+sphere equation still opens its child thread and returns to the exact source.
+
+Each paragraph, thread, question, and answer now has a URL using stable book,
+thread, and optional message IDs. The address bar follows navigation, source
+returns, and question submission. Receiving a reply keeps the question URL.
+Existing IDs are unchanged; new messages and branches use random unique IDs.
+Initial links resolve after cloud sync, so a fresh device can open a saved
+question. Later cloud copies keep the prior cross-device resume behavior and
+update the address bar to match; they do not re-upload the old reading place.
+Links retain the current Cloudflare Access protection. Unknown links show an
+actionable error. Browser Back/Forward and settings use the same history.
+
+Verification: 54 Node tests (including full reader DOM tests with delayed cloud
+loading, browser-history events, new questions, and nested source returns),
+TypeScript, three Python server checks, and build passed. DOM tests cover old
+anchors within/after formulas and prevent Markdown element boundaries from
+changing canonical source text. External Brave displayed the actual saved sphere
+answer in isolated QA, followed its old highlight into a child thread, and
+returned to that answer with the correct URL.
+
+A real Luna/High QA follow-up used the ancestor sphere formula and returned a
+rendered equation. Request `amu2fwtg3-340dlra7fom` recorded 1,524 input tokens,
+242 output tokens (148 reasoning), and estimated cost $0.00067125. Its question
+URL stayed fixed through completion. A second Brave origin with separate browser
+storage opened that same question, answer, source link, and usage from QA D1
+revision 59. QA fixtures stayed outside the production study.
+
+Production version `48f78a77-cb64-4f68-95d9-8afd43202365` was read back at
+100% traffic in deployment `860213b6-43cb-47c4-884a-185ed84237f9`. External Brave
+opened the existing production answer at
+https://learn.voxdez.com/?book=modern-robotics-2019-preprint&thread=b5&message=m20
+and displayed the sphere equation and inline math. The original selected text
+and question `m19` were present. No production test question or state reset was
+needed. Settings direct links and browser-history return also pass reader tests.

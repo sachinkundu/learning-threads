@@ -13,7 +13,7 @@ book_script = '<script>window.LearningBookData=' + json.dumps(book, ensure_ascii
 content = content.replace('<script src="./book.js"></script>', book_script + '<script>' + (folder / 'book.js').read_text() + '</script>')
 for filename in ['thread-examples.css']:
     content = content.replace(f'<link rel="stylesheet" href="./{filename}">', '<style>' + (folder / filename).read_text() + '</style>')
-for filename in ['study-store.js', 'study-sync.js', 'study-links.js', 'assistant-client.js', 'assistant-context.js', 'assistant-models.js', 'thread-examples.js']:
+for filename in ['study-store.js', 'study-sync.js', 'study-links.js', 'study-route.js', 'assistant-client.js', 'assistant-context.js', 'assistant-models.js', 'thread-examples.js']:
     content = content.replace(f'<script src="./{filename}"></script>', '<script>' + (folder / filename).read_text() + '</script>')
 # Keep the same pinned icon set as the approved prototype.
 content += '''
@@ -22,7 +22,7 @@ content += '''
 '''
 scripts = re.findall(r'<script>([\s\S]*?)</script>', content)
 hashes = ' '.join("'sha256-" + base64.b64encode(hashlib.sha256(script.encode()).digest()).decode() + "'" for script in scripts)
-policy = f"default-src 'none'; script-src {hashes} https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'"
+policy = f"default-src 'none'; script-src 'self' {hashes} https://unpkg.com/lucide@1.17.0/; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'"
 document = f'''<!doctype html>
 <html lang="en">
 <head>
@@ -41,4 +41,11 @@ dist = folder.parent / 'dist'
 dist.mkdir(exist_ok=True)
 (dist / 'index.html').write_text(document)
 shutil.copytree(folder / 'source-pages', dist / 'source-pages', dirs_exist_ok=True)
+katex = folder.parent / 'node_modules/katex'
+vendor = dist / 'vendor/katex'
+vendor.mkdir(parents=True, exist_ok=True)
+for filename in ['katex.min.js', 'katex.min.css']:
+    shutil.copy2(katex / 'dist' / filename, vendor / filename)
+shutil.copytree(katex / 'dist/fonts', vendor / 'fonts', dirs_exist_ok=True)
+shutil.copy2(katex / 'LICENSE', vendor / 'LICENSE')
 print(folder / 'index.html')

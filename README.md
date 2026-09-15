@@ -5,6 +5,8 @@ highlight a passage, ask a question, and explore nested conversations that stay
 linked to the exact source. Notes, highlights, and reading history sync across
 devices through Cloudflare.
 
+- Questions and nested threads have fixed links that can be bookmarked.
+- Assistant equations render as math while saved source highlights stay intact.
 - Book figures appear with the passages that refer to them.
 - Original PDF pages stay hidden until opened.
 - Assistant settings offer Astra, Sol, Terra, and Luna, with Luna/High by default.

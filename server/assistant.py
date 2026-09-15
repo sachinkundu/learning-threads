@@ -2,6 +2,7 @@
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import mimetypes
 from pathlib import Path
 import traceback
 from urllib.parse import urlsplit
@@ -53,13 +54,14 @@ def handler(site, origins, cloud):
             path = urlsplit(self.path).path
             if self.headers.get('Host') not in hosts:
                 return self.send_json({'error': 'Unknown host.'}, 403)
-            if path in ['/', '/index.html'] or path in SOURCE_ASSETS:
+            vendor = path.startswith('/vendor/katex/') and '..' not in path.split('/') and Path(path).suffix in ['.js', '.css', '.woff', '.woff2', '.ttf']
+            if path in ['/', '/index.html'] or path in SOURCE_ASSETS or vendor:
                 asset = site / ('index.html' if path in ['/', '/index.html'] else path.lstrip('/'))
                 if not asset.is_file():
                     return self.send_json({'error': 'Source page not found.'}, 404)
                 data = asset.read_bytes()
                 self.send_response(200)
-                self.send_header('Content-Type', 'image/png' if path in SOURCE_ASSETS else 'text/html; charset=utf-8')
+                self.send_header('Content-Type', mimetypes.guess_type(asset.name)[0] or 'application/octet-stream')
                 self.send_header('Cache-Control', 'no-cache')
                 self.send_header('X-Content-Type-Options', 'nosniff')
                 self.send_header('Content-Length', str(len(data)))
