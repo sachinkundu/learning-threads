@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-gnXe6OFhtpWvbESQp3u4EeyxSXOWwVVCLm0zCZqDido=' 'sha256-4TFP5FpcUwA4OMszIgqVd//jb03wLRqBi9C2UorMYig=' 'sha256-wBoyCocLc65iovx+XTUWOsMvdcMnsgpmw2aKh3BNd+k=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-VzcDk7H6pc1fqd8eRAbmSvxb7LKOAGVyheLAtX7cGfU=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-B7tHyr/Jdt4yrJeWsU/sH4HY/+BR1UH9+7JNY/cLI+4=' 'sha256-BqK4I6WcYJGpuMeLxMlgf/9UTu0CTInHND0ZXzrkgTs=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-wBoyCocLc65iovx+XTUWOsMvdcMnsgpmw2aKh3BNd+k=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-Tz0wL7xxn9CVB6ow1y5cEGwMq+sgjaIptzJBlk62GOI=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -145,6 +145,15 @@
     #lt-reading .lt-footer{padding-bottom:12px}
     @media(max-width:860px){#lt-reading .lt-columns{grid-template-columns:minmax(0,1fr);row-gap:0}#lt-reading .lt-book-section,#lt-reading .lt-thread{grid-column:1;grid-row:1}#lt-reading .lt-demo{grid-column:1;grid-row:2;position:static;margin-top:24px}#lt-reading .lt-qa{grid-column:1;grid-row:3}#lt-reading .lt-diagram{height:300px}#lt-reading .lt-content{max-width:760px;padding-top:24px}#lt-reading .lt-top-right{gap:0}}
     @media(max-width:400px){#lt-reading .lt-brand{font-size:15px}#lt-reading .lt-view-menu summary{font-size:12px}#lt-reading .lt-demo{padding:16px}#lt-reading .lt-diagram{height:270px}}
+    #lt-reading.lt-text-only:not(.lt-source-open) .lt-columns{display:block;max-width:760px;margin:auto}
+    #lt-reading.lt-text-only:not(.lt-source-open) .lt-content{max-width:888px}
+    #lt-reading .lt-book-figure{margin:24px 0}
+    #lt-reading .lt-book-figure img{width:100%;height:auto;background:white;border-radius:8px}
+    #lt-reading .lt-book-figure figcaption{font-size:14px;line-height:1.6;margin-top:12px;color:var(--lt-muted)}
+    #lt-reading .lt-reading-history-body{display:grid;gap:12px;margin-top:16px}
+    #lt-reading .lt-reading-history-body button{display:grid;text-align:left;justify-content:stretch}
+    #lt-reading .lt-reading-history-body span{color:var(--lt-muted)}
+    #lt-reading #lt-source-select{max-width:100%;min-width:0;background:var(--lt-surface);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:6px}
   </style>
   <style>#lt-reading{--lt-axis-a:light-dark(#4d719b,#97b9e1);--lt-axis-b:light-dark(#9b7028,#d6b16c);--lt-axis-c:var(--lt-teal)}
 #lt-reading.lt-in-thread .lt-columns{grid-template-columns:minmax(0,760px);gap:0;justify-content:center}
@@ -217,7 +226,7 @@
 #lt-reading .lt-call-usage summary{cursor:pointer}
 #lt-reading .lt-call-usage dl,#lt-reading .lt-usage-body>dl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:13px}
 #lt-reading .lt-call-usage dd,#lt-reading .lt-usage-body dd{margin:0;text-align:right}
-#lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-panel);color:var(--lt-ink)}
+#lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-surface);color:var(--lt-ink);opacity:1}
 #lt-reading .lt-usage-dialog::backdrop{background:rgba(0,0,0,.6)}
 #lt-reading .lt-usage-dialog>button{float:right}
 </style>
@@ -235,6 +244,7 @@
         <section class="lt-book-section" aria-label="Current book paragraph">
           <div class="lt-sectionlabel lt-passagelabel">2.2.1 Robot joints · paragraph 1</div>
           <p class="lt-prose" id="lt-passage"></p>
+          <figure class="lt-book-figure" hidden></figure>
           <div class="lt-source">Lynch &amp; Park · §2.2.1</div>
           <button class="lt-action lt-thread-entry" type="button" data-action="open-wrist" hidden><i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion</button>
           <div class="lt-actions">
@@ -263,7 +273,7 @@
         </section>
       </div>
       <aside id="lt-source-page" class="lt-source-page" aria-label="Original PDF page" hidden>
-        <div class="lt-source-tools"><button class="lt-action" type="button" data-action="zoom-source" aria-pressed="false">Zoom in</button><button class="lt-action" type="button" data-action="close-source">Close</button></div>
+        <div class="lt-source-tools"><select id="lt-source-select" aria-label="PDF page" hidden></select><button class="lt-action" type="button" data-action="zoom-source" aria-pressed="false">Zoom in</button><button class="lt-action" type="button" data-action="close-source">Close</button></div>
         <div class="lt-source-viewport" tabindex="0" aria-label="Source page, scroll to inspect"><img class="lt-source-image" alt="Modern Robotics, printed page 16, PDF page 36" width="1275" height="1651"></div>
         <p class="lt-source-error" role="alert" hidden>Could not load this page. <button class="lt-action" type="button" data-action="retry-source">Retry</button></p>
       </aside>
@@ -277,25 +287,55 @@
       </section>
     </div>
     <footer class="lt-footer">
-      <div class="lt-progress"><button type="button" data-page="0" aria-label="Read sample paragraph 1">1</button><button type="button" data-page="1" aria-label="Read sample paragraph 2">2</button><span class="lt-readstatus"></span></div>
+      <button class="lt-action" type="button" data-action="history">History</button>
       <div class="lt-nav"><button class="lt-action" type="button" data-action="previous">Previous</button><button class="lt-action lt-primary" type="button" data-action="next">Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
     </footer>
   </div>
   <dialog class="lt-link-picker" aria-label="Choose a discussion"></dialog>
   <dialog class="lt-usage-dialog" aria-label="Assistant usage"><button class="lt-action" type="button" data-action="close-usage">Close</button><div class="lt-usage-body"></div></dialog>
   <dialog class="lt-usage-dialog lt-copies-dialog" aria-label="Saved study copies"><button class="lt-action" type="button" data-action="close-copies">Close</button><div class="lt-copies-body"></div></dialog>
+  <dialog class="lt-usage-dialog lt-reading-history" aria-label="Reading history"><button class="lt-action" type="button" data-action="close-history">Close</button><div class="lt-reading-history-body"></div></dialog>
   <input id="lt-restore-file" type="file" accept="application/json,.json" hidden>
+  <script>window.LearningBookData={"id": "modern-robotics-2019-preprint", "title": "Modern Robotics", "authors": "Lynch and Park", "sourceSha256": "65651f98b5573adabd75b46105db60dc30ebc95d247bffb5eacbb68f3ad4c3a7", "revision": 1, "chapters": [{"number": 1, "title": "Preview", "paragraphs": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]}], "paragraphs": [{"id": "2.2.1-p1", "chapter": 2, "chapterTitle": "Configuration Space", "section": "2.2.1 Robot joints", "number": 1, "sourcePages": [16], "text": "Figure 2.3 illustrates the basic joints found in typical robots. Every joint connects exactly two links; joints that simultaneously connect three or more links are not allowed. The revolute joint (R), also called a hinge joint, allows rotational motion about the joint axis. The prismatic joint (P), also called a sliding or linear joint, allows translational (or rectilinear) motion along the direction of the joint axis. The helical joint (H), also called a screw joint, allows simultaneous rotation and translation about a screw axis. Revolute, prismatic, and helical joints all have one degree of freedom.", "legacy": true, "jointDemo": true}, {"id": "2.2.1-p2", "chapter": 2, "chapterTitle": "Configuration Space", "section": "2.2.1 Robot joints", "number": 2, "sourcePages": [16], "text": "Joints can also have multiple degrees of freedom. The cylindrical joint (C) has two degrees of freedom and allows independent translations and rotations about a single fixed joint axis. The universal joint (U) is another two-degree-of-freedom joint that consists of a pair of revolute joints arranged so that their joint axes are orthogonal. The spherical joint (S), also called a ball-and-socket joint, has three degrees of freedom and functions much like our shoulder joint.", "legacy": true, "jointDemo": true}, {"id": "mr-ch01-p001", "chapter": 1, "chapterTitle": "Preview", "number": 1, "section": "Preview", "sourcePages": [1], "text": "As an academic discipline, robotics is a relatively young field with highly ambitious goals, the ultimate one being the creation of machines that can behave and think like humans. This attempt to create intelligent machines naturally leads us first to examine ourselves – to ask, for example, why our bodies are designed the way they are, how our limbs are coordinated, and how we learn and perform complex tasks. The sense that the fundamental questions in robotics are ultimately questions about ourselves is part of what makes robotics such a fascinating and engaging endeavor."}, {"id": "mr-ch01-p002", "chapter": 1, "chapterTitle": "Preview", "number": 2, "section": "Preview", "sourcePages": [1], "text": "Our focus in this book is on mechanics, planning, and control for robot mechanisms. Robot arms are one familiar example. So are wheeled vehicles, as are robot arms mounted on wheeled vehicles. Basically, a mechanism is constructed by connecting rigid bodies, called links, together by means of joints, so that relative motion between adjacent links becomes possible. Actuation of the joints, typically by electric motors, then causes the robot to move and exert forces in desired ways."}, {"id": "mr-ch01-p003", "chapter": 1, "chapterTitle": "Preview", "number": 3, "section": "Preview", "sourcePages": [1], "text": "The links of a robot mechanism can be arranged in serial fashion, like the familiar open-chain arm shown in Figure 1.1(a). Robot mechanisms can also have links that form closed loops, such as the Stewart–Gough platform shown in Figure 1.1(b). In the case of an open chain, all the joints are actuated, while in the case of mechanisms with closed loops, only a subset of the joints may be actuated.", "figure": {"asset": "/source-pages/modern-robotics-figure-1-1.png", "alt": "An open-chain industrial arm on the left and a Stewart–Gough platform with six legs forming closed loops on the right.", "caption": "Figure 1.1: Open-chain and closed-chain robot mechanisms.", "details": ["(a) An open-chain industrial manipulator, visualized in V-REP [154].", "(b) Stewart–Gough platform. Closed loops are formed from the base platform, through the legs, through the top platform, and through the legs back to the base platform."]}}, {"id": "mr-ch01-p004", "chapter": 1, "chapterTitle": "Preview", "number": 4, "section": "Preview", "sourcePages": [1, 2], "text": "Let us examine more closely the current technology behind robot mechanisms. The links are moved by actuators, which typically are electrically driven (e.g., by DC or AC motors, stepper motors, or shape memory alloys) but can also be driven by pneumatic or hydraulic cylinders. In the case of rotating electric motors, these would ideally be lightweight, operate at relatively low rotational speeds (e.g., in the range of hundreds of RPM), and be able to generate large forces and torques. Since most currently available motors operate at low torques and at up to thousands of RPM, speed reduction and torque amplification are required. Examples of such transmissions or transformers include gears, cable drives, belts and pulleys, and chains and sprockets. These speed-reduction devices should have zero or low slippage and backlash (defined as the amount of rotation available at the output of the speed-reduction device without motion at the input). Brakes may also be attached to stop the robot quickly or to maintain a stationary posture."}, {"id": "mr-ch01-p005", "chapter": 1, "chapterTitle": "Preview", "number": 5, "section": "Preview", "sourcePages": [2], "text": "Robots are also equipped with sensors to measure the motion at the joints. For both revolute and prismatic joints, encoders, potentiometers, or resolvers measure the displacement and sometimes tachometers are used to measure velocity. Forces and torques at the joints or at the end-effector of the robot can be measured using various types of force–torque sensors. Additional sensors may be used to help localize objects or the robot itself, such as vision-only cameras, RGB-D cameras which measure the color (RGB) and depth (D) to each pixel, laser range finders, and various types of acoustic sensor."}, {"id": "mr-ch01-p006", "chapter": 1, "chapterTitle": "Preview", "number": 6, "section": "Preview", "sourcePages": [2, 3], "text": "The study of robotics often includes artificial intelligence and computer perception, but an essential feature of any robot is that it moves in the physical world. Therefore, this book, which is intended to support a first course in robotics for undergraduates and graduate students, focuses on mechanics, motion planning, and control of robot mechanisms."}, {"id": "mr-ch01-p007", "chapter": 1, "chapterTitle": "Preview", "number": 7, "section": "Preview", "sourcePages": [3], "text": "In the rest of this chapter we provide a preview of the rest of the book."}, {"id": "mr-ch01-p008", "chapter": 1, "chapterTitle": "Preview", "number": 8, "section": "Chapter 2: Configuration Space", "sourcePages": [3], "text": "As mentioned above, at its most basic level a robot consists of rigid bodies connected by joints, with the joints driven by actuators. In practice the links may not be completely rigid, and the joints may be affected by factors such as elasticity, backlash, friction, and hysteresis. In this book we ignore these effects for the most part and assume that all links are rigid."}, {"id": "mr-ch01-p009", "chapter": 1, "chapterTitle": "Preview", "number": 9, "section": "Chapter 2: Configuration Space", "sourcePages": [3], "text": "With this assumption, Chapter 2 focuses on representing the configuration of a robot system, which is a specification of the position of every point of the robot. Since the robot consists of a collection of rigid bodies connected by joints, our study begins with understanding the configuration of a rigid body. We see that the configuration of a rigid body in the plane can be described using three variables (two for the position and one for the orientation) and the configuration of a rigid body in space can be described using six variables (three for the position and three for the orientation). The number of variables is the number of degrees of freedom (dof) of the rigid body. It is also the dimension of the configuration space, the space of all configurations of the body."}, {"id": "mr-ch01-p010", "chapter": 1, "chapterTitle": "Preview", "number": 10, "section": "Chapter 2: Configuration Space", "sourcePages": [3], "text": "The dof of a robot, and hence the dimension of its configuration space, is the sum of the dof of its rigid bodies minus the number of constraints on the motion of those rigid bodies provided by the joints. For example, the two most popular joints, revolute (rotational) and prismatic (translational) joints, allow only one motion freedom between the two bodies they connect. Therefore a revolute or prismatic joint can be thought of as providing five constraints on the motion of one spatial rigid body relative to another. Knowing the dof of a rigid body and the number of constraints provided by joints, we can derive Grübler’s formula for calculating the dof of general robot mechanisms. For open-chain robots such as the industrial manipulator of Figure 1.1(a), each joint is independently actuated and the dof is simply the sum of the freedoms provided by each joint. For closed chains like the Stewart–Gough platform in Figure 1.1(b), Grübler’s formula is a convenient way to calculate the dof. Unlike open-chain robots, some joints of closed chains are not actuated."}, {"id": "mr-ch01-p011", "chapter": 1, "chapterTitle": "Preview", "number": 11, "section": "Chapter 2: Configuration Space", "sourcePages": [3, 4], "text": "Apart from calculating the dof, other configuration space concepts of interest include the topology (or “shape”) of the configuration space and its representation. Two configuration spaces of the same dimension may have different shapes, just like a two-dimensional plane has a different shape from the two-dimensional surface of a sphere. These differences become important when determining how to represent the space. The surface of a unit sphere, for example, could be represented using a minimal number of coordinates, such as latitude and longitude, or it could be represented by three numbers (x, y, z) subject to the constraint x² + y² + z² = 1. The former is an explicit parametrization of the space and the latter is an implicit parametrization of the space. Each type of representation has its advantages, but in this book we will use implicit representations of configurations of rigid bodies."}, {"id": "mr-ch01-p012", "chapter": 1, "chapterTitle": "Preview", "number": 12, "section": "Chapter 2: Configuration Space", "sourcePages": [4], "text": "A robot arm is typically equipped with a hand or gripper, more generally called an end-effector, which interacts with objects in the surrounding world. To accomplish a task such as picking up an object, we are concerned with the configuration of a reference frame rigidly attached to the end-effector, and not necessarily the configuration of the entire arm. We call the space of positions and orientations of the end-effector frame the task space and note that there is not a one-to-one mapping between the robot’s configuration space and the task space. The workspace is defined to be the subset of the task space that the end-effector frame can reach."}, {"id": "mr-ch01-p013", "chapter": 1, "chapterTitle": "Preview", "number": 13, "section": "Chapter 3: Rigid-Body Motions", "sourcePages": [4], "text": "This chapter addresses the problem of how to describe mathematically the motion of a rigid body moving in three-dimensional physical space. One convenient way is to attach a reference frame to the rigid body and to develop a way to quantitatively describe the frame’s position and orientation as it moves. As a first step, we introduce a 3 × 3 matrix representation for describing a frame’s orientation; such a matrix is referred to as a rotation matrix."}, {"id": "mr-ch01-p014", "chapter": 1, "chapterTitle": "Preview", "number": 14, "section": "Chapter 3: Rigid-Body Motions", "sourcePages": [4], "text": "A rotation matrix is parametrized by three independent coordinates. The most natural and intuitive way to visualize a rotation matrix is in terms of its exponential coordinate representation. That is, given a rotation matrix R, there exists some unit vector ω̂ ∈ ℝ³ and angle θ ∈ [0, π] such that the rotation matrix can be obtained by rotating the identity frame (that is, the frame corresponding to the identity matrix) about ω̂ by θ. The exponential coordinates are defined as ω = ω̂θ ∈ ℝ³, which is a three-parameter representation. There are several other well-known coordinate representations, e.g., Euler angles, Cayley–Rodrigues parameters, and unit quaternions, which are discussed in Appendix B."}, {"id": "mr-ch01-p015", "chapter": 1, "chapterTitle": "Preview", "number": 15, "section": "Chapter 3: Rigid-Body Motions", "sourcePages": [4, 5], "text": "Another reason for focusing on the exponential description of rotations is that they lead directly to the exponential description of rigid-body motions. The latter can be viewed as a modern geometric interpretation of classical screw theory. Keeping the classical terminology as much as possible, we cover in detail the linear algebraic constructs of screw theory, including the unified description of linear and angular velocities as six-dimensional twists (also known as spatial velocities), and an analogous description of three-dimensional forces and moments as six-dimensional wrenches (also known as spatial forces)."}, {"id": "mr-ch01-p016", "chapter": 1, "chapterTitle": "Preview", "number": 16, "section": "Chapter 4: Forward Kinematics", "sourcePages": [5], "text": "For an open chain, the position and orientation of the end-effector are uniquely determined from the joint positions. The forward kinematics problem is to find the position and orientation of the reference frame attached to the end-effector given the set of joint positions. In this chapter we present the product of exponentials (PoE) formula describing the forward kinematics of open chains. As the name implies, the PoE formula is directly derived from the exponential coordinate representation for rigid-body motions. Aside from providing an intuitive and easily visualizable interpretation of the exponential coordinates as the twists of the joint axes, the PoE formula offers other advantages, like eliminating the need for link frames (only the base frame and end-effector frame are required, and these can be chosen arbitrarily)."}, {"id": "mr-ch01-p017", "chapter": 1, "chapterTitle": "Preview", "number": 17, "section": "Chapter 4: Forward Kinematics", "sourcePages": [5], "text": "In Appendix C we also present the Denavit–Hartenberg (D–H) representation for forward kinematics. The D–H representation uses fewer parameters but requires that reference frames be attached to each link following special rules of assignment, which can be cumbersome. Details of the transformation from the D–H to the PoE representation are also provided in Appendix C."}, {"id": "mr-ch01-p018", "chapter": 1, "chapterTitle": "Preview", "number": 18, "section": "Chapter 5: Velocity Kinematics and Statics", "sourcePages": [5], "text": "Velocity kinematics refers to the relationship between the joint linear and angular velocities and those of the end-effector frame. Central to velocity kinematics is the Jacobian of the forward kinematics. By multiplying the vector of joint-velocity rates by this configuration-dependent matrix, the twist of the end-effector frame can be obtained for any given robot configuration. Kinematic singularities, which are configurations in which the end-effector frame loses the ability to move or rotate in one or more directions, correspond to those configurations at which the Jacobian matrix fails to have maximal rank. The manipulability ellipsoid, whose shape indicates the ease with which the robot can move in various directions, is also derived from the Jacobian."}, {"id": "mr-ch01-p019", "chapter": 1, "chapterTitle": "Preview", "number": 19, "section": "Chapter 5: Velocity Kinematics and Statics", "sourcePages": [5], "text": "Finally, the Jacobian is also central to static force analysis. In static equilibrium settings, the Jacobian is used to determine what forces and torques need to be exerted at the joints in order for the end-effector to apply a desired wrench."}, {"id": "mr-ch01-p020", "chapter": 1, "chapterTitle": "Preview", "number": 20, "section": "Chapter 5: Velocity Kinematics and Statics", "sourcePages": [6], "text": "The definition of the Jacobian depends on the representation of the end-effector velocity, and our preferred representation of the end-effector velocity is as a six-dimensional twist. We touch briefly on other representations of the end-effector velocity and their corresponding Jacobians."}, {"id": "mr-ch01-p021", "chapter": 1, "chapterTitle": "Preview", "number": 21, "section": "Chapter 6: Inverse Kinematics", "sourcePages": [6], "text": "The inverse kinematics problem is to determine the set of joint positions that achieves a desired end-effector configuration. For open-chain robots, the inverse kinematics is in general more involved than the forward kinematics: for a given set of joint positions there usually exists a unique end-effector position and orientation but, for a particular end-effector position and orientation, there may exist multiple solutions to the joint positions, or no solution at all."}, {"id": "mr-ch01-p022", "chapter": 1, "chapterTitle": "Preview", "number": 22, "section": "Chapter 6: Inverse Kinematics", "sourcePages": [6], "text": "In this chapter we first examine a popular class of six-dof open-chain structures whose inverse kinematics admits a closed-form analytic solution. Iterative numerical algorithms are then derived for solving the inverse kinematics of general open chains by taking advantage of the inverse of the Jacobian. If the open-chain robot is kinematically redundant, meaning that it has more joints than the dimension of the task space, then we use the pseudoinverse of the Jacobian."}, {"id": "mr-ch01-p023", "chapter": 1, "chapterTitle": "Preview", "number": 23, "section": "Chapter 7: Kinematics of Closed Chains", "sourcePages": [6], "text": "While open chains have unique forward kinematics solutions, closed chains often have multiple forward kinematics solutions, and sometimes even multiple solutions for the inverse kinematics as well. Also, because closed chains possess both actuated and passive joints, the kinematic singularity analysis of closed chains presents subtleties not encountered in open chains. In this chapter we study the basic concepts and tools for the kinematic analysis of closed chains. We begin with a detailed case study of mechanisms such as the planar five-bar linkage and the Stewart–Gough platform. These results are then generalized into a systematic methodology for the kinematic analysis of more general closed chains."}, {"id": "mr-ch01-p024", "chapter": 1, "chapterTitle": "Preview", "number": 24, "section": "Chapter 8: Dynamics of Open Chains", "sourcePages": [6, 7], "text": "Dynamics is the study of motion taking into account the forces and torques that cause it. In this chapter we study the dynamics of open-chain robots. In analogy to the notions of a robot’s forward and inverse kinematics, the forward dynamics problem is to determine the resulting joint accelerations for a given set of joint forces and torques. The inverse dynamics problem is to determine the input joint torques and forces needed for desired joint accelerations. The dynamic equations relating the forces and torques to the motion of the robot’s links are given by a set of second-order ordinary differential equations."}, {"id": "mr-ch01-p025", "chapter": 1, "chapterTitle": "Preview", "number": 25, "section": "Chapter 8: Dynamics of Open Chains", "sourcePages": [7], "text": "The dynamics for an open-chain robot can be derived using one of two approaches. In the Lagrangian approach, first a set of coordinates – referred to as generalized coordinates in the classical dynamics literature – is chosen to parametrize the configuration space. The sum of the potential and kinetic energies of the robot’s links are then expressed in terms of the generalized coordinates and their time derivatives. These are then substituted into the Euler–Lagrange equations, which then lead to a set of second-order differential equations for the dynamics, expressed in the chosen coordinates for the configuration space."}, {"id": "mr-ch01-p026", "chapter": 1, "chapterTitle": "Preview", "number": 26, "section": "Chapter 8: Dynamics of Open Chains", "sourcePages": [7], "text": "The Newton–Euler approach builds on the generalization of f = ma, i.e., the equations governing the acceleration of a rigid body given the wrench acting on it. Given the joint variables and their time derivatives, the Newton–Euler approach to inverse dynamics is: to propagate the link velocities and accelerations outward from the proximal link to the distal link, in order to determine the velocity and acceleration of each link; to use the equations of motion for a rigid body to calculate the wrench (and therefore the joint force or torque) that must be acting on the outermost link; and to proceed along the links back toward the base of the robot, calculating the joint forces or torques needed to create the motion of each link and to support the wrench transmitted to the distal links. Because of the open-chain structure, the dynamics can be formulated recursively."}, {"id": "mr-ch01-p027", "chapter": 1, "chapterTitle": "Preview", "number": 27, "section": "Chapter 8: Dynamics of Open Chains", "sourcePages": [7], "text": "In this chapter we examine both approaches to deriving a robot’s dynamic equations. Recursive algorithms for both the forward and inverse dynamics, as well as analytical formulations of the dynamic equations, are presented."}, {"id": "mr-ch01-p028", "chapter": 1, "chapterTitle": "Preview", "number": 28, "section": "Chapter 9: Trajectory Generation", "sourcePages": [7], "text": "What sets a robot apart from an automated machine is that it should be easily reprogrammable for different tasks. Different tasks require different motions, and it would be unreasonable to expect the user to specify the entire time-history of each joint for every task; clearly it would be desirable for the robot’s control computer to “fill in the details” from a small set of task input data."}, {"id": "mr-ch01-p029", "chapter": 1, "chapterTitle": "Preview", "number": 29, "section": "Chapter 9: Trajectory Generation", "sourcePages": [7], "text": "This chapter is concerned with the automatic generation of joint trajectories from this set of task input data. Formally, a trajectory consists of a path, which is a purely geometric description of the sequence of configurations achieved by a robot, and a time scaling, which specifies the times at which those configurations are reached."}, {"id": "mr-ch01-p030", "chapter": 1, "chapterTitle": "Preview", "number": 30, "section": "Chapter 9: Trajectory Generation", "sourcePages": [8], "text": "Often the input task data is given in the form of an ordered set of joint values, called control points, together with a corresponding set of control times. On the basis of this data the trajectory generation algorithm produces a trajectory for each joint which satisfies various user-supplied conditions. In this chapter we focus on three cases: (i) point-to-point straight-line trajectories in both joint space and task space; (ii) smooth trajectories passing through a sequence of timed “via points”; and (iii) time-optimal trajectories along specified paths, subject to the robot’s dynamics and actuator limits. Finding paths that avoid collisions is the subject of the next chapter on motion planning."}, {"id": "mr-ch01-p031", "chapter": 1, "chapterTitle": "Preview", "number": 31, "section": "Chapter 10: Motion Planning", "sourcePages": [8], "text": "This chapter addresses the problem of finding a collision-free motion for a robot through a cluttered workspace, while avoiding joint limits, actuator limits, and other physical constraints imposed on the robot. The path planning problem is a subproblem of the general motion planning problem that is concerned with finding a collision-free path between a start and goal configuration, usually without regard to the dynamics, the duration of the motion, or other constraints on the motion or control inputs."}, {"id": "mr-ch01-p032", "chapter": 1, "chapterTitle": "Preview", "number": 32, "section": "Chapter 10: Motion Planning", "sourcePages": [8], "text": "There is no single planner applicable to all motion planning problems. In this chapter we consider three basic approaches: grid-based methods, sampling methods, and methods based on virtual potential fields."}, {"id": "mr-ch01-p033", "chapter": 1, "chapterTitle": "Preview", "number": 33, "section": "Chapter 11: Robot Control", "sourcePages": [8], "text": "A robot arm can exhibit a number of different behaviors depending on the task and its environment. It can act as a source of programmed motions for tasks such as moving an object from one place to another, or tracing a trajectory for manufacturing applications. It can act as a source of forces, for example when grinding or polishing a workpiece. In tasks such as writing on a chalkboard, it must control forces in some directions (the force pressing the chalk against the board) and motions in other directions (the motion in the plane of the board). In certain applications, e.g., haptic displays, we may want the robot to act like a programmable spring, damper, or mass, by controlling its position, velocity, or acceleration in response to forces applied to it."}, {"id": "mr-ch01-p034", "chapter": 1, "chapterTitle": "Preview", "number": 34, "section": "Chapter 11: Robot Control", "sourcePages": [8, 9], "text": "In each of these cases, it is the job of the robot controller to convert the task specification to forces and torques at the actuators. Control strategies to achieve the behaviors described above are known as motion (or position) control, force control, hybrid motion–force control, and impedance control. Which of these behaviors is appropriate depends on both the task and the environment. For example, a force-control goal makes sense when the end-effector is in contact with something, but not when it is moving in free space. We also have a fundamental constraint imposed by the mechanics, irrespective of the environment: the robot cannot independently control both motions and forces in the same direction. If the robot imposes a motion then the environment determines the force, and vice versa."}, {"id": "mr-ch01-p035", "chapter": 1, "chapterTitle": "Preview", "number": 35, "section": "Chapter 11: Robot Control", "sourcePages": [9], "text": "Most robots are driven by actuators that apply a force or torque to each joint. Hence, precisely controlling a robot requires an understanding of the relationship between the joint forces and torques and the motion of the robot; this is the domain of dynamics. Even for simple robots, however, the dynamic equations are complex and dependent on a precise knowledge of the mass and inertia of each link, which may not be readily available. Even if it were, the dynamic equations would still not reflect physical phenomena such as friction, elasticity, backlash, and hysteresis."}, {"id": "mr-ch01-p036", "chapter": 1, "chapterTitle": "Preview", "number": 36, "section": "Chapter 11: Robot Control", "sourcePages": [9], "text": "Most practical control schemes compensate for these uncertainties by using feedback control. After examining the performance limits of feedback control without a dynamic model of the robot, we study motion control algorithms, such as computed torque control, that combine approximate dynamic modeling with feedback control. The basic lessons learned for robot motion control are then applied to force control, hybrid motion–force control, and impedance control."}, {"id": "mr-ch01-p037", "chapter": 1, "chapterTitle": "Preview", "number": 37, "section": "Chapter 12: Grasping and Manipulation", "sourcePages": [9], "text": "The focus of earlier chapters is on characterizing, planning, and controlling the motion of the robot itself. To do useful work, the robot must be capable of manipulating objects in its environment. In this chapter we model the contact between the robot and an object, specifically the constraints on the object motion imposed by a contact and the forces that can be transmitted through a frictional contact. With these models we study the problem of choosing contacts to immobilize an object by form closure and force closure grasping. We also apply contact modeling to manipulation problems other than grasping, such as pushing an object, carrying an object dynamically, and testing the stability of a structure."}, {"id": "mr-ch01-p038", "chapter": 1, "chapterTitle": "Preview", "number": 38, "section": "Chapter 13: Wheeled Mobile Robots", "sourcePages": [9, 10], "text": "The final chapter addresses the kinematics, motion planning, and control of wheeled mobile robots and of wheeled mobile robots equipped with robot arms. A mobile robot can use specially designed omniwheels or mecanum wheels to achieve omnidirectional motion, including spinning in place or translating in any direction. Many mobile bases, however, such as cars and differential-drive robots, use more typical wheels, which do not slip sideways. These no-slip constraints are fundamentally different from the loop-closure constraints found in closed chains; the latter are holonomic, meaning that they are configuration constraints, while the former are nonholonomic, meaning that the velocity constraints cannot be integrated to become equivalent configuration constraints."}, {"id": "mr-ch01-p039", "chapter": 1, "chapterTitle": "Preview", "number": 39, "section": "Chapter 13: Wheeled Mobile Robots", "sourcePages": [10], "text": "Because of the different properties of omnidirectional mobile robots versus nonholonomic mobile robots, we consider their kinematic modeling, motion planning, and control separately. In particular, the motion planning and control of nonholonomic mobile robots is more challenging than for omnidirectional mobile robots."}, {"id": "mr-ch01-p040", "chapter": 1, "chapterTitle": "Preview", "number": 40, "section": "Chapter 13: Wheeled Mobile Robots", "sourcePages": [10], "text": "Once we have derived their kinematic models, we show that the odometry problem – the estimation of the chassis configuration based on wheel encoder data – can be solved in the same way for both types of mobile robots. Similarly, for mobile manipulators consisting of a wheeled base and a robot arm, we show that feedback control for mobile manipulation (controlling the motion of the end-effector using the arm joints and wheels) is the same for both types of mobile robots. The fundamental object in mobile manipulation is the Jacobian mapping joint rates and wheel velocities to end-effector twists."}, {"id": "mr-ch01-p041", "chapter": 1, "chapterTitle": "Preview", "number": 41, "section": "Chapter 13: Wheeled Mobile Robots", "sourcePages": [10], "text": "Each chapter concludes with a summary of important concepts from the chapter, and Appendix A compiles some of the most used equations into a handy reference. Videos supporting the book can be found at the book’s website, http://modernrobotics.org. Some chapters have associated software, downloadable from the website. The software is meant to be neither maximally robust nor efficient but to be readable and to reinforce the concepts in the book. You are encouraged to read the software, not just use it, to cement your understanding of the material. Each function contains a sample usage in the comments. The software package may grow over time, but the core functions are documented in the chapters themselves."}]};</script><script>/* Stable paragraph slots keep previously saved source offsets and thread IDs intact. */
+(function(scope){
+  'use strict';
+  const data=typeof module!=='undefined'&&module.exports?require('./books/modern-robotics.json'):scope.LearningBookData;
+  const order=data.chapters.flatMap(c=>c.paragraphs),first=order[0];
+  const api={...data,order,first,
+    next(page){return order[order.indexOf(page)+1]??null},
+    previous(page){return order[order.indexOf(page)-1]??null},
+    label(page){const p=data.paragraphs[page];return `Chapter ${p.chapter} · ${p.section} · paragraph ${p.number}`},
+    root(page){const p=data.paragraphs[page];return {id:'p'+page,title:`Paragraph ${p.number}`,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null}},
+    upgrade(state){
+      const value=JSON.parse(JSON.stringify(state));
+      if(value.readingVersion===data.revision)return value;
+      // The first full chapter replaces the sample starting place, not its work.
+      const factories={notes:()=>'',noteOpen:()=>false,highlights:()=>[],noteHistory:()=>[],noteEdits:()=>null};
+      for(const [key,make] of Object.entries(factories)){
+        value[key]??=Array.from({length:value.notes.length},make);
+        while(value[key].length<data.paragraphs.length)value[key].push(make());
+      }
+      const ids=new Set(value.conversations.map(n=>n.id));
+      for(let page=0;page<data.paragraphs.length;page++)if(!ids.has('p'+page))value.conversations.push(api.root(page));
+      value.visits??=[{page:value.page,at:new Date(0).toISOString()}];
+      value.page=first;value.activeId='p'+first;value.readingVersion=data.revision;
+      return value;
+    }
+  };
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningBook=api;
+})(globalThis);
+</script>
   <script>/* Browser persistence for one book. Cloud storage will sit behind this boundary. */
 (function (scope) {
   'use strict';
-  const BOOK = 'modern-robotics-2019-preprint';
+  const catalog = typeof module!=='undefined' && module.exports ? require('./book.js') : scope.LearningBook;
+  const BOOK = catalog.id;
   const KEY = 'learning-threads:study:' + BOOK;
   class StudyStorageError extends Error {
     constructor(message, cause) { super(message, { cause }); this.name = 'StudyStorageError'; }
   }
   const check = (condition, message) => { if (!condition) throw new StudyStorageError(message); };
   const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
-  const isPage = value => value === 0 || value === 1;
   const validId = value => typeof value === 'string' && /^[a-z][a-z0-9-]*$/i.test(value);
   const checkHistory = history => check(history===undefined || (Array.isArray(history) && history.every(r=>isObject(r)&&typeof r.text==='string'&&typeof r.at==='string'&&Number.isFinite(Date.parse(r.at)))), 'Saved revision history is invalid.');
   function checkAnchor(a,page){
@@ -310,17 +350,21 @@
     check(Array.isArray(visual.values) && visual.values.length === bounds.length && visual.values.every((v,i)=>Number.isFinite(v) && v>=bounds[i][0] && v<=bounds[i][1]), 'Saved joint controls are invalid.');
   }
   function validate(state) {
+    check(isObject(state) && (state.readingVersion===undefined || state.readingVersion===catalog.revision), 'Saved book version is not supported.');
+    const count=state.readingVersion===catalog.revision?catalog.paragraphs.length:2;
+    const isPage=value=>Number.isInteger(value)&&value>=0&&value<count;
+    if(state.visits!==undefined)check(Array.isArray(state.visits)&&state.visits.every(v=>isObject(v)&&isPage(v.page)&&typeof v.at==='string'&&Number.isFinite(Date.parse(v.at))), 'Saved reading history is invalid.');
     check(isObject(state) && isPage(state.page), 'Saved reading place is invalid.');
-    check(Array.isArray(state.notes) && state.notes.length===2 && state.notes.every(n=>typeof n==='string'), 'Saved notes are invalid.');
-    if(state.noteHistory!==undefined){check(Array.isArray(state.noteHistory)&&state.noteHistory.length===2,'Saved note history is invalid.');state.noteHistory.forEach(checkHistory)}
-    if(state.noteEdits!==undefined)check(Array.isArray(state.noteEdits)&&state.noteEdits.length===2&&state.noteEdits.every(n=>n===null||typeof n==='string'),'Saved note edit is invalid.');
-    check(Array.isArray(state.noteOpen) && state.noteOpen.length===2 && state.noteOpen.every(n=>typeof n==='boolean'), 'Saved note view is invalid.');
+    check(Array.isArray(state.notes) && state.notes.length===count && state.notes.every(n=>typeof n==='string'), 'Saved notes are invalid.');
+    if(state.noteHistory!==undefined){check(Array.isArray(state.noteHistory)&&state.noteHistory.length===count,'Saved note history is invalid.');state.noteHistory.forEach(checkHistory)}
+    if(state.noteEdits!==undefined)check(Array.isArray(state.noteEdits)&&state.noteEdits.length===count&&state.noteEdits.every(n=>n===null||typeof n==='string'),'Saved note edit is invalid.');
+    check(Array.isArray(state.noteOpen) && state.noteOpen.length===count && state.noteOpen.every(n=>typeof n==='boolean'), 'Saved note view is invalid.');
     check(Array.isArray(state.read) && state.read.every(isPage), 'Saved read marks are invalid.');
-    check(Array.isArray(state.highlights) && state.highlights.length===2 && state.highlights.every(list=>Array.isArray(list) && list.every(h=>isObject(h) && Number.isInteger(h.start) && h.start>=0 && Number.isInteger(h.end) && h.end>h.start && typeof h.quote==='string' && h.quote.length===h.end-h.start)), 'Saved highlights are invalid.');
+    check(Array.isArray(state.highlights) && state.highlights.length===count && state.highlights.every(list=>Array.isArray(list) && list.every(h=>isObject(h) && Number.isInteger(h.start) && h.start>=0 && Number.isInteger(h.end) && h.end>h.start && typeof h.quote==='string' && h.quote.length===h.end-h.start)), 'Saved highlights are invalid.');
     checkVisual({joint:state.joint, values:state.states?.[state.joint]});
     for (const joint of Object.keys(limits)) checkVisual({joint,values:state.states?.[joint]});
     check(isObject(state.design) && ['Side by side','Visual below'].includes(state.design.layout) && Number.isFinite(state.design.textSize) && state.design.textSize>=17 && state.design.textSize<=24 && typeof state.design.surrounding==='boolean', 'Saved reading view is invalid.');
-    check(Array.isArray(state.conversations) && state.conversations.length>=2, 'Saved threads are missing.');
+    check(Array.isArray(state.conversations) && state.conversations.length>=count, 'Saved threads are missing.');
     const nodes=new Map(), messageIds=new Set();
     for (const node of state.conversations) {
       check(isObject(node) && validId(node.id) && !nodes.has(node.id) && isPage(node.page), 'Saved thread identity is invalid.');
@@ -343,7 +387,7 @@
       }
       nodes.set(node.id,node);
     }
-    check(nodes.get('p0')?.page===0 && !nodes.get('p0').parent && nodes.get('p1')?.page===1 && !nodes.get('p1').parent, 'Saved paragraph threads are missing.');
+    for(let p=0;p<count;p++)check(nodes.get('p'+p)?.page===p && !nodes.get('p'+p).parent, 'Saved paragraph threads are missing.');
     for (const node of nodes.values()) {
       for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean)){
         if(a.kind==='message'){
@@ -406,7 +450,7 @@
       }
     };
   }
-  const api={create,validate,KEY,BOOK,StudyStorageError};
+  const api={create,validate,upgrade:state=>validate(catalog.upgrade(validate(state))),KEY,BOOK,StudyStorageError};
   if (typeof module!=='undefined' && module.exports) module.exports=api;
   else scope.LearningStudyStore=api;
 })(globalThis);
@@ -416,10 +460,10 @@
   'use strict';
   const clone=value=>JSON.parse(JSON.stringify(value));
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-  const content=value=>{const copy=clone(value);for(const node of copy?.conversations||[])delete node.scrollY;return copy};
   const newId=()=> 's-'+(scope.crypto?.randomUUID?.()||Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
-  function create({book,storage,apply,status,canApply=()=>true,request=fetch}) {
+  function create({book,storage,apply,status,canApply=()=>true,normalize=value=>value,request=fetch}) {
     const key='learning-threads:sync:'+book;
+    const content=value=>{const copy=value?normalize(clone(value)):value;for(const node of copy?.conversations||[])delete node.scrollY;return copy};
     let meta={base:0,last:null,pending:null},latest=null,ready=false,working=false,conflict=null,timer;
     function persist(){storage().setItem(key,JSON.stringify(meta))}
     async function api(path,options={}){
@@ -431,7 +475,7 @@
     function report(error=null){status({error:error?.message||null,conflict:!!conflict})}
     function acceptHead(head){
       // Apply validates source offsets before changing the saved reading state.
-      apply(clone(head.state));latest=clone(head.state);
+      apply(normalize(clone(head.state)));latest=normalize(clone(head.state));
       meta={base:head.version,last:clone(head.state),pending:null};persist();conflict=null;report();
     }
     async function send(attempt=0){
@@ -477,11 +521,11 @@
           const atStart=clone(latest),result=await api('');
           if(conflict)return;
           if(!result.head){meta.base=0;await send();return}
-          if(same(content(latest),content(result.head.state))){meta={base:result.head.version,last:clone(latest),pending:null};persist();return}
-          if((!hadLocal||same(latest,meta.last))&&same(atStart,latest)&&canApply())acceptHead(result.head);
+          if(same(content(latest),content(result.head.state))){meta={base:result.head.version,last:clone(result.head.state),pending:null};persist();return}
+          if((!hadLocal||same(content(latest),content(meta.last)))&&same(atStart,latest)&&canApply())acceptHead(result.head);
           else await send();
         });
-        ready=true;
+        ready=true;if(!conflict&&!same(latest,meta.last))schedule();
       },
       observe(state){latest=clone(state);if(ready)schedule()},
       stop(){clearTimeout(timer)},
@@ -761,14 +805,18 @@ window.LearningThreadExamples = (() => {
     const threadExamples=window.LearningThreadExamples;
     const links=window.LearningStudyLinks;
     const assistant=window.LearningAssistant;
+    const book=LearningBook,catalog=book.paragraphs;
+    const blank=make=>Array.from({length:catalog.length},make);
     const runningRequests=new Set();
     let cloudSync=null,applyingCloud=false;
     const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
     const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
-    const paragraphs=[
-      `Figure 2.3 illustrates the basic joints found in typical robots. Every joint connects exactly two links; joints that simultaneously connect three or more links are not allowed. The ${term('R','revolute')} (R), also called a hinge joint, allows rotational motion about the joint axis. The ${term('P','prismatic')} (P), also called a sliding or linear joint, allows translational (or rectilinear) motion along the direction of the joint axis. The ${term('H','helical')} (H), also called a screw joint, allows simultaneous rotation and translation about a screw axis. Revolute, prismatic, and helical joints all have one degree of freedom.`,
-      `Joints can also have multiple degrees of freedom. The ${term('C','cylindrical')} (C) has two degrees of freedom and allows independent translations and rotations about a single fixed joint axis. The ${term('U','universal')} (U) is another two-degree-of-freedom joint that consists of a pair of revolute joints arranged so that their joint axes are orthogonal. The ${term('S','spherical')} (S), also called a ball-and-socket joint, has three degrees of freedom and functions much like our shoulder joint.`
-    ];
+    const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const paragraphs=catalog.map(p=>{
+      let html=escapeText(p.text);
+      if(p.jointDemo)for(const key of (p.number===1?['R','P','H']:['C','U','S']))html=html.replace(terms[key]+' joint',term(key,terms[key]));
+      return html;
+    });
     const clean=s=>{const t=document.createElement('div');t.innerHTML=s;return t.textContent};
     const states={R:[40],P:[35],H:[90],C:[40,30],U:[25,20],S:[25,20,15]};
     const defs={
@@ -779,27 +827,28 @@ window.LearningThreadExamples = (() => {
       U:{controls:[['First hinge',-60,60,'°'],['Second hinge',-60,60,'°']],caption:'Two hinges, with their axes at right angles.',dof:2},
       S:{controls:[['Tilt',-60,60,'°'],['Swing',-60,60,'°'],['Twist',-140,140,'°']],caption:'The link can turn about three axes through the joint.',dof:3}
     };
-    let page=0,joint='R',stack=[],read=new Set(),notes=['',''],noteOpen=[false,false],highlights=[[],[]],feedback='',animation=0,context=false;
-    let noteHistory=[[],[]],noteEdits=[null,null];
+    let page=book.first,joint='R',stack=[],read=new Set(),notes=blank(()=>''),noteOpen=blank(()=>false),highlights=blank(()=>[]),feedback='',animation=0,context=false,visits=[];
+    let noteHistory=blank(()=>[]),noteEdits=blank(()=>null);
     let selection=null;
-    let sourceOpen=false;
-    // The current paragraphs share printed p. 16 (PDF page 36). Extend this
-    // mapping with checked page references when importing the next passages.
-    const sourcePages=[{printed:16,pdf:36,asset:'/source-pages/modern-robotics-p16.png'},{printed:16,pdf:36,asset:'/source-pages/modern-robotics-p16.png'}];
+    let sourceOpen=false,sourceIndex=0,sourceParagraph=null;
+    const sourcePages=catalog.map(p=>p.sourcePages.map(printed=>({printed,pdf:printed+20,asset:`/source-pages/modern-robotics-p${printed}.png`})));
     function showSource(open){
-      sourceOpen=open;root.classList.toggle('lt-source-open',open);q('.lt-source-page').hidden=!open;q('.lt-demo').hidden=open;
-      const source=sourcePages[page],button=q('[data-action="toggle-source"]'),img=q('.lt-source-image');
-      button.setAttribute('aria-expanded',String(open));button.textContent='Source p. '+source.printed;
+      sourceOpen=open;root.classList.toggle('lt-source-open',open);q('.lt-source-page').hidden=!open;q('.lt-demo').hidden=open||!catalog[page].jointDemo;
+      const pages=sourcePages[page],button=q('[data-action="toggle-source"]'),img=q('.lt-source-image'),select=q('#lt-source-select');
+      if(sourceParagraph!==page){sourceIndex=0;sourceParagraph=page;select.innerHTML=pages.map((p,i)=>`<option value="${i}">Printed p. ${p.printed} · PDF ${p.pdf}</option>`).join('')}
+      select.hidden=pages.length===1;select.value=sourceIndex;
+      const source=pages[sourceIndex];
+      button.setAttribute('aria-expanded',String(open));button.textContent=pages.length===1?'Source p. '+source.printed:'Source pp. '+pages[0].printed+'–'+pages.at(-1).printed;
       if(open&&img.getAttribute('src')!==source.asset){img.src=source.asset;img.alt=`Modern Robotics, printed page ${source.printed}, PDF page ${source.pdf}`;img.classList.remove('lt-zoomed');q('[data-action="zoom-source"]').textContent='Zoom in';q('[data-action="zoom-source"]').setAttribute('aria-pressed','false')}
     }
+    q('#lt-source-select').addEventListener('change',event=>{sourceIndex=+event.target.value;showSource(true)});
     q('.lt-source-image').addEventListener('error',()=>{q('.lt-source-error').hidden=false;q('.lt-source-viewport').hidden=true});
     q('.lt-source-image').addEventListener('load',()=>{q('.lt-source-error').hidden=true;q('.lt-source-viewport').hidden=false});
     let selectedSource=null,branchCount=0,messageCount=0;
     const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
-    const conversations=new Map([['p0',makeNode('p0','Paragraph 1')],['p1',makeNode('p1','Paragraph 2')]]);
-    conversations.get('p1').page=1;
+    const conversations=new Map(catalog.map((_,p)=>['p'+p,book.root(p)]));
     const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
-    const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
     const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
     const isMessageAnchor=a=>a?.kind==='message';
     function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text)):message.text}
@@ -817,12 +866,12 @@ window.LearningThreadExamples = (() => {
       for(let i=0;i<notes.length;i++)if(noteEdits[i]!==null){links.revise(noteHistory[i],noteEdits[i],notes[i]);noteEdits[i]=null}
       for(const node of conversations.values())for(const m of node.messages)if(m.noteEditBase!==undefined){links.revise(m.noteHistory||(m.noteHistory=[]),m.noteEditBase,m.note||'');delete m.noteEditBase}
     }
-    function rememberVisual(){activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
+    function rememberVisual(){if(catalog[page].jointDemo)activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
     function restoreReadingPosition(){const y=activeNode().scrollY||0;requestAnimationFrame(()=>window.scrollTo(0,y))}
     const studyStore=LearningStudyStore.create(()=>window.localStorage);
     let studyReady=false,studyLoaded=false,lastStorageError='';
     function studySnapshot(){
-      return {page,activeId:activeNode().id,joint,states,read:[...read],notes,noteOpen,noteHistory,noteEdits,highlights,design,
+      return {readingVersion:book.revision,visits,page,activeId:activeNode().id,joint,states,read:[...read],notes,noteOpen,noteHistory,noteEdits,highlights,design,
         conversations:[...conversations.values()].map(node=>({...node,busy:false,status:''}))};
     }
     function showStorageError(error){
@@ -839,17 +888,18 @@ window.LearningThreadExamples = (() => {
     }
     function validateSourceLinks(saved){
       LearningStudyStore.validate(saved);
-      for(let p=0;p<paragraphs.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
+      for(let p=0;p<saved.highlights.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
       const savedNodes=new Map(saved.conversations.map(n=>[n.id,n]));
       for(const node of saved.conversations)for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean))if(sourceText(a,savedNodes).slice(a.start,a.end)!==a.quote)throw new Error('A saved thread no longer matches its source. Export a backup.');
     }
     function loadStudy(provided){
       try{
-        const saved=provided||studyStore.load();studyLoaded=true;if(!saved)return false;
+        const original=provided||studyStore.load();studyLoaded=true;if(!original)return false;
+        validateSourceLinks(original);const saved=LearningStudyStore.upgrade(original);
         // Never reattach an old highlight if a source passage has changed.
         validateSourceLinks(saved);
         page=saved.page;joint=saved.joint;Object.assign(states,saved.states);read=new Set(saved.read);notes=saved.notes;noteOpen=saved.noteOpen;highlights=saved.highlights;Object.assign(design,saved.design);
-        noteHistory=saved.noteHistory||[[],[]];noteEdits=saved.noteEdits||[null,null];
+        noteHistory=saved.noteHistory||blank(()=>[]);noteEdits=saved.noteEdits||blank(()=>null);visits=saved.visits||[];
         conversations.clear();for(const node of saved.conversations)conversations.set(node.id,{...node,busy:false,status:''});
         stack=conversations.get(saved.activeId).path.map(step=>({...step,restoreValues:[...step.restoreValues]}));
         branchCount=Math.max(0,...[...conversations.keys()].map(id=>/^b\d+$/.test(id)?+id.slice(1):0));
@@ -875,7 +925,7 @@ window.LearningThreadExamples = (() => {
         const copy=await cloudSync.copy(version),state=copy.state;validateSourceLinks(state);
         const notes=state.notes.filter(Boolean).map(text=>`<blockquote>${escapeText(text)}</blockquote>`).join('');
         const work=state.conversations.filter(n=>n.messages.length||n.draft).map(n=>`<details><summary>${escapeText(n.title)}</summary>${n.messages.map(m=>`<p>${escapeText(m.text)}</p>${m.note?`<blockquote>${escapeText(m.note)}</blockquote>`:''}`).join('')}${n.draft?`<blockquote>${escapeText(n.draft)}</blockquote>`:''}</details>`).join('');
-        body.innerHTML=`<p>${escapeText(new Date(copy.created).toLocaleString())} · Paragraph ${state.page+1}</p>${notes}${work}<div class="lt-actions"><button class="lt-action" type="button" data-restore-copy="${version}">Restore this copy</button><button class="lt-action" type="button" data-action="saved-copies">All copies</button></div>`;
+        body.innerHTML=`<p>${escapeText(new Date(copy.created).toLocaleString())} · ${escapeText(book.label(state.page))}</p>${notes}${work}<div class="lt-actions"><button class="lt-action" type="button" data-restore-copy="${version}">Restore this copy</button><button class="lt-action" type="button" data-action="saved-copies">All copies</button></div>`;
       }catch(error){body.textContent=error.message}
     }
     let syncConflict=false;
@@ -955,7 +1005,7 @@ window.LearningThreadExamples = (() => {
     function makeBookAnchor(quote,threadId){
       const text=clean(paragraphs[page]),start=text.indexOf(quote);
       if(start<0||text.indexOf(quote,start+1)!==-1)throw new Error('The highlighted source must match one exact passage.');
-      return links.anchor(text,start,start+quote.length,{id:'highlight-'+threadId,kind:'book',book:LearningStudyStore.BOOK,paragraph:'2.2.1-p'+(page+1),page,sourcePage:16});
+      return links.anchor(text,start,start+quote.length,{id:'highlight-'+threadId,kind:'book',book:LearningStudyStore.BOOK,paragraph:catalog[page].id,page,sourcePage:catalog[page].sourcePages[0]});
     }
     function renderBookAnchors(){
       const passage=q('#lt-passage');
@@ -995,7 +1045,7 @@ window.LearningThreadExamples = (() => {
       const close=document.createElement('button');close.type='button';close.className='lt-action';close.dataset.action='close-link-picker';close.textContent='Close';picker.append(close);picker.showModal();
     }
     function captureSource(container,range,messageId=null){
-      const source={id:newAnchorId(),book:LearningStudyStore.BOOK,page,kind:messageId?'message':'book',...(messageId?{nodeId:activeNode().id,messageId,sourceRevision:0}:{paragraph:'2.2.1-p'+(page+1),sourcePage:16})};
+      const source={id:newAnchorId(),book:LearningStudyStore.BOOK,page,kind:messageId?'message':'book',...(messageId?{nodeId:activeNode().id,messageId,sourceRevision:0}:{paragraph:catalog[page].id,sourcePage:catalog[page].sourcePages[0]})};
       return links.capture(container,range,source);
     }
     function openWrist(){
@@ -1036,7 +1086,8 @@ window.LearningThreadExamples = (() => {
       const publicMessage=m=>({id:m.id,role:m.role,text:m.text,sourceAnchor:m.sourceAnchor||null,note:m.note||null});
       const ancestors=[];let parent=node;
       while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages.map(publicMessage)})}
-      return {book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:node.page+1,passage:clean(paragraphs[node.page]),learningPath:['Robot joints',...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
+      const passage=catalog[node.page];
+      return {book:'Modern Robotics, Lynch and Park',chapter:passage.chapter,chapterTitle:passage.chapterTitle,section:passage.section,sourcePage:passage.sourcePages[0],sourcePages:passage.sourcePages,pdfPages:passage.sourcePages.map(p=>p+20),paragraph:passage.number,paragraphId:passage.id,passage:clean(paragraphs[node.page]),learningPath:[passage.section,...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:passage.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:passage.figure||null};
     }
     async function startReply(node,message){
       if(message.request&&runningRequests.has(message.request.id))return;
@@ -1079,9 +1130,15 @@ window.LearningThreadExamples = (() => {
       flushNoteEdits();
       showSource(sourceOpen);
       root.classList.toggle('lt-in-thread',!!stack.length);
-      q('h2').textContent=stack.length?activeNode().title:'How robot joints move';
+      const passage=catalog[page],next=book.next(page),previous=book.previous(page);
+      root.classList.toggle('lt-text-only',!passage.jointDemo);
+      q('.lt-book-meta span').textContent=`Chapter ${passage.chapter} · ${passage.chapterTitle}`;
+      q('h2').textContent=stack.length?activeNode().title:passage.section;
       q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
-      q('.lt-passagelabel').textContent=`2.2.1 Robot joints · paragraph ${page+1}`;
+      q('.lt-passagelabel').textContent=`Paragraph ${passage.number}`;
+      q('.lt-source').textContent=`Lynch & Park · p. ${passage.sourcePages.join('–')}`;
+      const figure=q('.lt-book-figure');figure.hidden=!passage.figure||!!stack.length;
+      if(passage.figure)figure.innerHTML=`<img src="${passage.figure.asset}" alt="${escapeText(passage.figure.alt)}"><figcaption>${escapeText(passage.figure.caption)} ${passage.figure.details.map(escapeText).join(' ')}</figcaption>`;
       q('[data-action="open-wrist"]').hidden=page!==1;
       q('#lt-passage').innerHTML=paragraphs[page];
       renderHighlights();
@@ -1094,12 +1151,11 @@ window.LearningThreadExamples = (() => {
       q('.lt-context').hidden=!(context||design.surrounding);
       q('[data-action="context"]').setAttribute('aria-expanded',String(context||design.surrounding));
       q('[data-action="context"]').textContent=context||design.surrounding?'Hide surrounding text':'Show surrounding text';
-      q('.lt-context .lt-sectionlabel').textContent=page===0?'Next paragraph':'Previous paragraph';
-      q('.lt-context-text').textContent=clean(paragraphs[1-page]);
-      qa('[data-page]').forEach(el=>{el.classList.toggle('current',+el.dataset.page===page);el.setAttribute('aria-current',+el.dataset.page===page?'step':'false')});
-      q('.lt-readstatus').textContent=read.size?read.size+' read':'';
-      q('[data-action="previous"]').disabled=page===0&&!stack.length;
-      q('[data-action="next"]').innerHTML=stack.length?'Return to reading':page===0?'Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i>':'Done for now <i data-lucide="check" aria-hidden="true"></i>';
+      q('.lt-context .lt-sectionlabel').textContent=next!==null?'Next paragraph':'Previous paragraph';
+      q('.lt-context-text').textContent=catalog[next??previous]?.text||'';
+      q('[data-action="previous"]').disabled=previous===null&&!stack.length;
+      q('[data-action="next"]').disabled=next===null&&read.has(page);
+      q('[data-action="next"]').innerHTML=next!==null?'Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i>':read.has(page)?'Chapter complete':'Finish chapter <i data-lucide="check" aria-hidden="true"></i>';
       q('.lt-footer').hidden=!!stack.length;
       if(stack.length){
         const node=activeNode();
@@ -1168,8 +1224,14 @@ window.LearningThreadExamples = (() => {
       el('circle',{cx:11,cy:19,r:4,fill:fixed});label(22,23,'Fixed link');
       el('circle',{cx:w-105,cy:19,r:4,fill:green});label(w-94,23,'Moving link');
     }
+    function visit(p){if(visits.at(-1)?.page!==p)visits.push({page:p,at:new Date().toISOString()})}
+    function showHistory(){
+      const pages=[page,...[...visits].reverse().map(v=>v.page),...read,...catalog.map((_,p)=>p).filter(p=>notes[p]||highlights[p].length||[...conversations.values()].some(n=>n.page===p&&(n.messages.length||n.draft)))];
+      q('.lt-reading-history-body').innerHTML=[...new Set(pages)].map(p=>`<button class="lt-action" data-page="${p}" type="button" ${p===page?'aria-current="location"':''}><strong>${escapeText(book.label(p))}</strong><span>${escapeText(catalog[p].text.slice(0,130))}…</span></button>`).join('');
+      q('.lt-reading-history').showModal();
+    }
     function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';joint=k;buildControls()}
-    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;visit(n);const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
     function enter(type,title,quote=''){
       cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id='b'+(++branchCount),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
       const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
@@ -1177,7 +1239,7 @@ window.LearningThreadExamples = (() => {
       if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();
     }
     function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
-    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;visit(page);stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
     root.addEventListener('click',e=>{
       const download=e.target.closest('[data-export-study]');if(download){exportStudy(download);return}
       const highlighted=e.target.closest('[data-source-links]');
@@ -1198,7 +1260,7 @@ window.LearningThreadExamples = (() => {
       if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}
       if(btn.dataset.messageNote){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.messageNote);message.noteOpen=!message.noteOpen;renderQA();if(message.noteOpen)q('#lt-answer-note-'+message.id).focus();return}
       if(btn.dataset.joint){selectJoint(btn.dataset.joint);return}
-      if(btn.dataset.page!==undefined){goPage(+btn.dataset.page);return}
+      if(btn.dataset.page!==undefined){q('.lt-reading-history').close();goPage(+btn.dataset.page);return}
       if(btn.dataset.return!==undefined){backTo(+btn.dataset.return);return}
       if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;if(node.pendingAnchor?.messageId!==btn.dataset.follow){node.pendingAnchor=null;node.quote=''}renderQA();focusQuestion();return}
       if(btn.dataset.branchMessage){
@@ -1218,6 +1280,8 @@ window.LearningThreadExamples = (() => {
       if(action==='close-source'){showSource(false);q('[data-action="toggle-source"]').focus({preventScroll:true});return}
       if(action==='zoom-source'){const zoom=q('.lt-source-image').classList.toggle('lt-zoomed');btn.setAttribute('aria-pressed',String(zoom));btn.textContent=zoom?'Fit page':'Zoom in';return}
       if(action==='retry-source'){q('.lt-source-image').removeAttribute('src');showSource(true);return}
+      if(action==='history'){showHistory();return}
+      if(action==='close-history'){q('.lt-reading-history').close();return}
       if(action==='usage'){showUsage();return}
       if(action==='close-usage'){q('.lt-usage-dialog').close();return}
       if(action==='export-study'){exportStudy();return}
@@ -1226,8 +1290,8 @@ window.LearningThreadExamples = (() => {
       if(action==='focus-question'){focusQuestion();return}
       if(action==='clear-ask-context'){activeNode().quote='';activeNode().replyTo=null;activeNode().pendingAnchor=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
       if(action==='branch-selection'){const node=activeNode(),message=node.messages.find(m=>m.id===node.replyTo);newQuestionBranch(node.quote||message?.concept||'A related concept');return}
-      if(action==='next'){if(stack.length)backTo(0);else{read.add(page);if(page===0)goPage(1);else{feedback='';render()}}}
-      if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(page>0)goPage(page-1)}
+      if(action==='next'){if(stack.length)backTo(0);else{read.add(page);const next=book.next(page);if(next!==null)goPage(next);else{feedback='';render()}}}
+      if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(book.previous(page)!==null)goPage(book.previous(page))}
       if(action==='back-thread')backTo(stack.length-1);
       if(action==='context'){context=!(context||design.surrounding);design.surrounding=false;render()}
       if(action==='note'){noteOpen[page]=!noteOpen[page];q('.lt-note').hidden=!noteOpen[page];if(noteOpen[page])q('#lt-note-text').focus()}
@@ -1285,7 +1349,7 @@ window.LearningThreadExamples = (() => {
     function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
     const resumed=loadStudy();
     q('.lt-view-options').insertAdjacentHTML('beforeend','<div class="lt-actions"><a class="lt-action" href="#" data-export-study download style="text-decoration:none">Export</a><button class="lt-action" type="button" data-action="restore-study">Restore</button><button class="lt-action" type="button" data-action="saved-copies">Saved copies</button></div>');
-    cloudSync=LearningStudySync.create({book:LearningStudyStore.BOOK,storage:()=>window.localStorage,status:syncStatus,canApply:()=>studyLoaded&&!runningRequests.size&&!document.activeElement?.matches('input,textarea'),apply:saved=>{
+    cloudSync=LearningStudySync.create({book:LearningStudyStore.BOOK,storage:()=>window.localStorage,status:syncStatus,normalize:LearningStudyStore.upgrade,canApply:()=>studyLoaded&&!runningRequests.size&&!document.activeElement?.matches('input,textarea'),apply:saved=>{
       validateSourceLinks(saved);applyingCloud=true;
       try{studyStore.save(saved);loadStudy(saved);q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;applyDesign();restoreReadingPosition();saveStudy()}
       finally{applyingCloud=false}

@@ -28,7 +28,7 @@ DISABLED = ['apps', 'plugins', 'shell_tool', 'unified_exec', 'browser_use',
             'computer_use', 'in_app_browser', 'image_generation', 'multi_agent',
             'memories', 'hooks', 'skill_search', 'workspace_dependencies', 'view_image']
 TOKEN_FIELDS = ['input_tokens', 'cached_input_tokens', 'output_tokens', 'reasoning_output_tokens']
-SOURCE_ASSETS = {'/source-pages/modern-robotics-p16.png'}
+SOURCE_ASSETS = {f'/source-pages/modern-robotics-p{page}.png' for page in [*range(1, 11), 16]} | {'/source-pages/modern-robotics-figure-1-1.png'}
 
 
 def now():

@@ -403,3 +403,76 @@ to cloud sync. If it differs from the cloud copy, the learner chooses which
 copy becomes current, and both remain in Saved copies. Do not import the QA
 fixture into the production study. The Mac must be awake for live Codex calls;
 Cloudflare serves reading and study sync independently.
+
+
+## SAC-196 — Chapter 1 reading release, 2026-09-15
+
+The reader now starts at Chapter 1, Preview. Its 41 paragraphs were checked
+against printed pages 1–10 (PDF pages 21–30) of MR-v2.pdf. The catalog retains
+the source PDF SHA-256 and stable paragraph IDs. Paragraphs split by a page
+break remain one paragraph, with both source pages available. Figure 1.1 is a
+separate web image with selectable caption text. Inline mathematics was
+checked visually and repaired where extraction lost accents or symbols.
+`scripts/extract-chapter-one.py` creates a review draft; the checked catalog in
+`web/books/modern-robotics.json` is the published source.
+
+The ordered path contains Chapter 1 only. Later chapters still need checked
+imports. The two previous section 2.2.1 passages retain slots 0 and 1, exact
+text offsets, conversation IDs, notes, highlights, and nested source links.
+History exposes earlier work without putting the sample into Chapter 1's
+sequence. Migration moves the starting place once, then normal resume applies.
+No mastery gate was introduced.
+
+Persistence accepts both old two-paragraph snapshots and the new catalog
+revision. Cloud comparisons normalize old copies before detecting conflicts;
+an unacknowledged write retains its original request ID and body. Migration
+never mutates the saved input. Unknown book revisions and invalid source
+positions are rejected. Usage and Saved copies dialogs now use the defined,
+opaque surface color instead of the undefined panel variable.
+
+Verification:
+- 26 Node tests, 6 Python tests, and TypeScript pass. New tests cover preservation
+  of nested work, repeat migration, invalid catalog references, all 41 ordered
+  paragraphs, cloud migration against newer tablet edits, and lost acknowledgements.
+- External Brave on the separate QA origin restored the existing rich D1 copy,
+  opened Chapter 1, and followed the old spherical highlight into its original
+  wrist thread. Nested source links and the offline draft were retained.
+- Brave traversed paragraphs 1–41, finished the chapter, and reloaded at
+  paragraph 41 with the completion mark retained. No jump to the old sample.
+- Printed pages 1 and 2 were selectable for the cross-page fourth paragraph.
+  The hidden source view loaded the checked images. Figure 1.1 and the source
+  panel were checked at an 820 × 1180 tablet viewport; no horizontal overflow.
+- Usage was visually opaque in Brave. This is browser tablet-size testing,
+  not a physical iPad trial.
+- Cloudflare release a4d414ea-6e1d-4c8a-b4d4-8c6614d663da is at 100% traffic.
+  The Mac/Tailscale service was updated with all new checked source assets.
+  The signed-in production page opened at Chapter 1. D1 version 8 read back
+  readingVersion 1 and 43 preserved paragraph slots.
+
+Assistant architecture clarification: the Mac LaunchAgent makes outbound
+HTTPS requests every three seconds to pick up questions stored in Cloudflare
+D1. It invokes codex exec with the existing Codex login, then uploads replies
+and token usage. OpenAI performs inference. Cloudflare does not initiate an
+inbound connection to the Mac. Cloud reading and sync work without the Mac;
+assistant responses require the Mac awake and online. Tailscale is not involved
+in this cloud relay. This follows the earlier request to wrap the Codex CLI.
+
+SAC-193 remains open for the exported-file backup/restore check described above.
+
+Live follow-up proof: production Chapter 1 question amu28t3wi-mf2sqnmw2ym
+completed with 10,840 input / 6,784 cached input / 52 output tokens. Follow-up
+amu28tp1z-1sn9nxyvn2d contained chapter 1, paragraph mr-ch01-p001, replyTo m4,
+and both prior messages; it completed with 10,957 input / 0 cached input /
+112 output tokens. Both used gpt-6-astra. The browser displayed a cup-reaching
+example and text diagram. Production D1 version 11 contained all four messages
+and both completed requests. Reload retained both exchanges. Dollar charges
+were not reported. The live Usage dialog computed rgb(32,41,43), opacity 1.
+The authenticated page-1 source image loaded at 1020px width, and an anonymous
+request to the same new image redirected to Access sign-in.
+
+Final release c03c3f61-51a9-476f-832a-6c687729fd33 also fixes the saved-copy
+preview label to use the book paragraph number rather than its storage slot.
+Brave opened the saved copy and showed Chapter 1 / Preview / paragraph 1.
+SAC-196 is Done; later chapter imports remain outside this completed first
+chapter slice. Both the cloud reader and the private Tailscale service have
+this build.

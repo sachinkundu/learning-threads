@@ -1,12 +1,16 @@
 """Build the reading app directly, without the chat visualization wrapper."""
 import base64
 import hashlib
+import json
 from pathlib import Path
 import re
 import shutil
 
 folder = Path(__file__).resolve().parent
 content = (folder / 'reading.html').read_text()
+book = json.loads((folder / 'books/modern-robotics.json').read_text())
+book_script = '<script>window.LearningBookData=' + json.dumps(book, ensure_ascii=False).replace('</', '<\\/') + ';</script>'
+content = content.replace('<script src="./book.js"></script>', book_script + '<script>' + (folder / 'book.js').read_text() + '</script>')
 for filename in ['thread-examples.css']:
     content = content.replace(f'<link rel="stylesheet" href="./{filename}">', '<style>' + (folder / filename).read_text() + '</style>')
 for filename in ['study-store.js', 'study-sync.js', 'study-links.js', 'assistant-client.js', 'thread-examples.js']:

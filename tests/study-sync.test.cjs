@@ -69,3 +69,29 @@ test('a viewport scroll adjustment does not conflict with a new note',async()=>{
   a.sync.observe({...initial,notes:'Edited on the computer'});await a.sync.flush();
   assert.equal(remote.head().state.notes,'Edited on the computer');assert.equal(a.statuses.at(-1).conflict,false);a.sync.stop();b.sync.stop();
 });
+
+test('a chapter migration adopts newer remote edits and durably saves the upgraded state',async()=>{
+  const remote=server(),disk=storage(),old=client(remote,disk);
+  await old.sync.start({notes:'Original'},true);old.sync.stop();
+  const other=client(remote);await other.sync.start({},false);
+  other.sync.observe({notes:'Newer tablet note'});await other.sync.flush();other.sync.stop();
+  const normalize=s=>({...s,readingVersion:1});
+  const updated=client(remote,disk,{normalize});
+  await updated.sync.start({notes:'Original',readingVersion:1},true);await updated.sync.flush();
+  assert.deepEqual(updated.received.at(-1),{notes:'Newer tablet note',readingVersion:1});
+  assert.equal(remote.head().state.readingVersion,1);assert.equal(updated.statuses.at(-1).conflict,false);updated.sync.stop();
+});
+test('a migration retries an unacknowledged save unchanged before saving the new format',async()=>{
+  const remote=server(),disk=storage();let drop=true;const bodies=[];
+  const wrapped={request:async(path,opts)=>{
+    if(opts.method==='POST')bodies.push(JSON.parse(opts.body));
+    const response=await remote.request(path,opts);
+    if(opts.method==='POST'&&drop){drop=false;throw new Error('Lost acknowledgement')}
+    return response;
+  }};
+  const old=client(wrapped,disk);await old.sync.start({notes:'Keep this'},true);old.sync.stop();
+  const updated=client(wrapped,disk,{normalize:s=>({...s,readingVersion:1})});
+  await updated.sync.start({notes:'Keep this',readingVersion:1},true);await updated.sync.flush();
+  assert.deepEqual(bodies[0],bodies[1]);assert.equal(remote.head().state.readingVersion,1);
+  assert.equal(remote.versions.size,2);updated.sync.stop();
+});

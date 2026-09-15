@@ -84,3 +84,33 @@ test('reply anchors and revision histories survive reopening and reject missing 
   state.conversations[3].sourceAnchor.messageId='missing';assert.throws(()=>store.save(state),/lost its reply/);
   assert.equal(create(()=>disk).load().conversations[3].sourceAnchor.messageId,'m2');
 });
+
+const Book=require('../web/book.js');
+const {upgrade}=require('../web/study-store.js');
+test('the full chapter migration preserves all old work and runs only once',()=>{
+  const old=fixture(),before=structuredClone(old),state=upgrade(old);
+  assert.deepEqual(old,before,'migration cannot mutate a saved copy');
+  assert.equal(state.page,Book.first);assert.equal(state.activeId,'p'+Book.first);
+  assert.deepEqual(state.conversations.slice(0,old.conversations.length),old.conversations);
+  for(const key of ['notes','noteOpen','highlights'])assert.deepEqual(state[key].slice(0,2),old[key]);
+  assert.equal(state.notes.length,43);assert.equal(state.readingVersion,1);
+  state.page=Book.next(Book.first);state.activeId='p'+state.page;
+  assert.deepEqual(upgrade(state),state,'reopening keeps the chosen paragraph');
+  for(const mutate of [s=>s.page=43,s=>s.read.push(-1),s=>s.highlights.pop(),s=>s.readingVersion=2,s=>s.visits.push({page:999,at:'2026-09-15T10:00:00Z'})]){
+    const bad=structuredClone(state);mutate(bad);assert.throws(()=>validate(bad));
+  }
+});
+test('Chapter 1 follows all 41 paragraphs without jumping to the old Chapter 2 sample',()=>{
+  const visited=[];for(let p=Book.first;p!==null;p=Book.next(p))visited.push(p);
+  assert.deepEqual(visited,Book.chapters[0].paragraphs);assert.equal(visited.length,41);
+  assert.equal(Book.previous(Book.first),null);assert.equal(Book.next(visited.at(-1)),null);
+  assert.equal(new Set(Book.paragraphs.map(p=>p.id)).size,43);
+  for(const [i,p] of visited.entries()){
+    const passage=Book.paragraphs[p];assert.equal(passage.chapter,1);assert.equal(passage.number,i+1);
+    assert.ok(passage.text.trim().length);assert.ok(passage.sourcePages.every(n=>n>=1&&n<=10));
+    if(i)assert.equal(Book.previous(p),visited[i-1]);
+  }
+  assert.deepEqual(Book.paragraphs[5].sourcePages,[1,2]);
+  assert.ok(Book.paragraphs[4].figure.asset.endsWith('figure-1-1.png'));
+  assert.match(Book.paragraphs[15].text,/ω̂/);
+});

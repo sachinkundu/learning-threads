@@ -96,7 +96,7 @@ export default {
       // Validation messages help recover work. Provider faults retain their exact
       // error in Worker logs, without returning private request bodies.
       if(error instanceof RequestError)return json({error:error.message},error.status);
-      if(error instanceof StudyStore.StudyStorageError||error instanceof SyntaxError)return json({error:error.message},400);
+      if(error instanceof Error && (error instanceof StudyStore.StudyStorageError||error instanceof SyntaxError))return json({error:error.message},400);
       console.error(error);
       return json({error:error instanceof Error?error.message:'The study copy could not be saved.'},500);
     }

@@ -69,6 +69,6 @@
 #lt-reading .lt-call-usage summary{cursor:pointer}
 #lt-reading .lt-call-usage dl,#lt-reading .lt-usage-body>dl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:13px}
 #lt-reading .lt-call-usage dd,#lt-reading .lt-usage-body dd{margin:0;text-align:right}
-#lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-panel);color:var(--lt-ink)}
+#lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-surface);color:var(--lt-ink);opacity:1}
 #lt-reading .lt-usage-dialog::backdrop{background:rgba(0,0,0,.6)}
 #lt-reading .lt-usage-dialog>button{float:right}

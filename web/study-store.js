@@ -1,14 +1,14 @@
 /* Browser persistence for one book. Cloud storage will sit behind this boundary. */
 (function (scope) {
   'use strict';
-  const BOOK = 'modern-robotics-2019-preprint';
+  const catalog = typeof module!=='undefined' && module.exports ? require('./book.js') : scope.LearningBook;
+  const BOOK = catalog.id;
   const KEY = 'learning-threads:study:' + BOOK;
   class StudyStorageError extends Error {
     constructor(message, cause) { super(message, { cause }); this.name = 'StudyStorageError'; }
   }
   const check = (condition, message) => { if (!condition) throw new StudyStorageError(message); };
   const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
-  const isPage = value => value === 0 || value === 1;
   const validId = value => typeof value === 'string' && /^[a-z][a-z0-9-]*$/i.test(value);
   const checkHistory = history => check(history===undefined || (Array.isArray(history) && history.every(r=>isObject(r)&&typeof r.text==='string'&&typeof r.at==='string'&&Number.isFinite(Date.parse(r.at)))), 'Saved revision history is invalid.');
   function checkAnchor(a,page){
@@ -23,17 +23,21 @@
     check(Array.isArray(visual.values) && visual.values.length === bounds.length && visual.values.every((v,i)=>Number.isFinite(v) && v>=bounds[i][0] && v<=bounds[i][1]), 'Saved joint controls are invalid.');
   }
   function validate(state) {
+    check(isObject(state) && (state.readingVersion===undefined || state.readingVersion===catalog.revision), 'Saved book version is not supported.');
+    const count=state.readingVersion===catalog.revision?catalog.paragraphs.length:2;
+    const isPage=value=>Number.isInteger(value)&&value>=0&&value<count;
+    if(state.visits!==undefined)check(Array.isArray(state.visits)&&state.visits.every(v=>isObject(v)&&isPage(v.page)&&typeof v.at==='string'&&Number.isFinite(Date.parse(v.at))), 'Saved reading history is invalid.');
     check(isObject(state) && isPage(state.page), 'Saved reading place is invalid.');
-    check(Array.isArray(state.notes) && state.notes.length===2 && state.notes.every(n=>typeof n==='string'), 'Saved notes are invalid.');
-    if(state.noteHistory!==undefined){check(Array.isArray(state.noteHistory)&&state.noteHistory.length===2,'Saved note history is invalid.');state.noteHistory.forEach(checkHistory)}
-    if(state.noteEdits!==undefined)check(Array.isArray(state.noteEdits)&&state.noteEdits.length===2&&state.noteEdits.every(n=>n===null||typeof n==='string'),'Saved note edit is invalid.');
-    check(Array.isArray(state.noteOpen) && state.noteOpen.length===2 && state.noteOpen.every(n=>typeof n==='boolean'), 'Saved note view is invalid.');
+    check(Array.isArray(state.notes) && state.notes.length===count && state.notes.every(n=>typeof n==='string'), 'Saved notes are invalid.');
+    if(state.noteHistory!==undefined){check(Array.isArray(state.noteHistory)&&state.noteHistory.length===count,'Saved note history is invalid.');state.noteHistory.forEach(checkHistory)}
+    if(state.noteEdits!==undefined)check(Array.isArray(state.noteEdits)&&state.noteEdits.length===count&&state.noteEdits.every(n=>n===null||typeof n==='string'),'Saved note edit is invalid.');
+    check(Array.isArray(state.noteOpen) && state.noteOpen.length===count && state.noteOpen.every(n=>typeof n==='boolean'), 'Saved note view is invalid.');
     check(Array.isArray(state.read) && state.read.every(isPage), 'Saved read marks are invalid.');
-    check(Array.isArray(state.highlights) && state.highlights.length===2 && state.highlights.every(list=>Array.isArray(list) && list.every(h=>isObject(h) && Number.isInteger(h.start) && h.start>=0 && Number.isInteger(h.end) && h.end>h.start && typeof h.quote==='string' && h.quote.length===h.end-h.start)), 'Saved highlights are invalid.');
+    check(Array.isArray(state.highlights) && state.highlights.length===count && state.highlights.every(list=>Array.isArray(list) && list.every(h=>isObject(h) && Number.isInteger(h.start) && h.start>=0 && Number.isInteger(h.end) && h.end>h.start && typeof h.quote==='string' && h.quote.length===h.end-h.start)), 'Saved highlights are invalid.');
     checkVisual({joint:state.joint, values:state.states?.[state.joint]});
     for (const joint of Object.keys(limits)) checkVisual({joint,values:state.states?.[joint]});
     check(isObject(state.design) && ['Side by side','Visual below'].includes(state.design.layout) && Number.isFinite(state.design.textSize) && state.design.textSize>=17 && state.design.textSize<=24 && typeof state.design.surrounding==='boolean', 'Saved reading view is invalid.');
-    check(Array.isArray(state.conversations) && state.conversations.length>=2, 'Saved threads are missing.');
+    check(Array.isArray(state.conversations) && state.conversations.length>=count, 'Saved threads are missing.');
     const nodes=new Map(), messageIds=new Set();
     for (const node of state.conversations) {
       check(isObject(node) && validId(node.id) && !nodes.has(node.id) && isPage(node.page), 'Saved thread identity is invalid.');
@@ -56,7 +60,7 @@
       }
       nodes.set(node.id,node);
     }
-    check(nodes.get('p0')?.page===0 && !nodes.get('p0').parent && nodes.get('p1')?.page===1 && !nodes.get('p1').parent, 'Saved paragraph threads are missing.');
+    for(let p=0;p<count;p++)check(nodes.get('p'+p)?.page===p && !nodes.get('p'+p).parent, 'Saved paragraph threads are missing.');
     for (const node of nodes.values()) {
       for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean)){
         if(a.kind==='message'){
@@ -119,7 +123,7 @@
       }
     };
   }
-  const api={create,validate,KEY,BOOK,StudyStorageError};
+  const api={create,validate,upgrade:state=>validate(catalog.upgrade(validate(state))),KEY,BOOK,StudyStorageError};
   if (typeof module!=='undefined' && module.exports) module.exports=api;
   else scope.LearningStudyStore=api;
 })(globalThis);

@@ -135,6 +135,15 @@
     #lt-reading .lt-footer{padding-bottom:12px}
     @media(max-width:860px){#lt-reading .lt-columns{grid-template-columns:minmax(0,1fr);row-gap:0}#lt-reading .lt-book-section,#lt-reading .lt-thread{grid-column:1;grid-row:1}#lt-reading .lt-demo{grid-column:1;grid-row:2;position:static;margin-top:24px}#lt-reading .lt-qa{grid-column:1;grid-row:3}#lt-reading .lt-diagram{height:300px}#lt-reading .lt-content{max-width:760px;padding-top:24px}#lt-reading .lt-top-right{gap:0}}
     @media(max-width:400px){#lt-reading .lt-brand{font-size:15px}#lt-reading .lt-view-menu summary{font-size:12px}#lt-reading .lt-demo{padding:16px}#lt-reading .lt-diagram{height:270px}}
+    #lt-reading.lt-text-only:not(.lt-source-open) .lt-columns{display:block;max-width:760px;margin:auto}
+    #lt-reading.lt-text-only:not(.lt-source-open) .lt-content{max-width:888px}
+    #lt-reading .lt-book-figure{margin:24px 0}
+    #lt-reading .lt-book-figure img{width:100%;height:auto;background:white;border-radius:8px}
+    #lt-reading .lt-book-figure figcaption{font-size:14px;line-height:1.6;margin-top:12px;color:var(--lt-muted)}
+    #lt-reading .lt-reading-history-body{display:grid;gap:12px;margin-top:16px}
+    #lt-reading .lt-reading-history-body button{display:grid;text-align:left;justify-content:stretch}
+    #lt-reading .lt-reading-history-body span{color:var(--lt-muted)}
+    #lt-reading #lt-source-select{max-width:100%;min-width:0;background:var(--lt-surface);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:6px}
   </style>
   <link rel="stylesheet" href="./thread-examples.css">
   <header class="lt-top">
@@ -151,6 +160,7 @@
         <section class="lt-book-section" aria-label="Current book paragraph">
           <div class="lt-sectionlabel lt-passagelabel">2.2.1 Robot joints · paragraph 1</div>
           <p class="lt-prose" id="lt-passage"></p>
+          <figure class="lt-book-figure" hidden></figure>
           <div class="lt-source">Lynch &amp; Park · §2.2.1</div>
           <button class="lt-action lt-thread-entry" type="button" data-action="open-wrist" hidden><i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion</button>
           <div class="lt-actions">
@@ -179,7 +189,7 @@
         </section>
       </div>
       <aside id="lt-source-page" class="lt-source-page" aria-label="Original PDF page" hidden>
-        <div class="lt-source-tools"><button class="lt-action" type="button" data-action="zoom-source" aria-pressed="false">Zoom in</button><button class="lt-action" type="button" data-action="close-source">Close</button></div>
+        <div class="lt-source-tools"><select id="lt-source-select" aria-label="PDF page" hidden></select><button class="lt-action" type="button" data-action="zoom-source" aria-pressed="false">Zoom in</button><button class="lt-action" type="button" data-action="close-source">Close</button></div>
         <div class="lt-source-viewport" tabindex="0" aria-label="Source page, scroll to inspect"><img class="lt-source-image" alt="Modern Robotics, printed page 16, PDF page 36" width="1275" height="1651"></div>
         <p class="lt-source-error" role="alert" hidden>Could not load this page. <button class="lt-action" type="button" data-action="retry-source">Retry</button></p>
       </aside>
@@ -193,14 +203,16 @@
       </section>
     </div>
     <footer class="lt-footer">
-      <div class="lt-progress"><button type="button" data-page="0" aria-label="Read sample paragraph 1">1</button><button type="button" data-page="1" aria-label="Read sample paragraph 2">2</button><span class="lt-readstatus"></span></div>
+      <button class="lt-action" type="button" data-action="history">History</button>
       <div class="lt-nav"><button class="lt-action" type="button" data-action="previous">Previous</button><button class="lt-action lt-primary" type="button" data-action="next">Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
     </footer>
   </div>
   <dialog class="lt-link-picker" aria-label="Choose a discussion"></dialog>
   <dialog class="lt-usage-dialog" aria-label="Assistant usage"><button class="lt-action" type="button" data-action="close-usage">Close</button><div class="lt-usage-body"></div></dialog>
   <dialog class="lt-usage-dialog lt-copies-dialog" aria-label="Saved study copies"><button class="lt-action" type="button" data-action="close-copies">Close</button><div class="lt-copies-body"></div></dialog>
+  <dialog class="lt-usage-dialog lt-reading-history" aria-label="Reading history"><button class="lt-action" type="button" data-action="close-history">Close</button><div class="lt-reading-history-body"></div></dialog>
   <input id="lt-restore-file" type="file" accept="application/json,.json" hidden>
+  <script src="./book.js"></script>
   <script src="./study-store.js"></script>
   <script src="./study-sync.js"></script>
   <script src="./assistant-client.js"></script>
@@ -213,14 +225,18 @@
     const threadExamples=window.LearningThreadExamples;
     const links=window.LearningStudyLinks;
     const assistant=window.LearningAssistant;
+    const book=LearningBook,catalog=book.paragraphs;
+    const blank=make=>Array.from({length:catalog.length},make);
     const runningRequests=new Set();
     let cloudSync=null,applyingCloud=false;
     const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
     const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
-    const paragraphs=[
-      `Figure 2.3 illustrates the basic joints found in typical robots. Every joint connects exactly two links; joints that simultaneously connect three or more links are not allowed. The ${term('R','revolute')} (R), also called a hinge joint, allows rotational motion about the joint axis. The ${term('P','prismatic')} (P), also called a sliding or linear joint, allows translational (or rectilinear) motion along the direction of the joint axis. The ${term('H','helical')} (H), also called a screw joint, allows simultaneous rotation and translation about a screw axis. Revolute, prismatic, and helical joints all have one degree of freedom.`,
-      `Joints can also have multiple degrees of freedom. The ${term('C','cylindrical')} (C) has two degrees of freedom and allows independent translations and rotations about a single fixed joint axis. The ${term('U','universal')} (U) is another two-degree-of-freedom joint that consists of a pair of revolute joints arranged so that their joint axes are orthogonal. The ${term('S','spherical')} (S), also called a ball-and-socket joint, has three degrees of freedom and functions much like our shoulder joint.`
-    ];
+    const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const paragraphs=catalog.map(p=>{
+      let html=escapeText(p.text);
+      if(p.jointDemo)for(const key of (p.number===1?['R','P','H']:['C','U','S']))html=html.replace(terms[key]+' joint',term(key,terms[key]));
+      return html;
+    });
     const clean=s=>{const t=document.createElement('div');t.innerHTML=s;return t.textContent};
     const states={R:[40],P:[35],H:[90],C:[40,30],U:[25,20],S:[25,20,15]};
     const defs={
@@ -231,27 +247,28 @@
       U:{controls:[['First hinge',-60,60,'°'],['Second hinge',-60,60,'°']],caption:'Two hinges, with their axes at right angles.',dof:2},
       S:{controls:[['Tilt',-60,60,'°'],['Swing',-60,60,'°'],['Twist',-140,140,'°']],caption:'The link can turn about three axes through the joint.',dof:3}
     };
-    let page=0,joint='R',stack=[],read=new Set(),notes=['',''],noteOpen=[false,false],highlights=[[],[]],feedback='',animation=0,context=false;
-    let noteHistory=[[],[]],noteEdits=[null,null];
+    let page=book.first,joint='R',stack=[],read=new Set(),notes=blank(()=>''),noteOpen=blank(()=>false),highlights=blank(()=>[]),feedback='',animation=0,context=false,visits=[];
+    let noteHistory=blank(()=>[]),noteEdits=blank(()=>null);
     let selection=null;
-    let sourceOpen=false;
-    // The current paragraphs share printed p. 16 (PDF page 36). Extend this
-    // mapping with checked page references when importing the next passages.
-    const sourcePages=[{printed:16,pdf:36,asset:'/source-pages/modern-robotics-p16.png'},{printed:16,pdf:36,asset:'/source-pages/modern-robotics-p16.png'}];
+    let sourceOpen=false,sourceIndex=0,sourceParagraph=null;
+    const sourcePages=catalog.map(p=>p.sourcePages.map(printed=>({printed,pdf:printed+20,asset:`/source-pages/modern-robotics-p${printed}.png`})));
     function showSource(open){
-      sourceOpen=open;root.classList.toggle('lt-source-open',open);q('.lt-source-page').hidden=!open;q('.lt-demo').hidden=open;
-      const source=sourcePages[page],button=q('[data-action="toggle-source"]'),img=q('.lt-source-image');
-      button.setAttribute('aria-expanded',String(open));button.textContent='Source p. '+source.printed;
+      sourceOpen=open;root.classList.toggle('lt-source-open',open);q('.lt-source-page').hidden=!open;q('.lt-demo').hidden=open||!catalog[page].jointDemo;
+      const pages=sourcePages[page],button=q('[data-action="toggle-source"]'),img=q('.lt-source-image'),select=q('#lt-source-select');
+      if(sourceParagraph!==page){sourceIndex=0;sourceParagraph=page;select.innerHTML=pages.map((p,i)=>`<option value="${i}">Printed p. ${p.printed} · PDF ${p.pdf}</option>`).join('')}
+      select.hidden=pages.length===1;select.value=sourceIndex;
+      const source=pages[sourceIndex];
+      button.setAttribute('aria-expanded',String(open));button.textContent=pages.length===1?'Source p. '+source.printed:'Source pp. '+pages[0].printed+'–'+pages.at(-1).printed;
       if(open&&img.getAttribute('src')!==source.asset){img.src=source.asset;img.alt=`Modern Robotics, printed page ${source.printed}, PDF page ${source.pdf}`;img.classList.remove('lt-zoomed');q('[data-action="zoom-source"]').textContent='Zoom in';q('[data-action="zoom-source"]').setAttribute('aria-pressed','false')}
     }
+    q('#lt-source-select').addEventListener('change',event=>{sourceIndex=+event.target.value;showSource(true)});
     q('.lt-source-image').addEventListener('error',()=>{q('.lt-source-error').hidden=false;q('.lt-source-viewport').hidden=true});
     q('.lt-source-image').addEventListener('load',()=>{q('.lt-source-error').hidden=true;q('.lt-source-viewport').hidden=false});
     let selectedSource=null,branchCount=0,messageCount=0;
     const makeNode=(id,title)=>({id,title,page,parent:null,path:[],messages:[],draft:'',quote:'',replyTo:null,status:'',busy:false,visual:null});
-    const conversations=new Map([['p0',makeNode('p0','Paragraph 1')],['p1',makeNode('p1','Paragraph 2')]]);
-    conversations.get('p1').page=1;
+    const conversations=new Map(catalog.map((_,p)=>['p'+p,book.root(p)]));
     const activeNode=()=>conversations.get(stack.length?stack.at(-1).id:'p'+page);
-    const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
     const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
     const isMessageAnchor=a=>a?.kind==='message';
     function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text)):message.text}
@@ -269,12 +286,12 @@
       for(let i=0;i<notes.length;i++)if(noteEdits[i]!==null){links.revise(noteHistory[i],noteEdits[i],notes[i]);noteEdits[i]=null}
       for(const node of conversations.values())for(const m of node.messages)if(m.noteEditBase!==undefined){links.revise(m.noteHistory||(m.noteHistory=[]),m.noteEditBase,m.note||'');delete m.noteEditBase}
     }
-    function rememberVisual(){activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
+    function rememberVisual(){if(catalog[page].jointDemo)activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
     function restoreReadingPosition(){const y=activeNode().scrollY||0;requestAnimationFrame(()=>window.scrollTo(0,y))}
     const studyStore=LearningStudyStore.create(()=>window.localStorage);
     let studyReady=false,studyLoaded=false,lastStorageError='';
     function studySnapshot(){
-      return {page,activeId:activeNode().id,joint,states,read:[...read],notes,noteOpen,noteHistory,noteEdits,highlights,design,
+      return {readingVersion:book.revision,visits,page,activeId:activeNode().id,joint,states,read:[...read],notes,noteOpen,noteHistory,noteEdits,highlights,design,
         conversations:[...conversations.values()].map(node=>({...node,busy:false,status:''}))};
     }
     function showStorageError(error){
@@ -291,17 +308,18 @@
     }
     function validateSourceLinks(saved){
       LearningStudyStore.validate(saved);
-      for(let p=0;p<paragraphs.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
+      for(let p=0;p<saved.highlights.length;p++)for(const h of saved.highlights[p])if(clean(paragraphs[p]).slice(h.start,h.end)!==h.quote)throw new Error('A saved highlight no longer matches this book. Export a backup.');
       const savedNodes=new Map(saved.conversations.map(n=>[n.id,n]));
       for(const node of saved.conversations)for(const a of [node.sourceAnchor,node.pendingAnchor,...node.messages.map(m=>m.sourceAnchor)].filter(Boolean))if(sourceText(a,savedNodes).slice(a.start,a.end)!==a.quote)throw new Error('A saved thread no longer matches its source. Export a backup.');
     }
     function loadStudy(provided){
       try{
-        const saved=provided||studyStore.load();studyLoaded=true;if(!saved)return false;
+        const original=provided||studyStore.load();studyLoaded=true;if(!original)return false;
+        validateSourceLinks(original);const saved=LearningStudyStore.upgrade(original);
         // Never reattach an old highlight if a source passage has changed.
         validateSourceLinks(saved);
         page=saved.page;joint=saved.joint;Object.assign(states,saved.states);read=new Set(saved.read);notes=saved.notes;noteOpen=saved.noteOpen;highlights=saved.highlights;Object.assign(design,saved.design);
-        noteHistory=saved.noteHistory||[[],[]];noteEdits=saved.noteEdits||[null,null];
+        noteHistory=saved.noteHistory||blank(()=>[]);noteEdits=saved.noteEdits||blank(()=>null);visits=saved.visits||[];
         conversations.clear();for(const node of saved.conversations)conversations.set(node.id,{...node,busy:false,status:''});
         stack=conversations.get(saved.activeId).path.map(step=>({...step,restoreValues:[...step.restoreValues]}));
         branchCount=Math.max(0,...[...conversations.keys()].map(id=>/^b\d+$/.test(id)?+id.slice(1):0));
@@ -327,7 +345,7 @@
         const copy=await cloudSync.copy(version),state=copy.state;validateSourceLinks(state);
         const notes=state.notes.filter(Boolean).map(text=>`<blockquote>${escapeText(text)}</blockquote>`).join('');
         const work=state.conversations.filter(n=>n.messages.length||n.draft).map(n=>`<details><summary>${escapeText(n.title)}</summary>${n.messages.map(m=>`<p>${escapeText(m.text)}</p>${m.note?`<blockquote>${escapeText(m.note)}</blockquote>`:''}`).join('')}${n.draft?`<blockquote>${escapeText(n.draft)}</blockquote>`:''}</details>`).join('');
-        body.innerHTML=`<p>${escapeText(new Date(copy.created).toLocaleString())} · Paragraph ${state.page+1}</p>${notes}${work}<div class="lt-actions"><button class="lt-action" type="button" data-restore-copy="${version}">Restore this copy</button><button class="lt-action" type="button" data-action="saved-copies">All copies</button></div>`;
+        body.innerHTML=`<p>${escapeText(new Date(copy.created).toLocaleString())} · ${escapeText(book.label(state.page))}</p>${notes}${work}<div class="lt-actions"><button class="lt-action" type="button" data-restore-copy="${version}">Restore this copy</button><button class="lt-action" type="button" data-action="saved-copies">All copies</button></div>`;
       }catch(error){body.textContent=error.message}
     }
     let syncConflict=false;
@@ -407,7 +425,7 @@
     function makeBookAnchor(quote,threadId){
       const text=clean(paragraphs[page]),start=text.indexOf(quote);
       if(start<0||text.indexOf(quote,start+1)!==-1)throw new Error('The highlighted source must match one exact passage.');
-      return links.anchor(text,start,start+quote.length,{id:'highlight-'+threadId,kind:'book',book:LearningStudyStore.BOOK,paragraph:'2.2.1-p'+(page+1),page,sourcePage:16});
+      return links.anchor(text,start,start+quote.length,{id:'highlight-'+threadId,kind:'book',book:LearningStudyStore.BOOK,paragraph:catalog[page].id,page,sourcePage:catalog[page].sourcePages[0]});
     }
     function renderBookAnchors(){
       const passage=q('#lt-passage');
@@ -447,7 +465,7 @@
       const close=document.createElement('button');close.type='button';close.className='lt-action';close.dataset.action='close-link-picker';close.textContent='Close';picker.append(close);picker.showModal();
     }
     function captureSource(container,range,messageId=null){
-      const source={id:newAnchorId(),book:LearningStudyStore.BOOK,page,kind:messageId?'message':'book',...(messageId?{nodeId:activeNode().id,messageId,sourceRevision:0}:{paragraph:'2.2.1-p'+(page+1),sourcePage:16})};
+      const source={id:newAnchorId(),book:LearningStudyStore.BOOK,page,kind:messageId?'message':'book',...(messageId?{nodeId:activeNode().id,messageId,sourceRevision:0}:{paragraph:catalog[page].id,sourcePage:catalog[page].sourcePages[0]})};
       return links.capture(container,range,source);
     }
     function openWrist(){
@@ -488,7 +506,8 @@
       const publicMessage=m=>({id:m.id,role:m.role,text:m.text,sourceAnchor:m.sourceAnchor||null,note:m.note||null});
       const ancestors=[];let parent=node;
       while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages.map(publicMessage)})}
-      return {book:'Modern Robotics, Lynch and Park',section:'2.2.1 Robot joints',sourcePage:16,paragraph:node.page+1,passage:clean(paragraphs[node.page]),learningPath:['Robot joints',...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}};
+      const passage=catalog[node.page];
+      return {book:'Modern Robotics, Lynch and Park',chapter:passage.chapter,chapterTitle:passage.chapterTitle,section:passage.section,sourcePage:passage.sourcePages[0],sourcePages:passage.sourcePages,pdfPages:passage.sourcePages.map(p=>p+20),paragraph:passage.number,paragraphId:passage.id,passage:clean(paragraphs[node.page]),learningPath:[passage.section,...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:passage.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:passage.figure||null};
     }
     async function startReply(node,message){
       if(message.request&&runningRequests.has(message.request.id))return;
@@ -531,9 +550,15 @@
       flushNoteEdits();
       showSource(sourceOpen);
       root.classList.toggle('lt-in-thread',!!stack.length);
-      q('h2').textContent=stack.length?activeNode().title:'How robot joints move';
+      const passage=catalog[page],next=book.next(page),previous=book.previous(page);
+      root.classList.toggle('lt-text-only',!passage.jointDemo);
+      q('.lt-book-meta span').textContent=`Chapter ${passage.chapter} · ${passage.chapterTitle}`;
+      q('h2').textContent=stack.length?activeNode().title:passage.section;
       q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
-      q('.lt-passagelabel').textContent=`2.2.1 Robot joints · paragraph ${page+1}`;
+      q('.lt-passagelabel').textContent=`Paragraph ${passage.number}`;
+      q('.lt-source').textContent=`Lynch & Park · p. ${passage.sourcePages.join('–')}`;
+      const figure=q('.lt-book-figure');figure.hidden=!passage.figure||!!stack.length;
+      if(passage.figure)figure.innerHTML=`<img src="${passage.figure.asset}" alt="${escapeText(passage.figure.alt)}"><figcaption>${escapeText(passage.figure.caption)} ${passage.figure.details.map(escapeText).join(' ')}</figcaption>`;
       q('[data-action="open-wrist"]').hidden=page!==1;
       q('#lt-passage').innerHTML=paragraphs[page];
       renderHighlights();
@@ -546,12 +571,11 @@
       q('.lt-context').hidden=!(context||design.surrounding);
       q('[data-action="context"]').setAttribute('aria-expanded',String(context||design.surrounding));
       q('[data-action="context"]').textContent=context||design.surrounding?'Hide surrounding text':'Show surrounding text';
-      q('.lt-context .lt-sectionlabel').textContent=page===0?'Next paragraph':'Previous paragraph';
-      q('.lt-context-text').textContent=clean(paragraphs[1-page]);
-      qa('[data-page]').forEach(el=>{el.classList.toggle('current',+el.dataset.page===page);el.setAttribute('aria-current',+el.dataset.page===page?'step':'false')});
-      q('.lt-readstatus').textContent=read.size?read.size+' read':'';
-      q('[data-action="previous"]').disabled=page===0&&!stack.length;
-      q('[data-action="next"]').innerHTML=stack.length?'Return to reading':page===0?'Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i>':'Done for now <i data-lucide="check" aria-hidden="true"></i>';
+      q('.lt-context .lt-sectionlabel').textContent=next!==null?'Next paragraph':'Previous paragraph';
+      q('.lt-context-text').textContent=catalog[next??previous]?.text||'';
+      q('[data-action="previous"]').disabled=previous===null&&!stack.length;
+      q('[data-action="next"]').disabled=next===null&&read.has(page);
+      q('[data-action="next"]').innerHTML=next!==null?'Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i>':read.has(page)?'Chapter complete':'Finish chapter <i data-lucide="check" aria-hidden="true"></i>';
       q('.lt-footer').hidden=!!stack.length;
       if(stack.length){
         const node=activeNode();
@@ -620,8 +644,14 @@
       el('circle',{cx:11,cy:19,r:4,fill:fixed});label(22,23,'Fixed link');
       el('circle',{cx:w-105,cy:19,r:4,fill:green});label(w-94,23,'Moving link');
     }
+    function visit(p){if(visits.at(-1)?.page!==p)visits.push({page:p,at:new Date().toISOString()})}
+    function showHistory(){
+      const pages=[page,...[...visits].reverse().map(v=>v.page),...read,...catalog.map((_,p)=>p).filter(p=>notes[p]||highlights[p].length||[...conversations.values()].some(n=>n.page===p&&(n.messages.length||n.draft)))];
+      q('.lt-reading-history-body').innerHTML=[...new Set(pages)].map(p=>`<button class="lt-action" data-page="${p}" type="button" ${p===page?'aria-current="location"':''}><strong>${escapeText(book.label(p))}</strong><span>${escapeText(catalog[p].text.slice(0,130))}…</span></button>`).join('');
+      q('.lt-reading-history').showModal();
+    }
     function selectJoint(k){if(!defs[k])return;cancelAnimationFrame(animation);q('[data-action="animate"]').textContent='Play one motion';joint=k;buildControls()}
-    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
+    function goPage(n){cancelAnimationFrame(animation);rememberVisual();stack=[];page=n;visit(n);const saved=activeNode().visual;joint=saved?saved.joint:n===0?'R':'C';if(saved)states[joint]=[...saved.values];feedback='';selection=null;selectedSource=null;q('.lt-note').hidden=true;render();restoreReadingPosition()}
     function enter(type,title,quote=''){
       cancelAnimationFrame(animation);rememberVisual();const parent=activeNode(),id='b'+(++branchCount),label=title||(type==='freedom'?'Degrees of freedom':'Independent motion');
       const node=makeNode(id,label);node.parent=parent.id;node.page=page;node.sourceQuote=quote;conversations.set(id,node);
@@ -629,7 +659,7 @@
       if(type!=='custom')joint=type==='freedom'?'H':'C';selection=null;selectedSource=null;render();
     }
     function backTo(depth){cancelAnimationFrame(animation);rememberVisual();while(stack.length>depth){const saved=stack.pop();joint=saved.restoreJoint;states[joint]=[...saved.restoreValues]}selection=null;selectedSource=null;render();restoreReadingPosition()}
-    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
+    function reopen(id){const node=conversations.get(id);if(!node)return;cancelAnimationFrame(animation);rememberVisual();page=node.page;visit(page);stack=node.path.map(s=>({...s,restoreValues:[...s.restoreValues]}));if(node.visual){joint=node.visual.joint;states[joint]=[...node.visual.values]}selection=null;selectedSource=null;render();restoreReadingPosition()}
     root.addEventListener('click',e=>{
       const download=e.target.closest('[data-export-study]');if(download){exportStudy(download);return}
       const highlighted=e.target.closest('[data-source-links]');
@@ -650,7 +680,7 @@
       if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}
       if(btn.dataset.messageNote){const node=activeNode(),message=node.messages.find(m=>m.id===btn.dataset.messageNote);message.noteOpen=!message.noteOpen;renderQA();if(message.noteOpen)q('#lt-answer-note-'+message.id).focus();return}
       if(btn.dataset.joint){selectJoint(btn.dataset.joint);return}
-      if(btn.dataset.page!==undefined){goPage(+btn.dataset.page);return}
+      if(btn.dataset.page!==undefined){q('.lt-reading-history').close();goPage(+btn.dataset.page);return}
       if(btn.dataset.return!==undefined){backTo(+btn.dataset.return);return}
       if(btn.dataset.follow){const node=activeNode();node.replyTo=btn.dataset.follow;if(node.pendingAnchor?.messageId!==btn.dataset.follow){node.pendingAnchor=null;node.quote=''}renderQA();focusQuestion();return}
       if(btn.dataset.branchMessage){
@@ -670,6 +700,8 @@
       if(action==='close-source'){showSource(false);q('[data-action="toggle-source"]').focus({preventScroll:true});return}
       if(action==='zoom-source'){const zoom=q('.lt-source-image').classList.toggle('lt-zoomed');btn.setAttribute('aria-pressed',String(zoom));btn.textContent=zoom?'Fit page':'Zoom in';return}
       if(action==='retry-source'){q('.lt-source-image').removeAttribute('src');showSource(true);return}
+      if(action==='history'){showHistory();return}
+      if(action==='close-history'){q('.lt-reading-history').close();return}
       if(action==='usage'){showUsage();return}
       if(action==='close-usage'){q('.lt-usage-dialog').close();return}
       if(action==='export-study'){exportStudy();return}
@@ -678,8 +710,8 @@
       if(action==='focus-question'){focusQuestion();return}
       if(action==='clear-ask-context'){activeNode().quote='';activeNode().replyTo=null;activeNode().pendingAnchor=null;selection=null;selectedSource=null;window.getSelection()?.removeAllRanges();renderAskContext();return}
       if(action==='branch-selection'){const node=activeNode(),message=node.messages.find(m=>m.id===node.replyTo);newQuestionBranch(node.quote||message?.concept||'A related concept');return}
-      if(action==='next'){if(stack.length)backTo(0);else{read.add(page);if(page===0)goPage(1);else{feedback='';render()}}}
-      if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(page>0)goPage(page-1)}
+      if(action==='next'){if(stack.length)backTo(0);else{read.add(page);const next=book.next(page);if(next!==null)goPage(next);else{feedback='';render()}}}
+      if(action==='previous'){if(stack.length)backTo(stack.length-1);else if(book.previous(page)!==null)goPage(book.previous(page))}
       if(action==='back-thread')backTo(stack.length-1);
       if(action==='context'){context=!(context||design.surrounding);design.surrounding=false;render()}
       if(action==='note'){noteOpen[page]=!noteOpen[page];q('.lt-note').hidden=!noteOpen[page];if(noteOpen[page])q('#lt-note-text').focus()}
@@ -737,7 +769,7 @@
     function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
     const resumed=loadStudy();
     q('.lt-view-options').insertAdjacentHTML('beforeend','<div class="lt-actions"><a class="lt-action" href="#" data-export-study download style="text-decoration:none">Export</a><button class="lt-action" type="button" data-action="restore-study">Restore</button><button class="lt-action" type="button" data-action="saved-copies">Saved copies</button></div>');
-    cloudSync=LearningStudySync.create({book:LearningStudyStore.BOOK,storage:()=>window.localStorage,status:syncStatus,canApply:()=>studyLoaded&&!runningRequests.size&&!document.activeElement?.matches('input,textarea'),apply:saved=>{
+    cloudSync=LearningStudySync.create({book:LearningStudyStore.BOOK,storage:()=>window.localStorage,status:syncStatus,normalize:LearningStudyStore.upgrade,canApply:()=>studyLoaded&&!runningRequests.size&&!document.activeElement?.matches('input,textarea'),apply:saved=>{
       validateSourceLinks(saved);applyingCloud=true;
       try{studyStore.save(saved);loadStudy(saved);q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;applyDesign();restoreReadingPosition();saveStudy()}
       finally{applyingCloud=false}

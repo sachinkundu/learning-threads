@@ -3,10 +3,10 @@
   'use strict';
   const clone=value=>JSON.parse(JSON.stringify(value));
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-  const content=value=>{const copy=clone(value);for(const node of copy?.conversations||[])delete node.scrollY;return copy};
   const newId=()=> 's-'+(scope.crypto?.randomUUID?.()||Date.now().toString(36)+'-'+Math.random().toString(36).slice(2));
-  function create({book,storage,apply,status,canApply=()=>true,request=fetch}) {
+  function create({book,storage,apply,status,canApply=()=>true,normalize=value=>value,request=fetch}) {
     const key='learning-threads:sync:'+book;
+    const content=value=>{const copy=value?normalize(clone(value)):value;for(const node of copy?.conversations||[])delete node.scrollY;return copy};
     let meta={base:0,last:null,pending:null},latest=null,ready=false,working=false,conflict=null,timer;
     function persist(){storage().setItem(key,JSON.stringify(meta))}
     async function api(path,options={}){
@@ -18,7 +18,7 @@
     function report(error=null){status({error:error?.message||null,conflict:!!conflict})}
     function acceptHead(head){
       // Apply validates source offsets before changing the saved reading state.
-      apply(clone(head.state));latest=clone(head.state);
+      apply(normalize(clone(head.state)));latest=normalize(clone(head.state));
       meta={base:head.version,last:clone(head.state),pending:null};persist();conflict=null;report();
     }
     async function send(attempt=0){
@@ -64,11 +64,11 @@
           const atStart=clone(latest),result=await api('');
           if(conflict)return;
           if(!result.head){meta.base=0;await send();return}
-          if(same(content(latest),content(result.head.state))){meta={base:result.head.version,last:clone(latest),pending:null};persist();return}
-          if((!hadLocal||same(latest,meta.last))&&same(atStart,latest)&&canApply())acceptHead(result.head);
+          if(same(content(latest),content(result.head.state))){meta={base:result.head.version,last:clone(result.head.state),pending:null};persist();return}
+          if((!hadLocal||same(content(latest),content(meta.last)))&&same(atStart,latest)&&canApply())acceptHead(result.head);
           else await send();
         });
-        ready=true;
+        ready=true;if(!conflict&&!same(latest,meta.last))schedule();
       },
       observe(state){latest=clone(state);if(ready)schedule()},
       stop(){clearTimeout(timer)},
