@@ -181,7 +181,7 @@
             <div class="lt-ask-context" hidden></div>
             <textarea id="lt-question" rows="3" placeholder="What would you like to understand?"></textarea>
             <div class="lt-actions">
-              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="send" aria-hidden="true"></i> Ask Codex</button>
+              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="send" aria-hidden="true"></i> Ask</button>
             </div>
           </form>
           <div class="lt-qa-status" role="status" aria-live="polite"></div>
@@ -216,6 +216,7 @@
   <script src="./study-store.js"></script>
   <script src="./study-sync.js"></script>
   <script src="./assistant-client.js"></script>
+  <script src="./assistant-context.js"></script>
   <script src="./study-links.js"></script>
   <script src="./thread-examples.js"></script>
   <script>
@@ -406,7 +407,7 @@
           <button class="lt-action" type="button" data-follow="${m.id}">Ask follow-up</button>
           <button class="lt-action" type="button" data-branch-message="${m.id}"><i data-lucide="git-branch" aria-hidden="true"></i> Explore separately</button>
           <button class="lt-action" type="button" data-message-note="${m.id}" aria-expanded="${!!m.noteOpen}"><i data-lucide="pencil-line" aria-hidden="true"></i>${m.note?'Your note':'Note'}</button>
-        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}" ${m.request&&['connecting','queued','running','waiting'].includes(m.request.state)?'disabled':''}>Edit</button>${!m.request||m.request.state==='failed'||m.request.state==='waiting'?`<button class="lt-action" type="button" data-run-question="${m.id}">${m.request?.state==='failed'?'Retry':m.request?.state==='waiting'?'Reconnect':'Ask Codex'}</button>`:''}</div>${historyHtml(m.history)}`:''}
+        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}" ${m.request&&['connecting','queued','running','waiting'].includes(m.request.state)?'disabled':''}>Edit</button>${!m.request||m.request.state==='failed'||m.request.state==='waiting'?`<button class="lt-action" type="button" data-run-question="${m.id}">${m.request?.state==='failed'?'Retry':m.request?.state==='waiting'?'Reconnect':'Ask'}</button>`:''}</div>${historyHtml(m.history)}`:''}
       </article>`;
     }
     function openExample(key,source=null){
@@ -503,11 +504,10 @@
       render();saveStudy();await startReply(node,message);
     }
     function questionContext(node,message){
-      const publicMessage=m=>({id:m.id,role:m.role,text:m.text,sourceAnchor:m.sourceAnchor||null,note:m.note||null});
-      const ancestors=[];let parent=node;
-      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages.map(publicMessage)})}
-      const passage=catalog[node.page];
-      return {book:'Modern Robotics, Lynch and Park',chapter:passage.chapter,chapterTitle:passage.chapterTitle,section:passage.section,sourcePage:passage.sourcePages[0],sourcePages:passage.sourcePages,pdfPages:passage.sourcePages.map(p=>p+20),paragraph:passage.number,paragraphId:passage.id,passage:clean(paragraphs[node.page]),learningPath:[passage.section,...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:passage.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:passage.figure||null};
+      const paragraph=catalog[node.page];
+      return LearningAssistantContext.build({paragraph,node,message,nodes:conversations,paragraphNote:notes[node.page],
+        messageText:m=>m.example?messageText(m):m.text,
+        visual:paragraph.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:paragraph.figure||null});
     }
     async function startReply(node,message){
       if(message.request&&runningRequests.has(message.request.id))return;
@@ -521,9 +521,9 @@
       try{
         const job=await assistant.run(current.payload,update=>{current.state=update.status;saveStudy()});
         current.state=job.status;current.result=job;
-        if(job.status==='failed'){current.error=job.error||'Codex could not finish this reply.'}
+        if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd}});
+          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -534,7 +534,7 @@
     }
     async function showUsage(){
       const dialog=q('.lt-usage-dialog'),body=q('.lt-usage-body');body.textContent='Loading…';dialog.showModal();
-      try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
+      try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({...ledger,usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
       catch(error){body.textContent=error.message}
     }
     const design={layout:'Side by side',textSize:19,surrounding:false};

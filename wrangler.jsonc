@@ -11,5 +11,6 @@
   "build":{"command":"python3 web/build.py"},
   "d1_databases":[{"binding":"DB","database_name":"learning-threads-study","database_id":"9a8bbbe7-c588-41c8-a67c-e942f79d22b1","migrations_dir":"cloudflare/migrations"}],
   "vars":{"ACCESS_ISSUER":"https://deos-voxdez.cloudflareaccess.com","ACCESS_AUD":"f91715a0bb7236a30f44f7179c75aa3938e77bf738f442550c1a0d6b7959cb9a","OWNER_EMAIL":"sachin.kundu@pm.me"},
+  "triggers":{"crons":["* * * * *"]},
   "observability":{"enabled":true}
 }

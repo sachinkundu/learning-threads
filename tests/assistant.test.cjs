@@ -12,7 +12,7 @@ test('rejected questions can be edited while uncertain network outcomes retain t
   try{
     global.fetch=async()=>({ok:false,status:400,text:async()=>JSON.stringify({error:'Question is too long.'})});
     await assert.rejects(()=>client.request('/api/replies',{question:'Invalid'}),error=>error.definitiveFailure===true&&error.message==='Question is too long.');
-    global.fetch=async()=>({ok:false,status:503,text:async()=>JSON.stringify({error:'The Mac is offline.'})});
+    global.fetch=async()=>({ok:false,status:503,text:async()=>JSON.stringify({error:'OpenAI is temporarily unavailable.'})});
     await assert.rejects(()=>client.request('/api/replies/existing-id'),error=>error.definitiveFailure===false);
   }finally{global.fetch=original}
 });
@@ -25,4 +25,10 @@ test('missing token and dollar charges are never presented as zero',()=>{
   assert.ok(html.includes('<dd>12</dd>'));assert.ok(html.includes('<dd>0</dd>'));
   assert.ok(html.includes('<dt>Output tokens</dt><dd>Not reported</dd>'));
   assert.ok(html.includes('<dt>Cost</dt><dd>Not reported</dd>'));
+});
+
+test('API costs and unpriced history are displayed separately without rounding tiny calls to zero',()=>{
+ const html=usageHtml({usage:{input_tokens:100,cache_write_tokens:30,output_tokens:12},cost_usd:0.000006,cost_kind:'estimated',unpriced_calls:4});
+ assert.ok(html.includes('Estimated API cost'));assert.ok(html.includes('$0.000006'));
+ assert.ok(html.includes('<dt>Unpriced replies</dt><dd>4</dd>'));assert.ok(html.includes('<dt>Cache writes</dt><dd>30</dd>'));
 });

@@ -45,7 +45,9 @@
   }
   function usageHtml(call){
     const u=call?.usage, count=k=>u?.[k]===null||u?.[k]===undefined?'Not reported':u[k].toLocaleString();
-    return `<dl><dt>Input tokens</dt><dd>${count('input_tokens')}</dd><dt>Cached input</dt><dd>${count('cached_input_tokens')}</dd><dt>Output tokens</dt><dd>${count('output_tokens')}</dd><dt>Reasoning output</dt><dd>${count('reasoning_output_tokens')}</dd><dt>Cost</dt><dd>Not reported</dd>${call?.model?`<dt>Model</dt><dd>${escape(call.model)}</dd>`:''}</dl>`;
+    const known=typeof call?.cost_usd==='number'&&Number.isFinite(call.cost_usd)&&call.cost_usd>=0;
+    const cost=known?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:4,maximumFractionDigits:6}).format(call.cost_usd):'Not reported';
+    return `<dl><dt>Input tokens</dt><dd>${count('input_tokens')}</dd><dt>Cached input</dt><dd>${count('cached_input_tokens')}</dd>${u?.cache_write_tokens!=null?`<dt>Cache writes</dt><dd>${count('cache_write_tokens')}</dd>`:''}<dt>Output tokens</dt><dd>${count('output_tokens')}</dd><dt>Reasoning output</dt><dd>${count('reasoning_output_tokens')}</dd><dt>${call?.cost_kind==='estimated'?'Estimated API cost':'Cost'}</dt><dd>${cost}</dd>${call?.unpriced_calls?`<dt>Unpriced replies</dt><dd>${call.unpriced_calls}</dd>`:''}${call?.model?`<dt>Model</dt><dd>${escape(call.model)}</dd>`:''}</dl>`;
   }
   const api={renderText,run,request,usageHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;

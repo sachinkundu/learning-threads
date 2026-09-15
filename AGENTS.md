@@ -8,6 +8,8 @@
 - Preserve the approved reading and thread UI while replacing temporary behavior.
 - Distinguish browser persistence from cloud sync, and sample replies from live assistant calls.
 - Build with `python3 web/build.py`; the old visualization export files are historical.
+- Assistant answers use the OpenAI API from Cloudflare. Do not add a Mac service or Codex CLI dependency.
+- Carry the full source, exact highlight, notes, visual state, and ancestor/current conversation context with each question. Preserve existing conversation and source IDs when changing the harness.
 
 ## UI removal test
 

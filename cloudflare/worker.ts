@@ -1,9 +1,10 @@
 import {createRemoteJWKSet, jwtVerify} from 'jose';
 import StudyStore from '../web/study-store.js';
-import {assistant} from './assistant';
+import {assistant,collectReplies} from './assistant';
+import type {AssistantEnv} from './assistant';
 import {RequestError} from './errors';
 
-interface Env {
+interface Env extends AssistantEnv {
   DB: D1Database;
   ASSETS: Fetcher;
   BRIDGE_TOKEN: string;
@@ -76,19 +77,20 @@ async function study(request:Request,env:Env,path:string) {
   return json({version:own.seq,accepted:!!own.accepted,head:expose(current)},own.accepted?200:409);
 }
 export default {
-  async fetch(request:Request,env:Env):Promise<Response> {
+  async scheduled(_event:ScheduledController,env:Env){await collectReplies(env)},
+  async fetch(request:Request,env:Env,ctx:ExecutionContext):Promise<Response> {
     const url=new URL(request.url),internal=url.pathname.startsWith('/internal/');
     try {
       if(internal){
         if(!await machine(request,env))return json({error:'Sign-in required.'},401);
-        // The Mac can sync study and relay replies, never fetch public assets.
+        // Private development clients may call the cloud API, never fetch public assets.
         const path=url.pathname.replace('/internal/','/api/');
-        return path.startsWith('/api/study')?await study(request,env,path):await assistant(request,env.DB,path,()=>body(request),true);
+        return path.startsWith('/api/study')?await study(request,env,path):await assistant(request,env,path,()=>body(request),ctx);
       }
       if(!await owner(request,env))return json({error:'Sign-in required.'},401);
       if(url.pathname.startsWith('/api/')){
         if(request.headers.get('X-Learning-Threads')!=='1'||request.headers.get('Sec-Fetch-Site')==='cross-site'||(request.headers.has('Origin')&&request.headers.get('Origin')!==url.origin))return json({error:'Open the reading app to continue.'},403);
-        return url.pathname.startsWith('/api/study')?await study(request,env,url.pathname):await assistant(request,env.DB,url.pathname,()=>body(request),false);
+        return url.pathname.startsWith('/api/study')?await study(request,env,url.pathname):await assistant(request,env,url.pathname,()=>body(request),ctx);
       }
       const result=await env.ASSETS.fetch(request);
       const response=new Response(result.body,result);response.headers.set('Cache-Control','private, no-store');return response;

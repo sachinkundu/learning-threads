@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-B7tHyr/Jdt4yrJeWsU/sH4HY/+BR1UH9+7JNY/cLI+4=' 'sha256-BqK4I6WcYJGpuMeLxMlgf/9UTu0CTInHND0ZXzrkgTs=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-wBoyCocLc65iovx+XTUWOsMvdcMnsgpmw2aKh3BNd+k=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-Tz0wL7xxn9CVB6ow1y5cEGwMq+sgjaIptzJBlk62GOI=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-B7tHyr/Jdt4yrJeWsU/sH4HY/+BR1UH9+7JNY/cLI+4=' 'sha256-BqK4I6WcYJGpuMeLxMlgf/9UTu0CTInHND0ZXzrkgTs=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-OYttjHQXm6XV+xxCt/bHHTDq3kMqvncnBTWnTMlzJGA=' 'sha256-1Nm13Ny444oEXfEjNbDh3zGaoQ7PYl2yi/pYgPt3dqg=' 'sha256-iy3oGYqYDroIKXbv0+MzsOpdHgV83VMN0GV1ikcRDo0=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-xpuDFNBPTkg8vbaQuzxPyKVlfXNdj5dXWchwILnIjFw=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -265,7 +265,7 @@
             <div class="lt-ask-context" hidden></div>
             <textarea id="lt-question" rows="3" placeholder="What would you like to understand?"></textarea>
             <div class="lt-actions">
-              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="send" aria-hidden="true"></i> Ask Codex</button>
+              <button class="lt-action lt-primary" type="submit" data-action="ask-codex"><i data-lucide="send" aria-hidden="true"></i> Ask</button>
             </div>
           </form>
           <div class="lt-qa-status" role="status" aria-live="polite"></div>
@@ -605,10 +605,35 @@
   }
   function usageHtml(call){
     const u=call?.usage, count=k=>u?.[k]===null||u?.[k]===undefined?'Not reported':u[k].toLocaleString();
-    return `<dl><dt>Input tokens</dt><dd>${count('input_tokens')}</dd><dt>Cached input</dt><dd>${count('cached_input_tokens')}</dd><dt>Output tokens</dt><dd>${count('output_tokens')}</dd><dt>Reasoning output</dt><dd>${count('reasoning_output_tokens')}</dd><dt>Cost</dt><dd>Not reported</dd>${call?.model?`<dt>Model</dt><dd>${escape(call.model)}</dd>`:''}</dl>`;
+    const known=typeof call?.cost_usd==='number'&&Number.isFinite(call.cost_usd)&&call.cost_usd>=0;
+    const cost=known?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:4,maximumFractionDigits:6}).format(call.cost_usd):'Not reported';
+    return `<dl><dt>Input tokens</dt><dd>${count('input_tokens')}</dd><dt>Cached input</dt><dd>${count('cached_input_tokens')}</dd>${u?.cache_write_tokens!=null?`<dt>Cache writes</dt><dd>${count('cache_write_tokens')}</dd>`:''}<dt>Output tokens</dt><dd>${count('output_tokens')}</dd><dt>Reasoning output</dt><dd>${count('reasoning_output_tokens')}</dd><dt>${call?.cost_kind==='estimated'?'Estimated API cost':'Cost'}</dt><dd>${cost}</dd>${call?.unpriced_calls?`<dt>Unpriced replies</dt><dd>${call.unpriced_calls}</dd>`:''}${call?.model?`<dt>Model</dt><dd>${escape(call.model)}</dd>`:''}</dl>`;
   }
   const api={renderText,run,request,usageHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;
+})(globalThis);
+</script>
+  <script>/* The learning graph stays in our study store, independent of the model harness. */
+(function(scope){
+  'use strict';
+  function build({paragraph,node,message,nodes,paragraphNote,visual,messageText}){
+    const publicMessage=m=>({id:m.id,role:m.role,text:messageText(m),sourceAnchor:m.sourceAnchor||null,
+      note:m.note||null,replyTo:m.replyTo||null,visualization:m.visualization||null});
+    const ancestors=[];let parent=node;
+    while(parent.parent){parent=nodes.get(parent.parent);ancestors.unshift({id:parent.id,title:parent.title,
+      sourceQuote:parent.sourceAnchor?.quote||parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,visual:parent.visual||null,
+      messages:parent.messages.map(publicMessage)})}
+    return {contextVersion:2,book:'Modern Robotics, Lynch and Park',chapter:paragraph.chapter,
+      chapterTitle:paragraph.chapterTitle,section:paragraph.section,sourcePage:paragraph.sourcePages[0],
+      sourcePages:paragraph.sourcePages,pdfPages:paragraph.sourcePages.map(p=>p+20),paragraph:paragraph.number,
+      paragraphId:paragraph.id,passage:paragraph.text,paragraphNote:paragraphNote||null,
+      learningPath:[paragraph.section,...node.path.map(s=>s.title)],threadId:node.id,
+      branchSourceText:node.sourceAnchor?.quote||node.sourceQuote||null,branchSourceAnchor:node.sourceAnchor||null,
+      sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,
+      selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,
+      ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual};
+  }
+  if(typeof module!=='undefined'&&module.exports)module.exports={build};else scope.LearningAssistantContext={build};
 })(globalThis);
 </script>
   <script>/* Exact source ranges and reversible edit records. No model calls. */
@@ -986,7 +1011,7 @@ window.LearningThreadExamples = (() => {
           <button class="lt-action" type="button" data-follow="${m.id}">Ask follow-up</button>
           <button class="lt-action" type="button" data-branch-message="${m.id}"><i data-lucide="git-branch" aria-hidden="true"></i> Explore separately</button>
           <button class="lt-action" type="button" data-message-note="${m.id}" aria-expanded="${!!m.noteOpen}"><i data-lucide="pencil-line" aria-hidden="true"></i>${m.note?'Your note':'Note'}</button>
-        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}" ${m.request&&['connecting','queued','running','waiting'].includes(m.request.state)?'disabled':''}>Edit</button>${!m.request||m.request.state==='failed'||m.request.state==='waiting'?`<button class="lt-action" type="button" data-run-question="${m.id}">${m.request?.state==='failed'?'Retry':m.request?.state==='waiting'?'Reconnect':'Ask Codex'}</button>`:''}</div>${historyHtml(m.history)}`:''}
+        </div><div class="lt-message-note" ${m.noteOpen?'':'hidden'}><label for="lt-answer-note-${m.id}">Your note on this answer</label><textarea id="lt-answer-note-${m.id}" data-note-message="${m.id}">${escapeText(m.note||'')}</textarea><div data-note-history="${m.id}">${historyHtml(m.noteHistory)}</div></div>`:m.kind==='question'&&!m.editing?`<div class="lt-actions"><button class="lt-action" type="button" data-edit-message="${m.id}" ${m.request&&['connecting','queued','running','waiting'].includes(m.request.state)?'disabled':''}>Edit</button>${!m.request||m.request.state==='failed'||m.request.state==='waiting'?`<button class="lt-action" type="button" data-run-question="${m.id}">${m.request?.state==='failed'?'Retry':m.request?.state==='waiting'?'Reconnect':'Ask'}</button>`:''}</div>${historyHtml(m.history)}`:''}
       </article>`;
     }
     function openExample(key,source=null){
@@ -1083,11 +1108,10 @@ window.LearningThreadExamples = (() => {
       render();saveStudy();await startReply(node,message);
     }
     function questionContext(node,message){
-      const publicMessage=m=>({id:m.id,role:m.role,text:m.text,sourceAnchor:m.sourceAnchor||null,note:m.note||null});
-      const ancestors=[];let parent=node;
-      while(parent.parent){parent=conversations.get(parent.parent);ancestors.unshift({title:parent.title,sourceQuote:parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,messages:parent.messages.map(publicMessage)})}
-      const passage=catalog[node.page];
-      return {book:'Modern Robotics, Lynch and Park',chapter:passage.chapter,chapterTitle:passage.chapterTitle,section:passage.section,sourcePage:passage.sourcePages[0],sourcePages:passage.sourcePages,pdfPages:passage.sourcePages.map(p=>p+20),paragraph:passage.number,paragraphId:passage.id,passage:clean(paragraphs[node.page]),learningPath:[passage.section,...node.path.map(s=>s.title)],branchSourceText:node.sourceQuote||null,sourceAnchor:message.sourceAnchor||node.sourceAnchor||null,selectedText:message.sourceAnchor?.quote||null,replyTo:message.replyTo||null,ancestorConversations:ancestors,currentConversation:node.messages.slice(0,node.messages.indexOf(message)).map(publicMessage),visual:passage.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:passage.figure||null};
+      const paragraph=catalog[node.page];
+      return LearningAssistantContext.build({paragraph,node,message,nodes:conversations,paragraphNote:notes[node.page],
+        messageText:m=>m.example?messageText(m):m.text,
+        visual:paragraph.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:paragraph.figure||null});
     }
     async function startReply(node,message){
       if(message.request&&runningRequests.has(message.request.id))return;
@@ -1101,9 +1125,9 @@ window.LearningThreadExamples = (() => {
       try{
         const job=await assistant.run(current.payload,update=>{current.state=update.status;saveStudy()});
         current.state=job.status;current.result=job;
-        if(job.status==='failed'){current.error=job.error||'Codex could not finish this reply.'}
+        if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd}});
+          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -1114,7 +1138,7 @@ window.LearningThreadExamples = (() => {
     }
     async function showUsage(){
       const dialog=q('.lt-usage-dialog'),body=q('.lt-usage-body');body.textContent='Loading…';dialog.showModal();
-      try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
+      try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({...ledger,usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
       catch(error){body.textContent=error.message}
     }
     const design={layout:'Side by side',textSize:19,surrounding:false};

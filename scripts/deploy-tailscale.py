@@ -1,4 +1,4 @@
-"""Publish the reader and its Codex bridge on this Mac's private tailnet."""
+"""Optional local preview on the private tailnet; answers are generated in the cloud."""
 import json
 import os
 from pathlib import Path
@@ -48,23 +48,23 @@ try:
         with sqlite3.connect(database) as db:
             if db.execute("SELECT count(*) FROM calls WHERE status IN ('queued','running')").fetchone()[0]:
                 raise RuntimeError('A reply is still running. Deploy after it finishes.')
-    codex = '/Applications/ChatGPT.app/Contents/Resources/codex'
-    if not Path(codex).is_file():
-        raise RuntimeError('The configured app-bundled Codex executable is missing.')
-    login = run(codex, 'login', 'status')
-    if 'ChatGPT' not in login.stdout + login.stderr:
-        raise RuntimeError('This bridge requires the existing ChatGPT Codex login.')
+    if not (APP / 'cloud-sync.json').is_file():
+        raise RuntimeError('The private cloud preview configuration is missing.')
     old_arguments = [python, '-u', '-m', 'http.server', str(PORT), '--bind', '127.0.0.1', '--directory', str(SITE)]
+    legacy_arguments = [python, '-u', str(APP / 'assistant.py'), '--site', str(SITE),
+                        '--data', str(APP / 'data'), '--codex', '/Applications/ChatGPT.app/Contents/Resources/codex',
+                        '--port', str(PORT), '--origin', f'https://{origin}']
     arguments = [python, '-u', str(APP / 'assistant.py'), '--site', str(SITE),
-                 '--data', str(APP / 'data'), '--codex', codex, '--port', str(PORT),
+                 '--cloud-config', str(APP / 'cloud-sync.json'), '--port', str(PORT),
                  '--origin', f'https://{origin}']
     for address in status['Self'].get('TailscaleIPs', []):
         if ':' not in address:
             arguments += ['--origin', f'http://{address}:8080']
+            legacy_arguments += ['--origin', f'http://{address}:8080']
     reload_agent = False
     if PLIST.exists():
         old = plistlib.loads(PLIST.read_bytes())
-        if old.get('Label') != LABEL or old.get('ProgramArguments') not in [arguments, old_arguments]:
+        if old.get('Label') != LABEL or old.get('ProgramArguments') not in [arguments, old_arguments, legacy_arguments]:
             raise RuntimeError('The existing launch agent does not match this app.')
         reload_agent = old.get('ProgramArguments') != arguments
 

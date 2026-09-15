@@ -476,3 +476,77 @@ Brave opened the saved copy and showed Chapter 1 / Preview / paragraph 1.
 SAC-196 is Done; later chapter imports remain outside this completed first
 chapter slice. Both the cloud reader and the private Tailscale service have
 this build.
+
+## SAC-207 — Direct OpenAI assistant, 2026-09-15
+
+Requested change: replace the Mac/Codex CLI relay with the OpenAI API while
+carrying the learning context. Work is on `codex/openai-cloud-assistant`.
+
+Implementation is ready in the isolated QA Worker. Production has not switched:
+no OpenAI API key is configured in the environment, project, or production
+Worker secrets. The user was asked for its local file path or environment
+variable name, without sharing the key in chat. SAC-207 remains In Progress.
+The old production relay is still running until a real QA API call passes.
+
+The Worker now starts GPT-6 Astra Responses with low reasoning, standard service,
+and a 6,000-token output limit. D1 retains the provider response ID, request,
+result, usage, and price snapshot. A minute cron collects background replies
+when the browser is closed. No Codex process or Mac polling loop exists in the
+new code. The optional Python preview only serves assets and proxies cloud API
+requests; it does not open the historical SQLite ledger.
+
+Each question explicitly carries the paragraph, source pages, exact highlight
+anchor, paragraph notes, current messages, ancestor conversations, message
+notes, selected reply ID, and visual state. Existing conversation IDs and study
+snapshots remain intact. A separate branch anchor distinguishes the paragraph
+or answer that started a branch from the highlight being asked about now.
+The anchored quote takes precedence over an older preview description. Full
+context is retained rather than silently truncated or tied to provider history.
+
+Submission is claimed in D1 before contacting OpenAI. Reconnect retrieves the
+same response. If submission acknowledgement is lost, the job is marked uncertain
+and is never sent again automatically. Poll failures preserve the response ID
+and original error. Legacy answers remain available; pending CLI calls cannot
+be silently rerun through a paid API. API keys stay in Worker secrets.
+
+Usage includes input, cached input, cache writes, output, and reasoning tokens.
+Cost is an estimate from the price snapshot recorded when the call starts.
+Cached and cache-write tokens are deducted from ordinary input before pricing;
+reasoning is already counted in output. Unknown usage and legacy dollar charges
+remain unknown. Totals include the priced subtotal and count of unpriced replies.
+Official Responses, background, conversation-state, prompt-caching, and GPT-6
+Astra pricing documentation was checked on 2026-09-15; links are in web/README.md.
+
+Verification completed:
+- 37 Node tests, 3 Python tests, TypeScript, and the production Wrangler dry run
+  passed. Tests use real SQLite and stubbed OpenAI responses; they do not prove
+  live OpenAI access. Coverage includes nested context, costs, concurrent
+  submissions, lost acknowledgements, reconnects, and scheduled collection.
+- Migration 0003 was applied to the separate QA D1 database only. It adds provider
+  and recovery fields while keeping the two legacy QA assistant records intact.
+  The final QA deployment is `14f92904-5c93-463f-968f-1a0f7041126e` on
+  learning-threads-sync-qa, with the minute collector configured.
+- External Brave opened the QA study through the optional preview on port 63406.
+  The spherical highlight opened the original wrist thread and the nested
+  actuation highlight opened its conversation. Existing replies and the wrist
+  draft remained visible.
+- Submitting the existing QA question "Can a sensor ever affect the motion it
+  measures?" displayed the missing-key error with Reconnect. QA D1 version 33
+  retained request `amu29p1x0-aca0ag951uf`, its exact answer highlight, replyTo m7,
+  ancestors p1/b3, all six ancestor messages, the two current messages, source
+  paragraph 2.2.1-p2, and spherical visual controls. The assistant ledger remained
+  at two legacy calls: no provider call or charge was made.
+
+Remaining before cutover:
+1. Provision OPENAI_API_KEY in QA and complete a real Brave follow-up. Read back
+   its provider ID, token usage, cost calculation, and background recovery.
+2. Provision the production secret. Verify old Mac jobs are finished and retain
+   the historical local ledger. Stop the LaunchAgent and prevent restart at login.
+3. Apply production migration 0003 and deploy the Worker immediately. The old
+   Worker assumes the original table shape; do not roll its code back alone.
+4. Continue an existing production conversation in Brave with the Mac service
+   stopped. Check source links, context, usage, reload, and active 100% deployment.
+
+No real OpenAI API response, Mac-independent production reply, or production
+migration is claimed by the QA checks above. SAC-193's exported-file verification
+and SAC-197's generated/interactive answer visuals remain separate work.
