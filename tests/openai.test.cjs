@@ -77,7 +77,7 @@ test('duplicate request IDs cannot change the context or create another charge',
   const a=await assistant(req,env,'/api/replies',async()=>packet(id),ctx);assert.equal(a.status,202);
   const b=await assistant(req,env,'/api/replies',async()=>packet(id),ctx);assert.equal(b.status,200);
   const c=await assistant(req,env,'/api/replies',async()=>({...packet(id),context:{...context,selectedText:'Changed'}}),ctx);assert.equal(c.status,409);assert.equal(creates,1);
-  const ledger=await (await assistant(new Request('https://example.com/api/usage'),env,'/api/usage',async()=>null,ctx)).json();assert.equal(ledger.calls.length,1);assert.ok(ledger.cost_usd>0);
+  const ledger=await (await assistant(new Request('https://example.com/api/usage'),env,'/api/usage',async()=>null,ctx)).json();assert.equal(env.raw.prepare('SELECT COUNT(*) AS count FROM assistant_calls').get().count,1);assert.equal(ledger.models.length,1);assert.ok(ledger.cost_usd>0);
  }finally{await Promise.allSettled(tasks);global.fetch=original;env.raw.close()}
 });
 test('the scheduled collector saves answers with no browser and no Mac',async()=>{
@@ -164,4 +164,28 @@ test('each model uses its own price and a different returned model cannot be cha
   assert.equal(long.rates.input,pricing(model).input*2);assert.equal(long.rates.output,pricing(model).output*1.5);
  }
  assert.equal(estimateCost(usage,MODEL,'default',pricing('gpt-5.6-luna')),null);
+});
+
+test('usage sums each used model and all recorded charges, including failed charged calls',async()=>{
+ const env=database();
+ insert(env,'usage-astra-0001',{status:'completed',result:JSON.stringify({model:'gpt-6-astra',usage:{input_tokens:100,output_tokens:10,cached_input_tokens:20},cost_usd:0.003})});
+ insert(env,'usage-astra-0002',{status:'completed',provider:'codex',result:JSON.stringify({model:'gpt-6-astra',usage:{input_tokens:40,output_tokens:5},cost_usd:null})});
+ insert(env,'usage-luna-00001',{status:'completed',result:JSON.stringify({model:'gpt-5.6-luna',usage:{input_tokens:200,output_tokens:30,reasoning_output_tokens:10},cost_usd:0.0001})});
+ insert(env,'usage-luna-00002',{status:'failed',result:JSON.stringify({model:'gpt-5.6-luna',usage:{input_tokens:20,output_tokens:2},cost_usd:0.00001})});
+ insert(env,'usage-sol-pending',{configuration:JSON.stringify({model:'gpt-5.6-sol',reasoning:'high'})});
+ const response=await assistant(new Request('https://learn.example/api/usage'),env,'/api/usage',async()=>null,{waitUntil(){}}),ledger=await response.json();
+ assert.deepEqual(ledger.models.map(m=>m.model),['gpt-6-astra','gpt-5.6-luna']);
+ assert.equal(ledger.models[0].usage.input_tokens,140);assert.equal(ledger.models[1].usage.input_tokens,220);
+ assert.equal(ledger.models[1].usage.output_tokens,32);assert.equal(ledger.models[1].usage.reasoning_output_tokens,10);
+ assert.equal(ledger.totals.input_tokens,360);assert.equal(ledger.totals.output_tokens,47);
+ assert.ok(Math.abs(ledger.cost_usd-0.00311)<1e-12);
+ assert.equal(ledger.unpriced_calls,undefined);assert.deepEqual(ledger.calls,[]);
+ assert.ok(!JSON.stringify(ledger).includes('How does this relate'));
+ env.raw.close();
+});
+test('usage has no unused model rows and does not invent zero costs for old unpriced records',()=>{
+ const {aggregateUsage}=require('../cloudflare/assistant.ts');
+ assert.deepEqual(aggregateUsage([]).models,[]);assert.equal(aggregateUsage([]).cost_usd,0);assert.deepEqual(aggregateUsage([{status:'completed',usage:null,cost_usd:null}]).models,[]);
+ const ledger=aggregateUsage([{status:'completed',model:'gpt-6-astra',usage:{input_tokens:10},cost_usd:null}]);
+ assert.equal(ledger.models[0].cost_usd,null);assert.equal(ledger.cost_usd,null);assert.equal(ledger.totals.output_tokens,null);
 });

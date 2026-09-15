@@ -14,6 +14,20 @@ const expose=(call:Call)=>({id:call.id,status:call.status,created:call.created,p
   ...(call.provider==='openai'?choiceOf(call):{}),...(call.result?JSON.parse(call.result) as SavedResult:{})});
 const get=(db:D1Database,id:string)=>db.prepare('SELECT * FROM assistant_calls WHERE id=?').bind(id).first<Call>();
 const pending=(call:{status:string})=>['queued','running'].includes(call.status);
+export function aggregateUsage(records:Array<SavedResult&{status:string}>){
+  const reported=(value:unknown):value is number=>typeof value==='number'&&Number.isFinite(value)&&value>=0;
+  // Include recorded charges even when a provider could not finish the answer.
+  const calls=records.filter(c=>(c.status==='completed'&&!!c.model)||reported(c.cost_usd)||fields.some(k=>reported(c.usage?.[k])));
+  const sum=(values:unknown[],empty:boolean)=>{const numbers=values.filter(reported);return numbers.length?numbers.reduce((a,b)=>a+b,0):empty?0:null};
+  const summarize=(rows:typeof calls)=>({usage:Object.fromEntries(fields.map(k=>[k,sum(rows.map(c=>c.usage?.[k]),!rows.length)])),cost_usd:sum(rows.map(c=>c.cost_usd),!rows.length)});
+  const groups=new Map<string,typeof calls>();
+  for(const call of calls){const model=call.model||'Unknown model';if(!groups.has(model))groups.set(model,[]);groups.get(model)!.push(call)}
+  const order=Models.models.map(m=>m.id);
+  const models=[...groups].sort(([a],[b])=>(order.indexOf(a)<0?order.length:order.indexOf(a))-(order.indexOf(b)<0?order.length:order.indexOf(b))||a.localeCompare(b)).map(([model,rows])=>({model,...summarize(rows)}));
+  const total=summarize(calls);
+  // Older open tabs expect a calls array; keep it empty during the rollout.
+  return {models,totals:total.usage,cost_usd:total.cost_usd,cost_kind:'estimated',calls:[]};
+}
 function payload(value:unknown):{id:string;data:LearningPayload}{
   const v=value as {id?:unknown;question?:unknown;context?:unknown}|null;
   if(!v||typeof v.id!=='string'||!/^[-a-zA-Z0-9]{12,100}$/.test(v.id))throw new RequestError('The request ID is invalid.');
@@ -101,12 +115,7 @@ export async function assistant(request:Request,env:AssistantEnv,path:string,bod
   if(path==='/api/settings'&&request.method==='POST')return json(await saveSettings(db,await body()));
   if(path==='/api/usage'&&request.method==='GET'){
     const {results}=await db.prepare('SELECT * FROM assistant_calls ORDER BY created DESC').all<Call>();
-    const calls=results.map(c=>{const call={...expose(c),question:(JSON.parse(c.payload) as LearningPayload).question};delete call.text;return call});
-    const totals=Object.fromEntries(fields.map(k=>{const reported=calls.map(c=>c.usage?.[k]).filter((v):v is number=>typeof v==='number'&&Number.isFinite(v)&&v>=0);return [k,reported.length?reported.reduce((a,b)=>a+b,0):calls.length?null:0]}));
-    const known=calls.filter(c=>typeof c.cost_usd==='number'&&Number.isFinite(c.cost_usd)&&c.cost_usd>=0);
-    return json({calls,totals,unreported_calls:calls.filter(c=>!c.usage).length,
-      cost_usd:known.length?known.reduce((sum,c)=>sum+c.cost_usd!,0):null,cost_kind:'estimated',
-      unpriced_calls:calls.filter(c=>!pending(c)&&c.cost_usd==null).length});
+    return json(aggregateUsage(results.map(expose)));
   }
   if(/^\/api\/replies\/[-a-zA-Z0-9]+$/.test(path)&&request.method==='GET'){
     const call=await get(db,path.split('/').pop()!);if(!call)return json({error:'Reply not found.'},404);

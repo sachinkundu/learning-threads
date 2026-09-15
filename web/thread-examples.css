@@ -65,10 +65,12 @@
 #lt-reading .lt-rich code{font-size:.85em}
 #lt-reading .lt-rich li{margin:8px 0}
 #lt-reading .lt-request-status{font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;white-space:pre-wrap;margin:12px 0;color:var(--lt-muted)}
-#lt-reading .lt-call-usage{font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:14px 0;color:var(--lt-muted)}
-#lt-reading .lt-call-usage summary{cursor:pointer}
-#lt-reading .lt-call-usage dl,#lt-reading .lt-usage-body>dl{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;font-size:13px}
-#lt-reading .lt-call-usage dd,#lt-reading .lt-usage-body dd{margin:0;text-align:right}
 #lt-reading .lt-usage-dialog{box-sizing:border-box;width:min(560px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:22px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-surface);color:var(--lt-ink);opacity:1}
 #lt-reading .lt-usage-dialog::backdrop{background:rgba(0,0,0,.6)}
 #lt-reading .lt-usage-dialog>button{float:right}
+
+#lt-reading .lt-usage-scroll{max-width:100%;overflow-x:auto;clear:both}
+#lt-reading .lt-usage-scroll table{width:100%;border-collapse:collapse;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+#lt-reading .lt-usage-scroll th,#lt-reading .lt-usage-scroll td{padding:12px 8px;border-bottom:1px solid var(--lt-line);text-align:right}
+#lt-reading .lt-usage-scroll th:first-child{text-align:left}
+#lt-reading .lt-usage-scroll tfoot{font-weight:700}

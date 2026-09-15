@@ -6,11 +6,11 @@ linked to the exact source. Notes, highlights, and reading history sync across
 devices through Cloudflare.
 
 - Questions and nested threads have fixed links that can be bookmarked.
-- Assistant equations render as math while saved source highlights stay intact.
+- Assistant equations and tables render clearly while saved source highlights stay intact.
 - Book figures appear with the passages that refer to them.
 - Original PDF pages stay hidden until opened.
 - Assistant settings offer Astra, Sol, Terra, and Luna, with Luna/High by default.
-- Each answer records its model, reasoning level, token usage, and estimated cost.
+- Usage sums input/output tokens and recorded cost by model, with an overall total.
 
 The current book is *Modern Robotics* by Kevin Lynch and Frank Park. Chapter 1
 has checked web text, source-page images, and Figure 1.1. The full PDF is not

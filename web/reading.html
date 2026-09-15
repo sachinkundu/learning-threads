@@ -84,6 +84,11 @@
     #lt-reading .lt-message.lt-user{background:var(--lt-soft);margin-left:22px}
     #lt-reading .lt-math-display{display:block;overflow-x:auto;max-width:100%}
     #lt-reading .lt-math .katex-display{margin:1em 0}
+    #lt-reading .lt-table-scroll{max-width:100%;overflow-x:auto;margin:16px 0;white-space:normal}
+    #lt-reading .lt-table-scroll table{width:100%;border-collapse:collapse;font:inherit;line-height:1.5}
+    #lt-reading .lt-table-scroll th,#lt-reading .lt-table-scroll td{padding:10px 12px;border:1px solid var(--lt-line);vertical-align:top;min-width:110px;overflow-wrap:normal}
+    #lt-reading .lt-table-scroll th{background:var(--lt-soft);font-weight:700}
+    #lt-reading .lt-table-scroll:focus-visible{outline:2px solid var(--lt-teal);outline-offset:3px}
     #lt-reading .lt-message-link{color:inherit;text-underline-offset:3px;padding:4px 0}
     #lt-reading .lt-message:focus-visible{outline:2px solid var(--lt-accent);outline-offset:6px}
     #lt-reading .lt-message-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--lt-muted);margin-bottom:6px}
@@ -327,7 +332,7 @@
 
     const newAnchorId=()=> 'a'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
     const isMessageAnchor=a=>a?.kind==='message';
-    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text,{math:false})):message.text}
+    function messageText(message){return message.example?clean(threadExamples.examples[message.example].html()):message.kind==='live'?clean(assistant.renderText(message.text,{math:false,tables:false})):message.text}
     function sourceText(anchor,nodes=conversations){return isMessageAnchor(anchor)?messageText(nodes.get(anchor.nodeId).messages.find(m=>m.id===anchor.messageId)):clean(paragraphs[anchor.page])}
     function allAnchors(){
       const entries=new Map();
@@ -453,7 +458,6 @@
         ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
         ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example||m.kind==='live'?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
-        ${m.usageRecord?`<details class="lt-call-usage"><summary>Usage</summary>${assistant.usageHtml(m.usageRecord)}</details>`:''}
         ${m.request&&['connecting','queued','running','waiting','failed'].includes(m.request.state)?`<div class="lt-request-status" role="status">${m.request.error?escapeText(m.request.error):m.request.state==='queued'?'Queued…':'Thinking…'}</div>`:''}
         ${m.role==='assistant'?`<div class="lt-actions">
           ${m.visualKey?`<button class="lt-action" type="button" data-visualize="${m.id}"><i data-lucide="shapes" aria-hidden="true"></i>${hasVisual?'View visual':'Visualize'}</button>`:''}
@@ -587,7 +591,7 @@
     }
     async function showUsage(){
       const dialog=q('.lt-usage-dialog'),body=q('.lt-usage-body');body.textContent='Loading…';dialog.showModal();
-      try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({...ledger,usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
+      try{const ledger=await assistant.request('/api/usage');body.innerHTML=assistant.usageHtml(ledger)}
       catch(error){body.textContent=error.message}
     }
     function reasoningOptions(preferred){

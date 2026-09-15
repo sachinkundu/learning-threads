@@ -774,3 +774,48 @@ https://learn.voxdez.com/?book=modern-robotics-2019-preprint&thread=b5&message=m
 and displayed the sphere equation and inline math. The original selected text
 and question `m19` were present. No production test question or state reset was
 needed. Settings direct links and browser-history return also pass reader tests.
+
+## Tables and aggregate usage — SAC-216 / SAC-217 (2026-09-15)
+
+The saved `b5/m20` answer contains a valid Markdown table; the renderer previously
+left it as one plain paragraph. Added semantic tables with column headers, cell
+alignment, wrapping, and horizontal scrolling when needed. Inline code, escaped
+pipes, links, and math remain supported. Hidden syntax markers retain original
+pipes, separator rows, and newlines in canonical source text. A final canonical
+text comparison falls back to plain text for malformed cross-cell markup rather
+than shifting any saved source range. No stored answers or anchors are rewritten.
+
+The user also requested aggregate-only usage by model. The Usage dialog now has
+one row per model with recorded use and a Total row. It shows input tokens,
+output tokens, and recorded estimated cost. Removed per-question listings,
+per-answer Usage controls, and the unpriced reply count. Kept the opaque dialog.
+Server aggregation uses each call's recorded model and cost; it does not reprice
+old calls using current settings. Recorded usage/cost from failed calls is
+included. Unknown amounts are not treated as zero. Cached and reasoning token
+subsets remain in the underlying records and API but are not counted twice.
+An empty `calls` array keeps already-open older clients from breaking during
+rollout. Legacy rows without any model or recorded amount add no visible row.
+
+All 59 Node tests, TypeScript, three Python server tests, build, and diff checks
+passed. Added table tests for the exact saved tradeoff, old/new cell highlights,
+content after tables, escaped pipes, code, math, links, malformed tables, and
+HTML injection. API tests verify model sums, overall sums, recorded failed-call
+charges, pending/unused models, unknown amounts, and the absence of question
+content. Existing duplicate-request billing protection still passes.
+
+External Brave displayed the saved QA tradeoff as three columns and two body
+rows, alongside the existing equation and source highlight. The Usage dialog
+displayed summed Astra, Terra, and Luna records without question details.
+No new model call, production test conversation, D1 migration, or study reset
+was needed for these changes.
+
+Production version `b9cd38af-972d-4043-b0f8-2633f895785e` was deployed and
+verified in external Brave. The original `b5/m20` comparison now displays three
+columns and two data rows, with its equation and pending source selection intact.
+Production Usage displays only Astra, Luna, and Total. The values match the
+pre-change ledger: 78,056 input tokens, 7,407 output tokens, and recorded estimated
+cost $0.0249876 (displayed as $0.024988). No question names or unpriced reply
+count appear. QA's final version is `8eb64044-28df-450f-a277-9f66506d5092`.
+
+Cloudflare readback confirmed deployment `1b6f19cb-26f2-4f9d-a00e-87db6373cdd0`
+serves that production version at 100% traffic.

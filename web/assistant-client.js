@@ -11,13 +11,55 @@
       return escape(part);
     }).join('');
   }
+  const unescape=text=>text.replace(/&(?:amp|lt|gt|quot|#39);/g,e=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[e]));
+  const plain=html=>unescape(html.replace(/<[^>]+>/g,''));
+  const syntax=text=>text?`<span hidden aria-hidden="true" data-source-syntax>${escape(text)}</span>`:'';
+  function tableRow(line){
+    // Pipes inside escaped text, code, and delimited math belong to the cell.
+    const pipes=[...line.matchAll(/`[^`]*`|\\\([^\n]*?\\\)|\\\[[^\n]*?\\\]|\$\$[^\n]*?\$\$|\\[\s\S]|\|/g)].filter(m=>m[0]==='|').map(m=>m.index);
+    if(!pipes.length)return null;
+    let start=0,end=line.length;
+    if(!line.slice(0,pipes[0]).trim())start=pipes.shift()+1;
+    if(pipes.length&&!line.slice(pipes.at(-1)+1).trim())end=pipes.pop();
+    const bounds=[start,...pipes.flatMap(p=>[p,p+1]),end],cells=[];
+    for(let i=0;i<bounds.length;i+=2)cells.push({start:bounds[i],end:bounds[i+1],text:line.slice(bounds[i],bounds[i+1])});
+    return {line,cells};
+  }
+  function tableCells(row,tag,alignment,after=''){
+    return row.cells.map((cell,i)=>{
+      const prefix=i===0?row.line.slice(0,cell.start):'',suffix=row.line.slice(cell.end,row.cells[i+1]?.start??row.line.length)+(i===row.cells.length-1?after:'');
+      const value=inline(cell.text).replace(/<[^>]+>|\\\|/g,part=>part==='\\|'?syntax('\\')+'|':part);
+      return `<${tag}${tag==='th'?' scope="col"':''} style="text-align:${alignment[i]}">${syntax(prefix)}${value}${syntax(suffix)}</${tag}>`;
+    }).join('');
+  }
+  function paragraphHtml(text,tables=true){
+    const fallback='<p>'+inline(text)+'</p>';
+    if(!tables)return fallback;
+    const lines=text.split('\n'),blocks=[];let pending=[];
+    const flush=()=>{if(pending.length){blocks.push('<p>'+inline(pending.join('\n'))+'</p>');pending=[]}};
+    for(let i=0;i<lines.length;){
+      const header=tableRow(lines[i]),separator=i+1<lines.length?tableRow(lines[i+1]):null;
+      if(!header||!separator||header.cells.length!==separator.cells.length||!separator.cells.every(c=>/^:?-{3,}:?$/.test(c.text.trim()))){pending.push(lines[i++]);continue}
+      const alignment=separator.cells.map(c=>c.text.trim().endsWith(':')?(c.text.trim().startsWith(':')?'center':'right'):'left');
+      const body=[];let end=i+2;
+      while(end<lines.length){const row=tableRow(lines[end]);if(!row||row.cells.length!==header.cells.length)break;body.push(row);end++}
+      if(pending.length){pending[pending.length-1]+='\n';flush()}
+      const headSuffix='\n'+lines[i+1]+(i+2<lines.length?'\n':'');
+      blocks.push('<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Answer table"><table><thead><tr>'+tableCells(header,'th',alignment,headSuffix)+'</tr></thead><tbody>'+body.map((row,j)=>'<tr>'+tableCells(row,'td',alignment,i+2+j<lines.length-1?'\n':'')+'</tr>').join('')+'</tbody></table></div>');
+      i=end;
+    }
+    flush();const html=blocks.join('');
+    // Malformed Markdown that crosses cell boundaries must never shift a saved
+    // source range. Hidden syntax retains pipes, separator rows, and newlines.
+    return plain(html)===plain(fallback)?html:fallback;
+  }
   const katex=typeof module!=='undefined'&&module.exports?require('katex'):scope.katex;
   function renderMath(html){
     // Work on escaped Markdown text, leaving tags and code samples intact. The
     // original text is retained for existing source ranges and future highlights.
     return html.replace(/<pre>[\s\S]*?<\/pre>|<code>[\s\S]*?<\/code>|<[^>]+>|\\\[[^<]*?\\\]|\\\([^<]*?\\\)|\$\$[^<]*?\$\$/g,part=>{
       if(part.startsWith('<')||!katex)return part;
-      const source=part.replace(/&(?:amp|lt|gt|quot|#39);/g,e=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[e]));
+      const source=unescape(part);
       const display=!source.startsWith('\\(');
       try{
         const math=katex.renderToString(source.slice(2,-2),{displayMode:display,output:'htmlAndMathml',throwOnError:true,trust:false,strict:'ignore',maxSize:10,maxExpand:1000,macros:{}});
@@ -27,7 +69,7 @@
   }
   function renderText(text,options={}){
     const lines=String(text).split('\n'),blocks=[];let paragraph=[],list=[],code=null;
-    const flush=()=>{if(paragraph.length){blocks.push('<p>'+inline(paragraph.join('\n'))+'</p>');paragraph=[]}if(list.length){blocks.push('<ul>'+list.map(x=>'<li>'+inline(x)+'</li>').join('')+'</ul>');list=[]}};
+    const flush=()=>{if(paragraph.length){blocks.push(paragraphHtml(paragraph.join('\n'),options.tables!==false));paragraph=[]}if(list.length){blocks.push('<ul>'+list.map(x=>'<li>'+inline(x)+'</li>').join('')+'</ul>');list=[]}};
     for(const line of lines){
       if(line.trimStart().startsWith('```')){flush();if(code!==null){blocks.push('<pre><code>'+escape(code.join('\n'))+'</code></pre>');code=null}else code=[];continue}
       if(code!==null){code.push(line);continue}
@@ -57,11 +99,12 @@
     }
     return job;
   }
-  function usageHtml(call){
-    const u=call?.usage, count=k=>u?.[k]===null||u?.[k]===undefined?'Not reported':u[k].toLocaleString();
-    const known=typeof call?.cost_usd==='number'&&Number.isFinite(call.cost_usd)&&call.cost_usd>=0;
-    const cost=known?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:4,maximumFractionDigits:6}).format(call.cost_usd):'Not reported';
-    return `<dl><dt>Input tokens</dt><dd>${count('input_tokens')}</dd><dt>Cached input</dt><dd>${count('cached_input_tokens')}</dd>${u?.cache_write_tokens!=null?`<dt>Cache writes</dt><dd>${count('cache_write_tokens')}</dd>`:''}<dt>Output tokens</dt><dd>${count('output_tokens')}</dd><dt>Reasoning output</dt><dd>${count('reasoning_output_tokens')}</dd><dt>${call?.cost_kind==='estimated'?'Estimated API cost':'Cost'}</dt><dd>${cost}</dd>${call?.unpriced_calls?`<dt>Unpriced replies</dt><dd>${call.unpriced_calls}</dd>`:''}${call?.model?`<dt>Model</dt><dd>${escape(call.model)}</dd>`:''}${call?.reasoning?`<dt>Reasoning</dt><dd>${escape(({none:'None',low:'Low',medium:'Medium',high:'High',xhigh:'Extra high',max:'Maximum'})[call.reasoning]||call.reasoning)}</dd>`:''}</dl>`;
+  function usageHtml(ledger){
+    const models=typeof module!=='undefined'&&module.exports?require('./assistant-models.js'):scope.LearningAssistantModels;
+    const count=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value.toLocaleString():'—';
+    const money=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:4,maximumFractionDigits:6}).format(value):'—';
+    const row=(label,usage,cost)=>`<tr><th scope="row">${escape(label)}</th><td>${count(usage?.input_tokens)}</td><td>${count(usage?.output_tokens)}</td><td>${money(cost)}</td></tr>`;
+    return '<h3>Usage</h3><div class="lt-usage-scroll"><table aria-label="Usage by model"><thead><tr><th scope="col">Model</th><th scope="col">Input tokens</th><th scope="col">Output tokens</th><th scope="col" aria-label="Recorded estimated API cost in USD">Recorded cost</th></tr></thead><tbody>'+(ledger.models||[]).map(m=>row(models?.models.find(choice=>choice.id===m.model)?.label||m.model,m.usage,m.cost_usd)).join('')+'</tbody><tfoot>'+row('Total',ledger.totals,ledger.cost_usd)+'</tfoot></table></div>';
   }
   const api={renderText,run,request,usageHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;

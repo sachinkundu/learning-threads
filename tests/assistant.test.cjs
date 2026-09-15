@@ -20,21 +20,12 @@ test('text diagrams preserve whitespace without executing markup',()=>{
   const html=renderText('```text\n motor  -->  joint\n <img src=x>\n```');
   assert.equal(html,'<pre><code> motor  --&gt;  joint\n &lt;img src=x&gt;</code></pre>');
 });
-test('missing token and dollar charges are never presented as zero',()=>{
-  const html=usageHtml({usage:{input_tokens:12,cached_input_tokens:0,output_tokens:null}});
-  assert.ok(html.includes('<dd>12</dd>'));assert.ok(html.includes('<dd>0</dd>'));
-  assert.ok(html.includes('<dt>Output tokens</dt><dd>Not reported</dd>'));
-  assert.ok(html.includes('<dt>Cost</dt><dd>Not reported</dd>'));
+test('usage shows only model sums and a total, without question lists or unpriced counts',()=>{
+ const html=usageHtml({models:[{model:'gpt-6-astra',usage:{input_tokens:20,output_tokens:4},cost_usd:0.01},{model:'gpt-5.6-luna',usage:{input_tokens:30,output_tokens:6},cost_usd:0.000006}],totals:{input_tokens:50,output_tokens:10},cost_usd:0.010006,calls:[{question:'Never list this question'}],unpriced_calls:6});
+ for(const expected of ['Astra','Luna','Total','50','10','$0.000006','$0.010006'])assert.ok(html.includes(expected));
+ for(const omitted of ['Never list this question','Unpriced','<details>','Sol','Terra'])assert.ok(!html.includes(omitted));
 });
-
-test('API costs and unpriced history are displayed separately without rounding tiny calls to zero',()=>{
- const html=usageHtml({usage:{input_tokens:100,cache_write_tokens:30,output_tokens:12},cost_usd:0.000006,cost_kind:'estimated',unpriced_calls:4});
- assert.ok(html.includes('Estimated API cost'));assert.ok(html.includes('$0.000006'));
- assert.ok(html.includes('<dt>Unpriced replies</dt><dd>4</dd>'));assert.ok(html.includes('<dt>Cache writes</dt><dd>30</dd>'));
-});
-test('usage identifies the answer’s model and reasoning without inventing it for legacy records',()=>{
- const html=usageHtml({model:'gpt-5.6-luna',reasoning:'high'});
- assert.ok(html.includes('<dt>Model</dt><dd>gpt-5.6-luna</dd>'));assert.ok(html.includes('<dt>Reasoning</dt><dd>High</dd>'));
- assert.ok(!usageHtml({}).includes('<dt>Reasoning</dt>'));
- assert.ok(!usageHtml({reasoning:'<script>alert(1)</script>'}).includes('<script>'));
+test('usage keeps unknown values distinct from zero and escapes unexpected model names',()=>{
+ const html=usageHtml({models:[{model:'<img src=x>',usage:{input_tokens:0,output_tokens:null},cost_usd:null}],totals:{input_tokens:0,output_tokens:null},cost_usd:null});
+ assert.ok(html.includes('<td>0</td>'));assert.ok(html.includes('<td>—</td>'));assert.ok(!html.includes('<img'));assert.ok(!html.includes('$0.0000'));
 });

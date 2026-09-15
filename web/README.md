@@ -64,14 +64,15 @@ visible. Explicit Retry creates a separate attempt. Legacy CLI answers and
 usage remain unchanged. Interrupted legacy jobs are not automatically billed
 through the API.
 
-Usage shows the answer's model, reasoning level, and reported input, cached
-input, cache-write, output, and reasoning tokens. Estimated API cost uses the
-price snapshot saved when the call starts.
-Cache reads and writes are removed from ordinary input before pricing;
-reasoning tokens are already included in output and are not charged twice.
-Unknown usage and legacy charges remain unknown. Totals show the priced
-subtotal and number of unpriced replies. Estimates do not include taxes or
-account-specific billing adjustments.
+Usage shows one row for each model with recorded use, then an overall total.
+The visible columns are input tokens, output tokens, and recorded estimated cost.
+Question lists and individual answer usage controls are removed. The underlying
+call records still retain model, reasoning, all token categories, and frozen
+pricing. Cached input and reasoning output are subsets of input and output;
+they are not added twice. The sums include recorded charges from failed calls.
+Unknown amounts stay unknown, while known costs are summed without repricing
+old calls. The API returns aggregate model rows; its empty `calls` array keeps
+previously opened clients compatible during deployment.
 
 Checked 2026-09-15: standard prices per million tokens:
 
@@ -160,3 +161,9 @@ random unique IDs. The reader waits for initial cloud sync before resolving an
 incoming link, then focuses the requested question or answer. New questions set
 the address bar immediately; receiving an answer keeps that question URL.
 Links stay private behind the existing Cloudflare Access sign-in.
+
+Markdown tables render as semantic headers and cells with horizontal overflow
+for narrow screens. Hidden, non-accessible syntax markers preserve the original
+pipes, delimiter row, and newlines in canonical text so saved highlight offsets
+stay valid. Cell content supports inline formatting, code, escaped pipes, links,
+and math. Malformed tables remain text without rewriting the saved answer.
