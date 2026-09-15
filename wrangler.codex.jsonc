@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "learning-threads-codex",
+  "account_id": "c68856288112af7698f5be52ea94b96e",
+  "main": "codex/worker.ts",
+  "compatibility_date": "2026-09-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "Sandbox",
+        "class_name": "Sandbox"
+      },
+      {
+        "name": "ACCOUNT",
+        "class_name": "CodexAccount"
+      }
+    ]
+  },
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "./codex/Dockerfile",
+      "max_instances": 2,
+      "instance_type": "basic",
+      "image_build_context": "."
+    }
+  ],
+  "migrations": [
+    {
+      "tag": "codex-v1",
+      "new_sqlite_classes": [
+        "Sandbox",
+        "CodexAccount"
+      ]
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "learning-threads-codex"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

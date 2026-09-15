@@ -3,7 +3,7 @@
   'use strict';
   function build({paragraph,node,message,nodes,paragraphNote,visual,messageText}){
     const publicMessage=m=>({id:m.id,role:m.role,text:messageText(m),sourceAnchor:m.sourceAnchor||null,
-      note:m.note||null,replyTo:m.replyTo||null,visualization:m.visualization||null});
+      note:m.note||null,replyTo:m.replyTo||null,visualization:m.visualization||null,artifacts:m.artifacts||[],artifactStates:m.artifactStates||{}});
     const ancestors=[];let parent=node;
     while(parent.parent){parent=nodes.get(parent.parent);ancestors.unshift({id:parent.id,title:parent.title,
       sourceQuote:parent.sourceAnchor?.quote||parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,visual:parent.visual||null,

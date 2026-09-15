@@ -104,8 +104,11 @@
     const count=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value.toLocaleString():'—';
     const money=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:4,maximumFractionDigits:6}).format(value):'—';
     const row=(label,usage,cost)=>`<tr><th scope="row">${escape(label)}</th><td>${count(usage?.input_tokens)}</td><td>${count(usage?.output_tokens)}</td><td>${money(cost)}</td></tr>`;
-    return '<h3>Usage</h3><div class="lt-usage-scroll"><table aria-label="Usage by model"><thead><tr><th scope="col">Model</th><th scope="col">Input tokens</th><th scope="col">Output tokens</th><th scope="col" aria-label="Recorded estimated API cost in USD">Recorded cost</th></tr></thead><tbody>'+(ledger.models||[]).map(m=>row(models?.models.find(choice=>choice.id===m.model)?.label||m.model,m.usage,m.cost_usd)).join('')+'</tbody><tfoot>'+row('Total',ledger.totals,ledger.cost_usd)+'</tfoot></table></div>';
+    return '<h3>Usage</h3><div class="lt-usage-scroll"><table aria-label="Usage by model"><thead><tr><th scope="col">Model</th><th scope="col">Input tokens</th><th scope="col">Output tokens</th><th scope="col" aria-label="Recorded estimated API cost in USD">API cost</th></tr></thead><tbody>'+(ledger.models||[]).map(m=>row(models?.models.find(choice=>choice.id===m.model)?.label||m.model,m.usage,m.cost_usd)).join('')+'</tbody><tfoot>'+row('Total',ledger.totals,ledger.cost_usd)+'</tfoot></table></div>';
   }
-  const api={renderText,run,request,usageHtml};
+  function artifactHtml(artifacts){
+    return (artifacts||[]).filter(a=>/^[-a-zA-Z0-9]{12,100}$/.test(a.jobId)&&/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}\.html$/.test(a.filename)).map(a=>`<iframe class="lt-live-visual" title="${escape(a.title||'Interactive explanation')}" src="/api/artifacts/${a.jobId}/${a.filename}" sandbox="allow-scripts" referrerpolicy="no-referrer" data-visual-job="${a.jobId}" data-visual-file="${a.filename}"></iframe>`).join('');
+  }
+  const api={renderText,run,request,usageHtml,artifactHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;
 })(globalThis);

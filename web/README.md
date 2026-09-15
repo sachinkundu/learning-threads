@@ -27,52 +27,40 @@ notes, and nested branches. Invalid or stale source anchors are never silently
 reattached. Saved-copy restoration works; the exported-file round trip remains
 tracked in SAC-193.
 
-## OpenAI assistant
+## Codex assistant
 
-The live reader calls the OpenAI Responses API from a Cloudflare Worker.
-Cutover status and real provider evidence are recorded in `planning/workpad.md`.
-The API key is a Worker secret named `OPENAI_API_KEY`. It must never be added
-to frontend assets, book data, study state, or version control.
+New questions use the private `learning-threads-codex` service binding. It runs
+Codex CLI inside Cloudflare Sandbox with the owner's OAuth login. There is no
+paid API fallback or Mac service. The runner owns the refresh cycle, encrypts
+credentials in R2, and stores updated auth even when a later step fails. The
+owner can reconnect with `scripts/seed-codex-auth.mjs` after a new Codex sign-in.
 
-Reading view → Settings selects Astra, Sol, Terra, or Luna and a supported
-reasoning level. The default is Luna with High reasoning. Settings live in D1,
-separate from book revisions, and follow the learner across devices. A stale
-settings save cannot silently overwrite a newer choice. Restoring a study copy
-does not revert these preferences.
+Settings still select Astra, Sol, Terra, or Luna and a reasoning level, with
+Luna/High as the default. Each question freezes that choice. Reconnect uses the
+same durable job ID; the runner never repeats an uncertain model submission.
+A Durable Object runs queued work and collects it even when the browser closes.
+The reader keeps the result in D1 alongside the existing assistant ledger.
 
-Each new call freezes the saved model, reasoning level, and price. Running calls
-and reconnects keep their original choice. `web/assistant-models.js` holds the
-shared capabilities and prices. `cloudflare/openai.ts` uses standard service
-and a 6,000-token output limit. `web/assistant-context.js` builds a complete
-context snapshot: source paragraph and page references, exact highlight,
-paragraph notes, ancestor conversations, current replies and notes, selected
-reply ID, and visual state. Each request includes that packet explicitly. Old
-CLI conversations therefore continue without an OpenAI conversation ID.
-Context is not silently truncated. The teaching instructions treat source text
-as data and prohibit automatic question suggestions and invented citations.
+`web/assistant-context.js` builds the full source/highlight/notes/ancestor and
+current conversation packet. Prior visual source files and control values are
+restored for follow-ups. Each job gets a fresh Codex session with this explicit
+packet, so context does not depend on keeping a container alive. The app's
+thread/message IDs and source anchors remain the durable learning graph.
 
-OpenAI starts a background response. D1 stores its provider ID. The browser can
-poll for the result, and a Cloudflare cron collector saves it even after the
-browser closes. Stored responses support recovery; D1 is the app's durable
-record. There is no Mac polling loop, local inference process, or Codex login
-requirement in this harness.
+The tutor can create self-contained HTML animations and inspect them with
+Playwright. Files are saved in private R2 storage and shown inside the answer
+in opaque sandboxed iframes. The app blocks external resources and navigation,
+keeps the visual outside selectable answer text, and saves control state with
+that answer. Follow-up edits create new versions while old visuals remain.
 
-A D1 claim prevents duplicate submissions. Reconnect uses the original request
-ID and retrieves an existing provider response. An uncertain submission is
-never automatically reissued; its error and possible unreported charge remain
-visible. Explicit Retry creates a separate attempt. Legacy CLI answers and
-usage remain unchanged. Interrupted legacy jobs are not automatically billed
-through the API.
+Usage shows token sums by model and overall. OAuth usage has subscription
+billing and no API dollar estimate; the API-cost column retains historical API
+charges. Cached input and reasoning output remain subsets, counted once. The
+runner records elapsed container time separately. Generated-image API tools
+are not configured. The historical direct-API handler only retrieves already
+submitted answers at cutover; it cannot receive new reader questions.
 
-Usage shows one row for each model with recorded use, then an overall total.
-The visible columns are input tokens, output tokens, and recorded estimated cost.
-Question lists and individual answer usage controls are removed. The underlying
-call records still retain model, reasoning, all token categories, and frozen
-pricing. Cached input and reasoning output are subsets of input and output;
-they are not added twice. The sums include recorded charges from failed calls.
-Unknown amounts stay unknown, while known costs are summed without repricing
-old calls. The API returns aggregate model rows; its empty `calls` array keeps
-previously opened clients compatible during deployment.
+### Historical API prices
 
 Checked 2026-09-15: standard prices per million tokens:
 
@@ -96,8 +84,8 @@ snapshots, and unsupported service tiers remain unpriced. Sources:
 - https://developers.openai.com/api/docs/guides/background
 - https://developers.openai.com/api/docs/guides/conversation-state
 
-Generated images and new interactive answer visuals remain SAC-197. Text
-diagrams and the previously approved prepared visuals are supported.
+Interactive HTML visuals are implemented with SAC-219. Image generation and
+precisely checked video links remain in SAC-197.
 
 ## Checks and release
 

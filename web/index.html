@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-rqCIT+/Xr+ExnRC74Xnw8hBDvujRJ4Xs1B4xdkYDLA4=' 'sha256-OvBUopxIUksvzJRam7CODbAyCgRqF+0ml+7/LkjsWAY=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-oBX6eNfWy3C+HwBXXL3JF6sWgOp0iV6Brt6K13owrrg=' 'sha256-aP0NcjnRvI0PWjaOAYpeAVjcx9YgfTrpc3GCKu1GThg=' 'sha256-1Nm13Ny444oEXfEjNbDh3zGaoQ7PYl2yi/pYgPt3dqg=' 'sha256-M3zfbe0tcRcKp2JccHUOzcJ/dPJn2qD7WzBE4Wo/Cr0=' 'sha256-SieaqRXbd0WoNCkSpnOFkNDVy3m+LJUdQLuY0gYoG54=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-vCnoTiQpw5FaxOWJg6o4JWa+9hMqITiTRXjnlcugsAY=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-rqCIT+/Xr+ExnRC74Xnw8hBDvujRJ4Xs1B4xdkYDLA4=' 'sha256-OvBUopxIUksvzJRam7CODbAyCgRqF+0ml+7/LkjsWAY=' 'sha256-X+tCVXm0+3dc4wKqYWnkQjvG5wpGKb67gvqRhZICMf4=' 'sha256-EUFojdMsxLhozy+9EwifQw49pCH51y3r+fqLOXYslIM=' 'sha256-PikDj43uMpkMMdgqkFOOXhLcyNIk3XGKS3WIoOWIxIQ=' 'sha256-aP0NcjnRvI0PWjaOAYpeAVjcx9YgfTrpc3GCKu1GThg=' 'sha256-phM/3YWOwmXdvgoRS0U6R/ER80yCIE+Sv69eKY/vTpo=' 'sha256-M3zfbe0tcRcKp2JccHUOzcJ/dPJn2qD7WzBE4Wo/Cr0=' 'sha256-SieaqRXbd0WoNCkSpnOFkNDVy3m+LJUdQLuY0gYoG54=' 'sha256-qUxhQtC74E/sNhzjXwCm+lcdoi9X2e4mg+hozKWJoaA=' 'sha256-JZKrqZ37eeYBui5vLWsCj60F9gnxAfF8yTGRp6a0gJ4=' 'sha256-4Fm8SxK0kNUll+g7+jQziuWRFbeAVeR3qqcDUtdTihs=' https://unpkg.com/lucide@1.17.0/; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Learning Threads</title>
 <style>html,body{margin:0;padding:0}svg.lucide{width:16px;height:16px;flex-shrink:0;vertical-align:middle}</style>
 </head>
@@ -87,6 +87,7 @@
     #lt-reading mark{background:var(--lt-mark);color:inherit;border-radius:3px}
     #lt-reading .lt-feedback{font-size:12px;color:var(--lt-muted);min-height:18px;margin-top:8px}
     #lt-reading .lt-qa{margin-top:23px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    #lt-reading .lt-live-visual{display:block;width:100%;height:620px;border:1px solid var(--lt-line);border-radius:12px;background:#fff;margin:18px 0}
     
     
     #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
@@ -701,9 +702,12 @@
     const count=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?value.toLocaleString():'—';
     const money=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:4,maximumFractionDigits:6}).format(value):'—';
     const row=(label,usage,cost)=>`<tr><th scope="row">${escape(label)}</th><td>${count(usage?.input_tokens)}</td><td>${count(usage?.output_tokens)}</td><td>${money(cost)}</td></tr>`;
-    return '<h3>Usage</h3><div class="lt-usage-scroll"><table aria-label="Usage by model"><thead><tr><th scope="col">Model</th><th scope="col">Input tokens</th><th scope="col">Output tokens</th><th scope="col" aria-label="Recorded estimated API cost in USD">Recorded cost</th></tr></thead><tbody>'+(ledger.models||[]).map(m=>row(models?.models.find(choice=>choice.id===m.model)?.label||m.model,m.usage,m.cost_usd)).join('')+'</tbody><tfoot>'+row('Total',ledger.totals,ledger.cost_usd)+'</tfoot></table></div>';
+    return '<h3>Usage</h3><div class="lt-usage-scroll"><table aria-label="Usage by model"><thead><tr><th scope="col">Model</th><th scope="col">Input tokens</th><th scope="col">Output tokens</th><th scope="col" aria-label="Recorded estimated API cost in USD">API cost</th></tr></thead><tbody>'+(ledger.models||[]).map(m=>row(models?.models.find(choice=>choice.id===m.model)?.label||m.model,m.usage,m.cost_usd)).join('')+'</tbody><tfoot>'+row('Total',ledger.totals,ledger.cost_usd)+'</tfoot></table></div>';
   }
-  const api={renderText,run,request,usageHtml};
+  function artifactHtml(artifacts){
+    return (artifacts||[]).filter(a=>/^[-a-zA-Z0-9]{12,100}$/.test(a.jobId)&&/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}\.html$/.test(a.filename)).map(a=>`<iframe class="lt-live-visual" title="${escape(a.title||'Interactive explanation')}" src="/api/artifacts/${a.jobId}/${a.filename}" sandbox="allow-scripts" referrerpolicy="no-referrer" data-visual-job="${a.jobId}" data-visual-file="${a.filename}"></iframe>`).join('');
+  }
+  const api={renderText,run,request,usageHtml,artifactHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;else scope.LearningAssistant=api;
 })(globalThis);
 </script>
@@ -741,7 +745,7 @@
   'use strict';
   function build({paragraph,node,message,nodes,paragraphNote,visual,messageText}){
     const publicMessage=m=>({id:m.id,role:m.role,text:messageText(m),sourceAnchor:m.sourceAnchor||null,
-      note:m.note||null,replyTo:m.replyTo||null,visualization:m.visualization||null});
+      note:m.note||null,replyTo:m.replyTo||null,visualization:m.visualization||null,artifacts:m.artifacts||[],artifactStates:m.artifactStates||{}});
     const ancestors=[];let parent=node;
     while(parent.parent){parent=nodes.get(parent.parent);ancestors.unshift({id:parent.id,title:parent.title,
       sourceQuote:parent.sourceAnchor?.quote||parent.sourceQuote||null,sourceAnchor:parent.sourceAnchor||null,visual:parent.visual||null,
@@ -994,6 +998,21 @@ window.LearningThreadExamples = (() => {
     const threadExamples=window.LearningThreadExamples;
     const links=window.LearningStudyLinks;
     const assistant=window.LearningAssistant;
+    root.addEventListener('load',event=>{
+      const frame=event.target;if(!frame.matches?.('.lt-live-visual'))return;
+      const message=activeNode().messages.find(m=>m.id===frame.closest('[data-message]')?.dataset.message);
+      frame.contentWindow?.postMessage({type:'lt-visual-init',state:message?.artifactStates?.[frame.dataset.visualFile]||{}},'*');
+    },true);
+    window.addEventListener('message',event=>{
+      if(!['lt-visual-state','lt-visual-size'].includes(event.data?.type))return;
+      const frame=qa('.lt-live-visual').find(f=>f.contentWindow===event.source);if(!frame)return;
+      if(event.data.type==='lt-visual-size'){if(Number.isFinite(event.data.height))frame.style.height=Math.min(1600,Math.max(320,event.data.height+2))+'px';return}
+      const state=event.data.state;
+      if(!state||typeof state!=='object'||Array.isArray(state))return;
+      let serialized;try{serialized=JSON.stringify(state)}catch{return}if(serialized.length>8192)return;
+      const message=activeNode().messages.find(m=>m.id===frame.closest('[data-message]')?.dataset.message);if(!message)return;
+      (message.artifactStates||(message.artifactStates={}))[frame.dataset.visualFile]=JSON.parse(serialized);saveStudy();
+    });
     const book=LearningBook,catalog=book.paragraphs;
     const blank=make=>Array.from({length:catalog.length},make);
     const runningRequests=new Set();
@@ -1193,6 +1212,7 @@ window.LearningThreadExamples = (() => {
         ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
         ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example||m.kind==='live'?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
+        ${assistant.artifactHtml(m.artifacts)}
         ${m.request&&['connecting','queued','running','waiting','failed'].includes(m.request.state)?`<div class="lt-request-status" role="status">${m.request.error?escapeText(m.request.error):m.request.state==='queued'?'Queued…':'Thinking…'}</div>`:''}
         ${m.role==='assistant'?`<div class="lt-actions">
           ${m.visualKey?`<button class="lt-action" type="button" data-visualize="${m.id}"><i data-lucide="shapes" aria-hidden="true"></i>${hasVisual?'View visual':'Visualize'}</button>`:''}
@@ -1315,7 +1335,7 @@ window.LearningThreadExamples = (() => {
         current.state=job.status;current.result=job;
         if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:newId('m'),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
+          node.messages.push({id:newId('m'),role:'assistant',kind:'live',text:job.text,artifacts:job.artifacts||[],artifactStates:{},requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -1509,7 +1529,7 @@ window.LearningThreadExamples = (() => {
       if(btn.dataset.editMessage){const m=activeNode().messages.find(m=>m.id===btn.dataset.editMessage);if(m.request&&['connecting','queued','running','waiting'].includes(m.request.state))return;m.editing=true;m.editDraft=m.text;renderQA();q('#lt-edit-'+m.id).focus();return}
       if(btn.dataset.cancelQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.cancelQuestion);m.editing=false;delete m.editDraft;renderQA();return}
       if(btn.dataset.saveQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.saveQuestion),text=m.editDraft.trim();if(!text)return;if(m.text!==text&&m.request){(m.attempts||(m.attempts=[])).push(m.request);delete m.request}m.text=links.revise(m.history||(m.history=[]),m.text,text);m.editing=false;delete m.editDraft;renderQA();return}
-      if(btn.dataset.runQuestion){startReply(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.runQuestion));return}
+      if(btn.dataset.runQuestion){writeRoute(btn.dataset.runQuestion);startReply(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.runQuestion));return}
       if(btn.dataset.highlightReturn){returnToHighlight(btn.dataset.highlightReturn);return}
       if(btn.dataset.concept){const content=btn.closest('.lt-message-content');let source=null;if(content){const range=document.createRange();range.selectNodeContents(btn);source=captureSource(content,range,btn.closest('[data-message]').dataset.message)}openExample(btn.dataset.concept,source);q('h2').scrollIntoView({block:'start'});return}
       if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}

@@ -88,6 +88,7 @@ export default {
         return path.startsWith('/api/study')?await study(request,env,path):await assistant(request,env,path,()=>body(request),ctx);
       }
       if(!await owner(request,env))return json({error:'Sign-in required.'},401);
+      if(url.pathname.startsWith('/api/artifacts/')&&request.method==='GET')return assistant(request,env,url.pathname,()=>body(request),ctx);
       if(url.pathname.startsWith('/api/')){
         if(request.headers.get('X-Learning-Threads')!=='1'||request.headers.get('Sec-Fetch-Site')==='cross-site'||(request.headers.has('Origin')&&request.headers.get('Origin')!==url.origin))return json({error:'Open the reading app to continue.'},403);
         return url.pathname.startsWith('/api/study')?await study(request,env,url.pathname):await assistant(request,env,url.pathname,()=>body(request),ctx);

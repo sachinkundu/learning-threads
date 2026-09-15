@@ -1,1 +1,25 @@
-{"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"bundler","lib":["ES2022"],"types":["@cloudflare/workers-types"],"allowJs":true,"checkJs":false,"strict":true,"esModuleInterop":true,"noEmit":true,"allowImportingTsExtensions":true},"include":["cloudflare/**/*.ts","web/study-store.js"]}
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@cloudflare/workers-types"
+    ],
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "cloudflare/**/*.ts",
+    "web/study-store.js",
+    "codex/**/*.ts"
+  ]
+}

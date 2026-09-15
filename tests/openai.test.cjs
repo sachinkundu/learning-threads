@@ -6,7 +6,7 @@ const {responseBody,resultOf,estimateCost,tokenUsage,pricing,openaiRequest}=requ
 const Models=require('../web/assistant-models.js');
 const {getSettings,saveSettings}=require('../cloudflare/settings.ts');
 const MODEL=Models.legacy.model,PRICES=pricing(MODEL);
-const {assistant,advance,collectReplies}=require('../cloudflare/assistant.ts');
+const {assistant,advance,collectReplies}=require('../cloudflare/legacy-openai.ts');
 const {build}=require('../web/assistant-context.js');
 const Book=require('../web/book.js');
 function database(){

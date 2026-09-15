@@ -5,6 +5,7 @@ import json
 import mimetypes
 from pathlib import Path
 import traceback
+import re
 from urllib.parse import urlsplit
 from cloud_sync import CloudStudy
 
@@ -54,6 +55,24 @@ def handler(site, origins, cloud):
             path = urlsplit(self.path).path
             if self.headers.get('Host') not in hosts:
                 return self.send_json({'error': 'Unknown host.'}, 403)
+            if re.fullmatch(r'/api/artifacts/[-a-zA-Z0-9]{12,100}/[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}\.html', path):
+                if self.headers.get('Sec-Fetch-Site') == 'cross-site':
+                    return self.send_json({'error': 'Open the reading app to continue.'}, 403)
+                try:
+                    status, data, headers = cloud.forward('GET', self.path, raw=True)
+                    self.send_response(status)
+                    for name in ['Content-Type', 'Content-Security-Policy', 'X-Content-Type-Options']:
+                        value = next((v for k, v in headers.items() if k.lower() == name.lower()), None)
+                        if value:
+                            self.send_header(name, value)
+                    self.send_header('Cache-Control', 'no-store')
+                    self.send_header('Content-Length', str(len(data)))
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+                except Exception as error:
+                    traceback.print_exc()
+                    return self.send_json({'error': str(error)}, 502)
             vendor = path.startswith('/vendor/katex/') and '..' not in path.split('/') and Path(path).suffix in ['.js', '.css', '.woff', '.woff2', '.ttf']
             if path in ['/', '/index.html'] or path in SOURCE_ASSETS or vendor:
                 asset = site / ('index.html' if path in ['/', '/index.html'] else path.lstrip('/'))

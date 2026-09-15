@@ -77,6 +77,7 @@
     #lt-reading mark{background:var(--lt-mark);color:inherit;border-radius:3px}
     #lt-reading .lt-feedback{font-size:12px;color:var(--lt-muted);min-height:18px;margin-top:8px}
     #lt-reading .lt-qa{margin-top:23px;padding-top:19px;border-top:1px solid var(--lt-line)}
+    #lt-reading .lt-live-visual{display:block;width:100%;height:620px;border:1px solid var(--lt-line);border-radius:12px;background:#fff;margin:18px 0}
     
     
     #lt-reading .lt-messages{display:grid;gap:15px;margin-bottom:16px}
@@ -259,6 +260,21 @@
     const threadExamples=window.LearningThreadExamples;
     const links=window.LearningStudyLinks;
     const assistant=window.LearningAssistant;
+    root.addEventListener('load',event=>{
+      const frame=event.target;if(!frame.matches?.('.lt-live-visual'))return;
+      const message=activeNode().messages.find(m=>m.id===frame.closest('[data-message]')?.dataset.message);
+      frame.contentWindow?.postMessage({type:'lt-visual-init',state:message?.artifactStates?.[frame.dataset.visualFile]||{}},'*');
+    },true);
+    window.addEventListener('message',event=>{
+      if(!['lt-visual-state','lt-visual-size'].includes(event.data?.type))return;
+      const frame=qa('.lt-live-visual').find(f=>f.contentWindow===event.source);if(!frame)return;
+      if(event.data.type==='lt-visual-size'){if(Number.isFinite(event.data.height))frame.style.height=Math.min(1600,Math.max(320,event.data.height+2))+'px';return}
+      const state=event.data.state;
+      if(!state||typeof state!=='object'||Array.isArray(state))return;
+      let serialized;try{serialized=JSON.stringify(state)}catch{return}if(serialized.length>8192)return;
+      const message=activeNode().messages.find(m=>m.id===frame.closest('[data-message]')?.dataset.message);if(!message)return;
+      (message.artifactStates||(message.artifactStates={}))[frame.dataset.visualFile]=JSON.parse(serialized);saveStudy();
+    });
     const book=LearningBook,catalog=book.paragraphs;
     const blank=make=>Array.from({length:catalog.length},make);
     const runningRequests=new Set();
@@ -458,6 +474,7 @@
         ${m.sourceAnchor&&m.sourceAnchor.id!==activeNode().sourceAnchor?.id?`<button class="lt-message-quote lt-quote-return" type="button" data-source-return="${m.sourceAnchor.id}" aria-label="Back to highlight">${escapeText(m.sourceAnchor.quote)}</button>`:m.quote?`<div class="lt-message-quote">${escapeText(m.quote)}</div>`:''}
         ${m.visualization?'':m.editing?`<div class="lt-question-edit"><label for="lt-edit-${m.id}">Edit question</label><textarea id="lt-edit-${m.id}" data-edit-question="${m.id}">${escapeText(m.editDraft??m.text)}</textarea><div class="lt-actions"><button class="lt-action" type="button" data-save-question="${m.id}">Save question</button><button class="lt-action" type="button" data-cancel-question="${m.id}">Cancel</button></div></div>`:`<div class="lt-message-content ${example||m.kind==='live'?'lt-rich':''}">${content}</div>`}
         ${m.visualization?threadExamples.visualHtml(m):''}
+        ${assistant.artifactHtml(m.artifacts)}
         ${m.request&&['connecting','queued','running','waiting','failed'].includes(m.request.state)?`<div class="lt-request-status" role="status">${m.request.error?escapeText(m.request.error):m.request.state==='queued'?'Queued…':'Thinking…'}</div>`:''}
         ${m.role==='assistant'?`<div class="lt-actions">
           ${m.visualKey?`<button class="lt-action" type="button" data-visualize="${m.id}"><i data-lucide="shapes" aria-hidden="true"></i>${hasVisual?'View visual':'Visualize'}</button>`:''}
@@ -580,7 +597,7 @@
         current.state=job.status;current.result=job;
         if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:newId('m'),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
+          node.messages.push({id:newId('m'),role:'assistant',kind:'live',text:job.text,artifacts:job.artifacts||[],artifactStates:{},requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -774,7 +791,7 @@
       if(btn.dataset.editMessage){const m=activeNode().messages.find(m=>m.id===btn.dataset.editMessage);if(m.request&&['connecting','queued','running','waiting'].includes(m.request.state))return;m.editing=true;m.editDraft=m.text;renderQA();q('#lt-edit-'+m.id).focus();return}
       if(btn.dataset.cancelQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.cancelQuestion);m.editing=false;delete m.editDraft;renderQA();return}
       if(btn.dataset.saveQuestion){const m=activeNode().messages.find(m=>m.id===btn.dataset.saveQuestion),text=m.editDraft.trim();if(!text)return;if(m.text!==text&&m.request){(m.attempts||(m.attempts=[])).push(m.request);delete m.request}m.text=links.revise(m.history||(m.history=[]),m.text,text);m.editing=false;delete m.editDraft;renderQA();return}
-      if(btn.dataset.runQuestion){startReply(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.runQuestion));return}
+      if(btn.dataset.runQuestion){writeRoute(btn.dataset.runQuestion);startReply(activeNode(),activeNode().messages.find(m=>m.id===btn.dataset.runQuestion));return}
       if(btn.dataset.highlightReturn){returnToHighlight(btn.dataset.highlightReturn);return}
       if(btn.dataset.concept){const content=btn.closest('.lt-message-content');let source=null;if(content){const range=document.createRange();range.selectNodeContents(btn);source=captureSource(content,range,btn.closest('[data-message]').dataset.message)}openExample(btn.dataset.concept,source);q('h2').scrollIntoView({block:'start'});return}
       if(btn.dataset.visualize){showVisual(btn.dataset.visualize);return}

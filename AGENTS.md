@@ -9,7 +9,8 @@
 - Distinguish browser persistence from cloud sync, and sample replies from live assistant calls.
 - Keep test conversations in the isolated QA app. Do not leave test exchanges in the learner's production reading.
 - Build with `python3 web/build.py`; the old visualization export files are historical.
-- Assistant answers use the OpenAI API from Cloudflare. Do not add a Mac service or Codex CLI dependency.
+- Assistant answers run Codex in Cloudflare Sandbox using the owner's ChatGPT OAuth login. Keep refresh credentials encrypted and persist refreshed credentials. Do not use a Mac service, paid API fallback, or switch the chosen model or reasoning level silently.
+- Keep OAuth token usage separate from recorded API charges. Preserve generated visuals and their source files with the answer so follow-ups can revise them.
 - Carry the full source, exact highlight, notes, visual state, and ancestor/current conversation context with each question. Preserve existing conversation and source IDs when changing the harness.
 
 ## UI removal test

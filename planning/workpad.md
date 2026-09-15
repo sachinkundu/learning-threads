@@ -819,3 +819,90 @@ count appear. QA's final version is `8eb64044-28df-450f-a277-9f66506d5092`.
 
 Cloudflare readback confirmed deployment `1b6f19cb-26f2-4f9d-a00e-87db6373cdd0`
 serves that production version at 100% traffic.
+
+## Codex OAuth and generated visuals — SAC-219 / SAC-197 (2026-09-15)
+
+The user explicitly replaced the direct API decision with Codex OAuth in
+Cloudflare, using the existing model/reasoning settings and no API fallback.
+The first experiment replays the exact saved axis-angle question and context
+from `b-79ca79ba-6291-48f7-bb3a-f1289f88ba05`, with Luna/high. It stays in QA.
+
+Reuse the DEOS execution pattern: pinned Sandbox preview image/package, Codex
+CLI subprocess, context and prompts through files/stdin, JSONL usage, encrypted
+credential storage, refresh persistence before cleanup, and durable outputs.
+Learning Threads has its own private service Worker and R2 bucket. A Durable
+Object owns the login and serializes jobs across QA and production, so these
+two environments do not race refresh. DEOS resources and credentials are not
+changed. A manual fresh-login seed remains the recovery path if a separate
+Codex client invalidates the shared OAuth refresh chain.
+
+An answer's immutable HTML files remain outside canonical selectable answer
+text. The iframe has an opaque origin, scripts only, and a network-blocking
+CSP. Controls can post small state objects; the parent validates the source
+window and keeps state with that answer. Follow-ups receive exact source,
+notes, ancestors/current messages, prior file references, and saved controls.
+The service restores only files from that same QA/production namespace.
+
+The runner has Codex 0.147.0 and Playwright 1.63.0/Chromium. Generated visuals
+must be self-contained and the tutor is instructed to run the visual, inspect
+a screenshot, check controls/errors/math, and fix it. API-priced image tools
+are not configured. OAuth usage records are subscription usage with null API
+cost; old API charges retain their frozen amounts. Container runtime is
+recorded separately in milliseconds, not misrepresented as a model charge.
+
+Initial checks: 59 existing Node tests passed. New tests verify OAuth-only
+submission, lost-acknowledgement recovery, frozen settings/full context,
+credential envelope integrity, no paid fallback, token aggregation, isolated
+frame paths, control persistence, and follow-up visual context. Provider and
+browser evidence will be appended after the real experiment.
+
+Live QA proof: Luna/high answered the original question as job
+`amu2j9v0c-4d654jhifkv` in 211,800 ms. It created an interactive axis-angle
+visual with axis selection, play/pause, and angle control. Usage: 180,773 input
+tokens (149,760 cached), 9,050 output (2,104 reasoning).
+
+A real follow-up, `amu2jhfgt-qsgfgnzbmgf`, carried the original highlight, prior
+answer, original HTML, and controls `{angle:180,axis:"diag",playing:false}`.
+Codex created a new file with a live numerical rotation matrix in 371,767 ms.
+Usage: 761,777 input (707,584 cached), 15,278 output (4,660 reasoning).
+Both calls used `auth_mode:chatgpt`, `provider:codex-oauth`, and no API charge.
+Credentials were persisted after both calls. Their refresh tokens did not rotate;
+these runs do not prove an expiry-triggered refresh. Unit tests cover encrypted
+rotation persistence, lost write acknowledgements, and protection of newer logins.
+
+The JSONL shows actual Playwright runs. The second run caught and fixed a script
+syntax error, checked animation/control changes, and verified a 360px layout
+without horizontal overflow. It recorded no browser errors in its final check.
+External Brave independently displayed both results, changed the angle to zero
+(identity matrix) and 180 degrees (diagonals -1/3, off-diagonals 2/3), and reopened
+the saved thread in a fresh tab with both files and selected controls intact.
+The original answer file is immutable; its SHA-256 remains
+`4a55bdd99a1b04c5665effd80ab8682829771659de1b5e5736c55d664c6be19d`.
+The follow-up file has SHA-256
+`693623cc77d290f3eb6ec0238cf34dea0811086894f1ed34b20d38071af0b165`.
+The frame presentation adapter adds content sizing while leaving R2 sources intact.
+
+Final local checks: 67 Node tests, TypeScript, three Python server tests, build,
+and diff whitespace checks passed. The OAuth tests prohibit paid fallback and
+preserve frozen model settings and the full source packet. The original
+production question and study remain separate from these QA experiments.
+SAC-197 stays open for image generation and precise external video references.
+
+Production reader version `57ed6d7a-168b-43c7-8e68-301416c463fe` is active at
+100% in deployment `def3617c-4125-468a-8efe-21320c513ab0`, with the private
+`learning-threads-codex` service and scope `production`. Backend version
+`5d6e18d1-bdc8-44f6-8fa4-f293043967bc` is also active at 100%. The container
+image remains `sha256:3d3dc7b149f3d005ca109222228754b57c83a31f6f93e1f7c00d3022901c0688`.
+
+External Brave opened the original production link after deployment. Its source,
+question, and earlier answer remain present. Readback confirmed unchanged
+messages, notes, and highlights (only the visited thread's scroll position
+changed), model settings version 1 Luna/high, and the prior usage ledger of
+87,010 input, 12,066 output, and $0.03272865 in recorded API cost. The dialog
+shows model sums and Total with the API cost label. Real provider/animation
+checks were in QA; production checks covered deployment, binding, saved state,
+settings, and rendered UI, without creating production test conversations.
+
+The publishable 82-file tree passed Gitleaks and exact-value scans for the local
+API key, OAuth fields, and vault key. Private context, transcript, and auth files
+remain outside the public file tree.

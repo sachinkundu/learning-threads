@@ -66,6 +66,27 @@ test('question links, browser history, and new nested threads keep the address b
   assert.deepEqual(a.errors,[]);
  }finally{a.dom.window.close()}
 });
+test('live visuals stay outside highlight text, save controls, and travel with follow-ups',async()=>{
+ const a=await app('?book='+book.id+'&thread=b5&message=m20');
+ try{
+  await a.release();const {w}=a;let captured;
+  w.LearningAssistant.run=async p=>{captured=p;return {id:p.id,status:'completed',text:'Rotate the frame.',artifacts:[{jobId:'codex-question-0001',filename:'rotation.html',title:'Rotation'}]}};
+  const input=w.document.querySelector('#lt-question');input.value='Animate this';input.dispatchEvent(new w.Event('input',{bubbles:true}));
+  w.document.querySelector('.lt-compose').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await pause();
+  const frame=w.document.querySelector('.lt-live-visual'),answer=frame.closest('[data-message]');
+  assert.equal(frame.getAttribute('sandbox'),'allow-scripts');assert.equal(answer.querySelector('.lt-message-content').textContent,'Rotate the frame.');
+  w.dispatchEvent(new w.MessageEvent('message',{source:frame.contentWindow,data:{type:'lt-visual-size',height:1000}}));assert.equal(frame.style.height,'1002px');
+  w.dispatchEvent(new w.MessageEvent('message',{source:w,data:{type:'lt-visual-size',height:9000}}));assert.equal(frame.style.height,'1002px');
+  w.dispatchEvent(new w.MessageEvent('message',{source:frame.contentWindow,data:{type:'lt-visual-state',state:{angle:42,playing:false}}}));
+  w.dispatchEvent(new w.MessageEvent('message',{source:w,data:{type:'lt-visual-state',state:{angle:999}}}));
+  answer.querySelector('[data-follow]').click();await pause();
+  input.value='Tilt that axis';input.dispatchEvent(new w.Event('input',{bubbles:true}));
+  w.document.querySelector('.lt-compose').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await pause();
+  const prior=captured.context.currentConversation.find(m=>m.id===answer.dataset.message);
+  assert.equal(prior.artifacts[0].filename,'rotation.html');assert.deepEqual(JSON.parse(JSON.stringify(prior.artifactStates)),{'rotation.html':{angle:42,playing:false}});
+  assert.equal(captured.context.replyTo,answer.dataset.message);assert.deepEqual(a.errors,[]);
+ }finally{a.dom.window.close()}
+});
 test('missing saved links show an error only after sync and can return to the reading place',async()=>{
  const a=await app('?book='+book.id+'&thread=b-missing');
  try{

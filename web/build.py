@@ -22,7 +22,7 @@ content += '''
 '''
 scripts = re.findall(r'<script>([\s\S]*?)</script>', content)
 hashes = ' '.join("'sha256-" + base64.b64encode(hashlib.sha256(script.encode()).digest()).decode() + "'" for script in scripts)
-policy = f"default-src 'none'; script-src 'self' {hashes} https://unpkg.com/lucide@1.17.0/; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'"
+policy = f"default-src 'none'; script-src 'self' {hashes} https://unpkg.com/lucide@1.17.0/; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'"
 document = f'''<!doctype html>
 <html lang="en">
 <head>
