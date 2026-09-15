@@ -686,3 +686,43 @@ available through the existing history mechanism.
 A fresh external Brave tab showed Paragraph 1 with an empty conversation and
 “Ask about this paragraph”. No code deployment was needed. Added a project rule
 to keep test exchanges in QA rather than the learner's production reading.
+
+## SAC-210 — Show referenced book figures (2026-09-15)
+
+The user pointed to the Figure 1.1(a) reference in Chapter 1 paragraph 10.
+Previously Figure 1.1 was attached only to paragraph 3. Moved its checked image,
+caption, and panel descriptions into a book-level figure catalog. The reader
+now resolves figure numbers in the current paragraph and shows each matching
+figure once below the text. Paragraphs 3 and 10 both show Figure 1.1(a–b);
+paragraph 11 clears the figure. The resolver handles Figure/Fig. references and
+supports several cataloged figures in one paragraph.
+
+The original PDF SHA-256 matches the checked catalog. Inspected the crop and
+printed page 2 (PDF page 22): the industrial arm is panel (a), the Stewart–Gough
+platform is panel (b). The catalog records the source page and extraction crop.
+No image generation or replacement drawing was used. Figure metadata also
+travels in the assistant's reading context; image pixels are not sent.
+
+The paragraph strings, IDs, source-page mappings, book revision, and ordering
+are byte-for-byte unchanged. Figure captions remain outside the selectable
+source passage. All 43 Node tests, TypeScript, build, and diff checks passed.
+External Brave displayed the complete figure and caption below paragraph 10
+in QA and production; QA navigation to paragraph 11 removed it. Production's
+saved selection of the open-chain sentence remained present. No production
+test conversations were created. Browser-script text selection was unsupported,
+so saved-highlight offset safety was checked through unchanged source text and
+the existing persistence tests rather than a new scripted highlight.
+
+Production version `099c8014-88b5-4813-abc4-c90626ed883a` was read back at 100%
+traffic (deployment `97add738-8950-435d-ad45-fc20d5d367df`). No D1 migration or
+study reset was needed.
+
+## Public GitHub repository (2026-09-15)
+
+The user requested a public repository named `learning-threads`. The local Git
+repository already existed, without a remote. Added a root README and an empty
+`.env.example`, and excluded all `.dev.vars*` variants. Gitleaks 8.30.1 found no
+leaks in the 14 pre-publication commits. An independent exact-value check of 153
+historical blobs and tracked working files found none of the current OpenAI or
+QA/production bridge credentials. The private `.env` and original PDF are not
+tracked. Publish only the scanned committed tree and history.

@@ -5,6 +5,14 @@ Chapter 1 (Preview) has 41 checked paragraphs, Figure 1.1, and the original PDF
 pages on demand. Earlier joint examples and their source-linked discussions
 remain in History. Later chapters still need checked imports.
 
+Figures are cataloged once per book, with their original caption, source page,
+and PDF crop. References such as “Figure 1.1(a)” resolve to that figure under
+each paragraph that cites it, including Chapter 1 paragraphs 3 and 10. Repeated
+references to its panels show the full figure once. Figure text stays outside
+the source passage so saved highlight offsets remain unchanged. Questions carry
+the figure's caption and source metadata in context; this does not send image
+pixels to the assistant.
+
 ## Build and storage
 
 `reading.html` is the editable page. Build from the repository root with

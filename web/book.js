@@ -4,6 +4,10 @@
   const data=typeof module!=='undefined'&&module.exports?require('./books/modern-robotics.json'):scope.LearningBookData;
   const order=data.chapters.flatMap(c=>c.paragraphs),first=order[0];
   const api={...data,order,first,
+    figuresFor(page){
+      const references=[...data.paragraphs[page].text.matchAll(/\b[Ff]ig(?:ure)?\.?\s+(\d+\.\d+)/g)].map(match=>match[1]);
+      return [...new Set(references)].map(id=>data.figures?.[id]).filter(Boolean);
+    },
     next(page){return order[order.indexOf(page)+1]??null},
     previous(page){return order[order.indexOf(page)-1]??null},
     label(page){const p=data.paragraphs[page];return `Chapter ${p.chapter} · ${p.section} · paragraph ${p.number}`},

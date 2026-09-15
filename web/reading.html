@@ -166,7 +166,7 @@
         <section class="lt-book-section" aria-label="Current book paragraph">
           <div class="lt-sectionlabel lt-passagelabel">2.2.1 Robot joints · paragraph 1</div>
           <p class="lt-prose" id="lt-passage"></p>
-          <figure class="lt-book-figure" hidden></figure>
+          <div class="lt-book-figures" hidden></div>
           <div class="lt-source">Lynch &amp; Park · §2.2.1</div>
           <button class="lt-action lt-thread-entry" type="button" data-action="open-wrist" hidden><i data-lucide="git-branch" aria-hidden="true"></i> Wrist discussion</button>
           <div class="lt-actions">
@@ -528,7 +528,7 @@
       const paragraph=catalog[node.page];
       return LearningAssistantContext.build({paragraph,node,message,nodes:conversations,paragraphNote:notes[node.page],
         messageText:m=>m.example?messageText(m):m.text,
-        visual:paragraph.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:paragraph.figure||null});
+        visual:paragraph.jointDemo?{joint:terms[joint],controls:defs[joint].controls.map((c,i)=>({name:c[0],value:states[joint][i],unit:c[3]}))}:book.figuresFor(node.page).length?{type:'book-figures',figures:book.figuresFor(node.page)}:null});
     }
     async function startReply(node,message){
       if(message.request&&runningRequests.has(message.request.id))return;
@@ -619,8 +619,8 @@
       q('.lt-book-section').hidden=!!stack.length;q('.lt-thread').hidden=!stack.length;
       q('.lt-passagelabel').textContent=`Paragraph ${passage.number}`;
       q('.lt-source').textContent=`Lynch & Park · p. ${passage.sourcePages.join('–')}`;
-      const figure=q('.lt-book-figure');figure.hidden=!passage.figure||!!stack.length;
-      if(passage.figure)figure.innerHTML=`<img src="${passage.figure.asset}" alt="${escapeText(passage.figure.alt)}"><figcaption>${escapeText(passage.figure.caption)} ${passage.figure.details.map(escapeText).join(' ')}</figcaption>`;
+      const figures=book.figuresFor(page),figureArea=q('.lt-book-figures');figureArea.hidden=!figures.length||!!stack.length;
+      figureArea.innerHTML=figures.map(figure=>`<figure class="lt-book-figure"><img src="${escapeText(figure.asset)}" alt="${escapeText(figure.alt)}"><figcaption>${escapeText(figure.caption)} ${figure.details.map(escapeText).join(' ')}</figcaption></figure>`).join('');
       q('[data-action="open-wrist"]').hidden=page!==1;
       q('#lt-passage').innerHTML=paragraphs[page];
       renderHighlights();

@@ -111,6 +111,9 @@ test('Chapter 1 follows all 41 paragraphs without jumping to the old Chapter 2 s
     if(i)assert.equal(Book.previous(p),visited[i-1]);
   }
   assert.deepEqual(Book.paragraphs[5].sourcePages,[1,2]);
-  assert.ok(Book.paragraphs[4].figure.asset.endsWith('figure-1-1.png'));
+  assert.ok(Book.figuresFor(4)[0].asset.endsWith('figure-1-1.png'));
+  assert.deepEqual(Book.figuresFor(11),Book.figuresFor(4));
+  assert.equal(Book.figuresFor(11).length,1);
+  assert.deepEqual(Book.figuresFor(12),[]);
   assert.match(Book.paragraphs[15].text,/ω̂/);
 });

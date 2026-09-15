@@ -111,16 +111,7 @@
       "sourcePages": [
         1
       ],
-      "text": "The links of a robot mechanism can be arranged in serial fashion, like the familiar open-chain arm shown in Figure 1.1(a). Robot mechanisms can also have links that form closed loops, such as the Stewart–Gough platform shown in Figure 1.1(b). In the case of an open chain, all the joints are actuated, while in the case of mechanisms with closed loops, only a subset of the joints may be actuated.",
-      "figure": {
-        "asset": "/source-pages/modern-robotics-figure-1-1.png",
-        "alt": "An open-chain industrial arm on the left and a Stewart–Gough platform with six legs forming closed loops on the right.",
-        "caption": "Figure 1.1: Open-chain and closed-chain robot mechanisms.",
-        "details": [
-          "(a) An open-chain industrial manipulator, visualized in V-REP [154].",
-          "(b) Stewart–Gough platform. Closed loops are formed from the base platform, through the legs, through the top platform, and through the legs back to the base platform."
-        ]
-      }
+      "text": "The links of a robot mechanism can be arranged in serial fashion, like the familiar open-chain arm shown in Figure 1.1(a). Robot mechanisms can also have links that form closed loops, such as the Stewart–Gough platform shown in Figure 1.1(b). In the case of an open chain, all the joints are actuated, while in the case of mechanisms with closed loops, only a subset of the joints may be actuated."
     },
     {
       "id": "mr-ch01-p004",
@@ -547,5 +538,25 @@
       ],
       "text": "Each chapter concludes with a summary of important concepts from the chapter, and Appendix A compiles some of the most used equations into a handy reference. Videos supporting the book can be found at the book’s website, http://modernrobotics.org. Some chapters have associated software, downloadable from the website. The software is meant to be neither maximally robust nor efficient but to be readable and to reinforce the concepts in the book. You are encouraged to read the software, not just use it, to cement your understanding of the material. Each function contains a sample usage in the comments. The software package may grow over time, but the core functions are documented in the chapters themselves."
     }
-  ]
+  ],
+  "figures": {
+    "1.1": {
+      "asset": "/source-pages/modern-robotics-figure-1-1.png",
+      "alt": "An open-chain industrial arm on the left and a Stewart–Gough platform with six legs forming closed loops on the right.",
+      "caption": "Figure 1.1: Open-chain and closed-chain robot mechanisms.",
+      "details": [
+        "(a) An open-chain industrial manipulator, visualized in V-REP [154].",
+        "(b) Stewart–Gough platform. Closed loops are formed from the base platform, through the legs, through the top platform, and through the legs back to the base platform."
+      ],
+      "id": "1.1",
+      "sourcePage": 2,
+      "pdfPage": 22,
+      "crop": [
+        134,
+        157,
+        500,
+        321
+      ]
+    }
+  }
 }
