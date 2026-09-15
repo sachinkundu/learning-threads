@@ -601,3 +601,74 @@ records remain unchanged with their unknown dollar charges.
 An older user-owned production tab showed its existing stale-tab warning. It
 was left intact; verification used a fresh production tab to preserve that
 older tab's work.
+
+## SAC-209 — Model and reasoning settings (2026-09-15)
+
+Requested and shipped a minimal Settings page at `/#settings`, reachable through
+Reading view. It has Model, Reasoning, Save, and Back to reading. Luna/High is
+the default. Supported choices are Astra, Sol, Terra, and Luna; the shared
+registry follows their API capabilities, not the desktop Codex picker. Astra
+supports Low, Medium, High, Extra high, and Maximum. The 5.6 models also support
+None. Switching from None to Astra chooses High. No automatic follow-ups or
+explanatory UI copy was added.
+
+Settings are global to this private learner and stored separately from study
+revisions in D1. Saves use version checks to prevent a stale device from
+overwriting a newer choice; repeating a lost acknowledgement is safe. Each
+assistant call freezes the model, reasoning, and prices when submitted. Reusing
+its request ID retains that configuration and context even after settings
+change. Migration 0004 backfills existing OpenAI calls with their known
+Astra/Low choice; CLI records remain untouched. The unchanged 6,000-token limit
+includes reasoning tokens. Each answer's Usage now includes its reasoning level.
+
+Official model pages and prompt-caching documentation were checked on September
+15. Prices and links are in `web/README.md`. Each model uses its own input,
+cache-read, cache-write, and output rates. Unknown or mismatched returned model
+prices remain unknown, not estimated with another model's rates. Sol's current
+promotional rates must be reviewed when that offer changes. Two attempts to
+open the skill's upgrading-to-gpt-5p6-sol guide returned DisabledError; the four
+current model pages and existing working Responses interface supplied the
+needed compatibility evidence.
+
+Validation: 43 Node tests, 3 Python tests, TypeScript, the production build,
+and `git diff --check` passed. Tests cover all supported model/effort pairs,
+settings save conflicts, lost acknowledgements, old pending Astra calls,
+configuration changes while a reply is pending, context preservation, and
+per-model pricing. Those provider stubs are separate from the live checks below.
+
+QA migration 0004 and Worker `f57722ea-1e40-4a8e-a8fe-7833e0811a23` deployed.
+External Brave verified the minimal form, default, supported options, Save and
+return to the same nested actuation conversation, and another tab loading the
+saved Terra/Medium choice from D1. QA was restored to Luna/High afterwards.
+
+- Luna/High call `amu2bp0vl-ix8q40hjs8e`, response
+  `resp_083ace3f959c0705006aa8ed2902ac87d2a689609515640d59`, answered the existing
+  sensor-torque example at constant positive speed. It correctly used the prior
+  numerical values: 0.110 N·m for the potentiometer and 0.100 N·m for the encoder.
+  Reported 3,350 input, 3,347 cache writes, 158 output including 64 reasoning;
+  estimated cost $0.00102695.
+- Terra/Medium call `amu2bq0n9-vd1xu372nek`, response
+  `resp_06c21777318de7b9006aa8ed56bd9c87d2ba3f443cd1624da1`, continued that same
+  conversation for negative rotation. Reported 3,535 input, 3,532 cache writes,
+  223 output including 109 reasoning; estimated cost $0.011512.
+
+Before production deployment, D1 contained six completed CLI calls, one
+completed OpenAI call, and no pending calls. Study head was 21. Migration 0004
+applied without changing those conversations. Worker
+`dd471052-43c5-4c3c-a85c-c11f0661d92b` is active at 100% on
+https://learn.voxdez.com (deployment read back through Wrangler).
+
+Brave saved Luna/High on production (settings version 1), then continued the
+existing cup-reaching discussion through Ask follow-up. Call
+`amu2bt8gc-hsx8d0fyihi`, response
+`resp_0950eff8d53578a1006aa8edecb63887d28a8b28eb0367aaa4`, carried paragraph
+`mr-ch01-p001`, printed page 1, replyTo m8, and all six prior messages. The reply
+explained choosing an elbow posture to avoid an obstacle. Usage showed Luna,
+High, 989 input, 51 output, and estimated cost $0.000259. This short response
+reported zero reasoning tokens; the configured effort was still High.
+Reload retained the answer and settings; D1 head 23 contained the new exchange.
+The production Settings page was left open in Brave for review. QA tabs and the
+optional local preview were closed. No physical iPad test was performed here.
+
+Unauthenticated requests to the production settings endpoint returned 401.
+The API key is absent from every built asset. The Mac relay remains retired.

@@ -26,7 +26,15 @@ Cutover status and real provider evidence are recorded in `planning/workpad.md`.
 The API key is a Worker secret named `OPENAI_API_KEY`. It must never be added
 to frontend assets, book data, study state, or version control.
 
-`cloudflare/openai.ts` sets GPT-6 Astra, low reasoning effort, standard service,
+Reading view → Settings selects Astra, Sol, Terra, or Luna and a supported
+reasoning level. The default is Luna with High reasoning. Settings live in D1,
+separate from book revisions, and follow the learner across devices. A stale
+settings save cannot silently overwrite a newer choice. Restoring a study copy
+does not revert these preferences.
+
+Each new call freezes the saved model, reasoning level, and price. Running calls
+and reconnects keep their original choice. `web/assistant-models.js` holds the
+shared capabilities and prices. `cloudflare/openai.ts` uses standard service
 and a 6,000-token output limit. `web/assistant-context.js` builds a complete
 context snapshot: source paragraph and page references, exact highlight,
 paragraph notes, ancestor conversations, current replies and notes, selected
@@ -48,18 +56,33 @@ visible. Explicit Retry creates a separate attempt. Legacy CLI answers and
 usage remain unchanged. Interrupted legacy jobs are not automatically billed
 through the API.
 
-Usage shows reported input, cached input, cache-write, output, and reasoning
-tokens. Estimated API cost uses the price snapshot saved when the call starts.
+Usage shows the answer's model, reasoning level, and reported input, cached
+input, cache-write, output, and reasoning tokens. Estimated API cost uses the
+price snapshot saved when the call starts.
 Cache reads and writes are removed from ordinary input before pricing;
 reasoning tokens are already included in output and are not charged twice.
 Unknown usage and legacy charges remain unknown. Totals show the priced
 subtotal and number of unpriced replies. Estimates do not include taxes or
 account-specific billing adjustments.
 
-Checked 2026-09-15: standard GPT-6 Astra prices per million tokens are $10 input,
-$1 cached input, $12.50 cache writes, and $50 output. Above 272,000 input tokens,
-input/cache rates double and output is $75. Sources:
+Checked 2026-09-15: standard prices per million tokens:
+
+| Model | Input | Cached input | Cache writes | Output |
+| --- | ---: | ---: | ---: | ---: |
+| Astra | $10 | $1 | $12.50 | $50 |
+| Sol | $4 | $0.40 | $5 | $20 |
+| Terra | $2 | $0.20 | $2.50 | $12 |
+| Luna | $0.20 | $0.02 | $0.25 | $1.20 |
+
+Above 272,000 input tokens, input/cache rates double and output rates increase
+by 50%. Sol's listed promotional rates run at least through November 21, 2026;
+recheck prices before updating the registry. Unknown models, mismatched price
+snapshots, and unsupported service tiers remain unpriced. Sources:
 - https://developers.openai.com/api/docs/pricing
+- https://developers.openai.com/api/docs/models/gpt-6-astra
+- https://developers.openai.com/api/docs/models/gpt-5.6-sol
+- https://developers.openai.com/api/docs/models/gpt-5.6-terra
+- https://developers.openai.com/api/docs/models/gpt-5.6-luna
 - https://developers.openai.com/api/docs/guides/prompt-caching
 - https://developers.openai.com/api/docs/guides/background
 - https://developers.openai.com/api/docs/guides/conversation-state
@@ -88,6 +111,13 @@ The completed production cutover used this sequence:
 Migration 0003 adds fields without deleting old study or assistant rows. The
 old Worker version expects the original assistant table shape, so do not
 roll back code alone after this migration. Use a compatible forward fix.
+
+Migration 0004 adds the settings table and per-call configuration. It marks
+existing OpenAI calls as Astra/Low, their known pre-settings configuration;
+legacy CLI calls keep their original records. Apply it before deploying the
+settings Worker. This migration is additive and compatible with the API Worker
+that preceded settings. Astra supports Low through Maximum; the three 5.6
+models also support None. The API does not accept the Codex-only Ultra level.
 
 ## Optional local preview
 

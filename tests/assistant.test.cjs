@@ -32,3 +32,9 @@ test('API costs and unpriced history are displayed separately without rounding t
  assert.ok(html.includes('Estimated API cost'));assert.ok(html.includes('$0.000006'));
  assert.ok(html.includes('<dt>Unpriced replies</dt><dd>4</dd>'));assert.ok(html.includes('<dt>Cache writes</dt><dd>30</dd>'));
 });
+test('usage identifies the answer’s model and reasoning without inventing it for legacy records',()=>{
+ const html=usageHtml({model:'gpt-5.6-luna',reasoning:'high'});
+ assert.ok(html.includes('<dt>Model</dt><dd>gpt-5.6-luna</dd>'));assert.ok(html.includes('<dt>Reasoning</dt><dd>High</dd>'));
+ assert.ok(!usageHtml({}).includes('<dt>Reasoning</dt>'));
+ assert.ok(!usageHtml({reasoning:'<script>alert(1)</script>'}).includes('<script>'));
+});

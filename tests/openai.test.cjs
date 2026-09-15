@@ -2,13 +2,16 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {DatabaseSync}=require('node:sqlite');
 const {readFileSync}=require('node:fs');
-const {responseBody,resultOf,estimateCost,tokenUsage,MODEL,PRICES,openaiRequest}=require('../cloudflare/openai.ts');
+const {responseBody,resultOf,estimateCost,tokenUsage,pricing,openaiRequest}=require('../cloudflare/openai.ts');
+const Models=require('../web/assistant-models.js');
+const {getSettings,saveSettings}=require('../cloudflare/settings.ts');
+const MODEL=Models.legacy.model,PRICES=pricing(MODEL);
 const {assistant,advance,collectReplies}=require('../cloudflare/assistant.ts');
 const {build}=require('../web/assistant-context.js');
 const Book=require('../web/book.js');
 function database(){
   const raw=new DatabaseSync(':memory:');
-  for(const name of ['0001_study.sql','0002_assistant.sql','0003_openai_assistant.sql'])raw.exec(readFileSync(new URL('../cloudflare/migrations/'+name,'file://'+__filename),'utf8'));
+  for(const name of ['0001_study.sql','0002_assistant.sql','0003_openai_assistant.sql','0004_assistant_settings.sql'])raw.exec(readFileSync(new URL('../cloudflare/migrations/'+name,'file://'+__filename),'utf8'));
   const db={prepare(sql){return {bind(...values){this.values=values;return this},async first(){return raw.prepare(sql).get(...(this.values||[]))||null},async all(){return {results:raw.prepare(sql).all(...(this.values||[]))}},async run(){const r=raw.prepare(sql).run(...(this.values||[]));return {meta:{changes:Number(r.changes)}}}}}};
   return {DB:db,OPENAI_API_KEY:'test-key',raw};
 }
@@ -68,7 +71,7 @@ test('a transient retrieval error retains the provider ID for a safe reconnect',
  env.raw.prepare('UPDATE assistant_calls SET poll_after=0').run();assert.equal((await advance(env,id,async()=>response(done()))).status,'completed');env.raw.close();
 });
 test('duplicate request IDs cannot change the context or create another charge',async()=>{
- const env=database(),original=global.fetch;let creates=0;global.fetch=async()=>{creates++;return response(done())};
+ const env=database(),original=global.fetch;let creates=0;global.fetch=async(_url,options)=>{creates++;const body=JSON.parse(options.body);return response({...done(),model:body.model,reasoning:body.reasoning})};
  const tasks=[],ctx={waitUntil:p=>tasks.push(p)},id='call-request-0001',req=new Request('https://example.com/api/replies',{method:'POST'});
  try{
   const a=await assistant(req,env,'/api/replies',async()=>packet(id),ctx);assert.equal(a.status,202);
@@ -89,4 +92,76 @@ test('legacy completed answers remain available, while interrupted CLI calls are
 });
 test('OpenAI errors preserve the provider reason and request ID but redact credentials',async()=>{
  await assert.rejects(()=>openaiRequest('sk-private-key','',{},'call-test',async()=>response({error:{message:'Incorrect API key: sk-private-key'}},401)),error=>error.message==='Incorrect API key: [redacted]'&&error.requestId==='req_test');
+});
+test('settings default to Luna high and accept only each model’s supported API efforts',async()=>{
+ const env=database();
+ try{
+  assert.deepEqual(await getSettings(env.DB),{version:0,configuration:{model:'gpt-5.6-luna',reasoning:'high'}});
+  let version=0;
+  for(const model of Models.models)for(const reasoning of model.efforts){
+   const configuration={model:model.id,reasoning};
+   const saved=await saveSettings(env.DB,{version,configuration});version=saved.version;
+   assert.deepEqual((await getSettings(env.DB)).configuration,configuration);
+   const body=responseBody(packet('supported-model'), 'supported-model',configuration);
+   assert.equal(body.model,model.id);assert.equal(body.reasoning.effort,reasoning);
+  }
+  for(const configuration of [{model:MODEL,reasoning:'none'},{model:'invented',reasoning:'high'},{model:'gpt-5.6-luna',reasoning:'ultra'}])
+   await assert.rejects(()=>saveSettings(env.DB,{version,configuration}),/supported model and reasoning/);
+  assert.equal((await getSettings(env.DB)).version,version);
+ }finally{env.raw.close()}
+});
+test('two devices cannot silently overwrite settings and a lost save acknowledgement can be retried',async()=>{
+ const env=database();
+ try{
+  const first=await getSettings(env.DB),second=await getSettings(env.DB);
+  const a={...first,configuration:{model:'gpt-5.6-terra',reasoning:'medium'}};
+  const saved=await saveSettings(env.DB,a);assert.equal(saved.version,1);
+  assert.deepEqual(await saveSettings(env.DB,a),saved);
+  await assert.rejects(()=>saveSettings(env.DB,{...second,configuration:{model:MODEL,reasoning:'low'}}),e=>e.status===409);
+  assert.deepEqual(await getSettings(env.DB),saved);
+ }finally{env.raw.close()}
+});
+test('settings changes affect new replies while a pending reply keeps its context, model, reasoning, and price',async()=>{
+ const env=database(),original=global.fetch,creates=[],tasks=[],ctx={waitUntil:p=>tasks.push(p)};
+ const post=new Request('https://example.com/api/replies',{method:'POST'}),settingsPost=new Request('https://example.com/api/settings',{method:'POST'});
+ global.fetch=async(_url,options)=>{
+  if(options.method==='POST'){const body=JSON.parse(options.body);creates.push(body);return response({id:'resp_'+creates.length,status:'queued',model:body.model,reasoning:body.reasoning})}
+  return response({...done('resp_1'),model:'gpt-5.6-luna',reasoning:{effort:'high'}});
+ };
+ try{
+  const id='call-settings-0001';
+  const first=await (await assistant(post,env,'/api/replies',async()=>packet(id),ctx)).json();
+  assert.equal(first.model,'gpt-5.6-luna');assert.equal(first.reasoning,'high');
+  assert.deepEqual(JSON.parse(creates[0].input[0].content.split('\n').slice(1).join('\n')),context);
+  const saved=await (await assistant(settingsPost,env,'/api/settings',async()=>({version:0,configuration:{model:'gpt-5.6-sol',reasoning:'medium'}}),ctx)).json();
+  assert.equal(saved.configuration.model,'gpt-5.6-sol');
+  env.raw.prepare('UPDATE assistant_calls SET poll_after=0').run();
+  const recovered=await (await assistant(post,env,'/api/replies',async()=>packet(id),ctx)).json();
+  assert.equal(recovered.status,'completed');assert.equal(recovered.model,'gpt-5.6-luna');assert.equal(recovered.reasoning,'high');
+  assert.ok(Math.abs(recovered.cost_usd-0.000299)<1e-12);assert.equal(creates.length,1);
+  await assistant(post,env,'/api/replies',async()=>packet('call-settings-0002'),ctx);
+  assert.equal(creates.length,2);assert.equal(creates[1].model,'gpt-5.6-sol');assert.equal(creates[1].reasoning.effort,'medium');
+  const row=env.raw.prepare('SELECT * FROM assistant_calls WHERE id=?').get(id);
+  assert.deepEqual(JSON.parse(row.configuration),Models.defaults);assert.equal(JSON.parse(row.pricing).model,'gpt-5.6-luna');
+  assert.deepEqual(JSON.parse(row.payload).context,context);
+ }finally{await Promise.allSettled(tasks);global.fetch=original;env.raw.close()}
+});
+test('pre-settings OpenAI jobs retain Astra low after the new Luna default',async()=>{
+ const env=database(),id=insert(env);let submitted;
+ try{
+  await saveSettings(env.DB,{version:0,configuration:{model:'gpt-5.6-luna',reasoning:'high'}});
+  const call=await advance(env,id,async(_url,options)=>{submitted=JSON.parse(options.body);return response(done())});
+  assert.equal(submitted.model,MODEL);assert.equal(submitted.reasoning.effort,'low');
+  const result=JSON.parse(call.result);assert.equal(result.reasoning,'low');assert.ok(Math.abs(result.cost_usd-0.01395)<1e-12);
+ }finally{env.raw.close()}
+});
+test('each model uses its own price and a different returned model cannot be charged at the requested model’s rate',()=>{
+ const usage=tokenUsage(done().usage);
+ for(const [model,expected] of [['gpt-6-astra',0.01395],['gpt-5.6-sol',0.00558],['gpt-5.6-terra',0.00299],['gpt-5.6-luna',0.000299]]){
+  const cost=estimateCost(usage,model+'-2026-09-15','default',pricing(model));
+  assert.ok(Math.abs(cost.usd-expected)<1e-12);
+  const long=estimateCost({...usage,input_tokens:300000},model,'default');
+  assert.equal(long.rates.input,pricing(model).input*2);assert.equal(long.rates.output,pricing(model).output*1.5);
+ }
+ assert.equal(estimateCost(usage,MODEL,'default',pricing('gpt-5.6-luna')),null);
 });

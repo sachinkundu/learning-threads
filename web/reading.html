@@ -2,10 +2,10 @@
   <style>
     #lt-reading{--lt-bg:light-dark(#faf9f5,#171e20);--lt-surface:light-dark(#ffffff,#20292b);--lt-ink:light-dark(#203431,#edf3ee);--lt-muted:light-dark(#63736e,#a9bbb4);--lt-line:light-dark(#e1e7df,#354641);--lt-green:light-dark(#1d6758,#95d7be);--lt-soft:light-dark(#e9f1e8,#293f37);--lt-teal:light-dark(#398878,#79c3ab);--lt-fixed:light-dark(#94a69f,#6d8b80);--lt-paper:light-dark(#f0f3ed,#1c3028);--lt-mark:light-dark(#fcf1b8,#625721);color:var(--lt-ink);background:var(--lt-bg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border:1px solid var(--lt-line);border-radius:16px;overflow:hidden}
     #lt-reading *{box-sizing:border-box}
-    #lt-reading button,#lt-reading input,#lt-reading textarea{font:inherit}
+    #lt-reading button,#lt-reading input,#lt-reading textarea,#lt-reading select{font:inherit}
     #lt-reading button{cursor:pointer;touch-action:manipulation;color:inherit}
     #lt-reading button:disabled{opacity:.4;cursor:default}
-    #lt-reading button:focus-visible,#lt-reading input:focus-visible,#lt-reading textarea:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px}
+    #lt-reading button:focus-visible,#lt-reading input:focus-visible,#lt-reading textarea:focus-visible,#lt-reading select:focus-visible{outline:3px solid var(--lt-teal);outline-offset:3px}
     #lt-reading [hidden]{display:none!important}
     #lt-reading .lt-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;background:var(--lt-surface);border-bottom:1px solid var(--lt-line)}
     #lt-reading .lt-brand{font-weight:650;letter-spacing:-.4px;display:flex;align-items:center;gap:10px;font-size:17px}
@@ -144,6 +144,12 @@
     #lt-reading .lt-reading-history-body button{display:grid;text-align:left;justify-content:stretch}
     #lt-reading .lt-reading-history-body span{color:var(--lt-muted)}
     #lt-reading #lt-source-select{max-width:100%;min-width:0;background:var(--lt-surface);color:var(--lt-ink);border:1px solid var(--lt-line);border-radius:6px}
+    #lt-reading .lt-settings-page{max-width:580px;min-height:70vh;margin:0 auto;padding:28px 24px 48px}
+    #lt-reading .lt-settings-page h2{margin:28px 0}
+    #lt-reading .lt-settings-page fieldset{border:0;margin:0 0 24px;padding:0;display:grid;gap:24px}
+    #lt-reading .lt-settings-page label{display:grid;gap:8px;font-weight:550}
+    #lt-reading .lt-settings-page select{min-height:48px;width:100%;padding:10px 12px;border:1px solid var(--lt-line);border-radius:8px;background:var(--lt-surface);color:var(--lt-ink)}
+    #lt-reading .lt-settings-error{color:var(--lt-ink);margin:20px 0}
   </style>
   <link rel="stylesheet" href="./thread-examples.css">
   <header class="lt-top">
@@ -207,6 +213,19 @@
       <div class="lt-nav"><button class="lt-action" type="button" data-action="previous">Previous</button><button class="lt-action lt-primary" type="button" data-action="next">Next paragraph <i data-lucide="arrow-right" aria-hidden="true"></i></button></div>
     </footer>
   </div>
+  <section class="lt-settings-page" aria-labelledby="lt-settings-title" hidden>
+    <button class="lt-action" type="button" data-action="back-settings">Back to reading</button>
+    <h2 id="lt-settings-title" tabindex="-1">Settings</h2>
+    <form id="lt-settings-form">
+      <fieldset disabled>
+        <label for="lt-model">Model<select id="lt-model" name="model"></select></label>
+        <label for="lt-reasoning">Reasoning<select id="lt-reasoning" name="reasoning"></select></label>
+      </fieldset>
+      <p class="lt-settings-error" role="alert" hidden></p>
+      <button class="lt-action" type="button" data-action="reload-settings" hidden>Retry</button>
+      <button class="lt-action lt-primary" type="submit" disabled>Save</button>
+    </form>
+  </section>
   <dialog class="lt-link-picker" aria-label="Choose a discussion"></dialog>
   <dialog class="lt-usage-dialog" aria-label="Assistant usage"><button class="lt-action" type="button" data-action="close-usage">Close</button><div class="lt-usage-body"></div></dialog>
   <dialog class="lt-usage-dialog lt-copies-dialog" aria-label="Saved study copies"><button class="lt-action" type="button" data-action="close-copies">Close</button><div class="lt-copies-body"></div></dialog>
@@ -217,6 +236,7 @@
   <script src="./study-sync.js"></script>
   <script src="./assistant-client.js"></script>
   <script src="./assistant-context.js"></script>
+  <script src="./assistant-models.js"></script>
   <script src="./study-links.js"></script>
   <script src="./thread-examples.js"></script>
   <script>
@@ -230,6 +250,7 @@
     const blank=make=>Array.from({length:catalog.length},make);
     const runningRequests=new Set();
     let cloudSync=null,applyingCloud=false;
+    let settingsOpen=false,settingsVersion=0,settingsLoad=0;
     const terms={R:'revolute',P:'prismatic',H:'helical',C:'cylindrical',U:'universal',S:'spherical'};
     const term=(key,name)=>`<button type="button" class="lt-term" data-joint="${key}" aria-pressed="false">${name} joint</button>`;
     const escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -287,8 +308,8 @@
       for(let i=0;i<notes.length;i++)if(noteEdits[i]!==null){links.revise(noteHistory[i],noteEdits[i],notes[i]);noteEdits[i]=null}
       for(const node of conversations.values())for(const m of node.messages)if(m.noteEditBase!==undefined){links.revise(m.noteHistory||(m.noteHistory=[]),m.noteEditBase,m.note||'');delete m.noteEditBase}
     }
-    function rememberVisual(){if(catalog[page].jointDemo)activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
-    function restoreReadingPosition(){const y=activeNode().scrollY||0;requestAnimationFrame(()=>window.scrollTo(0,y))}
+    function rememberVisual(){if(settingsOpen)return;if(catalog[page].jointDemo)activeNode().visual={joint,values:[...states[joint]]};activeNode().scrollY=window.scrollY}
+    function restoreReadingPosition(){if(settingsOpen)return;const y=activeNode().scrollY||0;requestAnimationFrame(()=>{if(!settingsOpen)window.scrollTo(0,y)})}
     const studyStore=LearningStudyStore.create(()=>window.localStorage);
     let studyReady=false,studyLoaded=false,lastStorageError='';
     function studySnapshot(){
@@ -523,7 +544,7 @@
         current.state=job.status;current.result=job;
         if(job.status==='failed'){current.error=job.error||'The assistant could not finish this reply.'}
         else if(!node.messages.some(m=>m.requestId===job.id)){
-          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
+          node.messages.push({id:'m'+(++messageCount),role:'assistant',kind:'live',text:job.text,requestId:job.id,replyTo:message.id,questionText:current.payload.question,usageRecord:{id:job.id,usage:job.usage,model:job.model,reasoning:job.reasoning,cost_usd:job.cost_usd,cost_kind:job.cost_kind,pricing:job.pricing}});
         }
       }catch(error){current.state=error.definitiveFailure?'failed':'waiting';current.error=error.message}
       finally{
@@ -537,6 +558,47 @@
       try{const ledger=await assistant.request('/api/usage');body.innerHTML='<h3>Usage</h3>'+assistant.usageHtml({...ledger,usage:ledger.totals})+(ledger.unreported_calls?'<p>'+ledger.unreported_calls+' calls with token usage not reported.</p>':'')+ledger.calls.map(call=>`<details class="lt-call-usage"><summary>${escapeText(call.question)}</summary><p>${escapeText(call.status)} · ${escapeText(new Date(call.created).toLocaleString())}</p>${assistant.usageHtml(call)}</details>`).join('')}
       catch(error){body.textContent=error.message}
     }
+    function reasoningOptions(preferred){
+      const model=LearningAssistantModels.models.find(m=>m.id===q('#lt-model').value);
+      q('#lt-reasoning').innerHTML=model.efforts.map(e=>`<option value="${e}">${LearningAssistantModels.labels[e]}</option>`).join('');
+      q('#lt-reasoning').value=model.efforts.includes(preferred)?preferred:'high';
+    }
+    async function showSettings(){
+      if(!settingsOpen){flushNoteEdits();saveStudy();cancelAnimationFrame(animation)}
+      settingsOpen=true;const load=++settingsLoad,form=q('#lt-settings-form');
+      q('.lt-view-menu').open=false;q('.lt-content').hidden=true;q('.lt-top-right').hidden=true;q('.lt-settings-page').hidden=false;
+      document.title='Settings · Learning Threads';q('#lt-settings-title').focus();
+      form.querySelector('fieldset').disabled=true;form.querySelector('[type="submit"]').disabled=true;
+      q('.lt-settings-error').hidden=true;q('[data-action="reload-settings"]').hidden=true;
+      try{
+        const saved=await assistant.request('/api/settings');if(!settingsOpen||load!==settingsLoad)return;
+        if(!LearningAssistantModels.valid(saved.configuration))throw new Error('The saved assistant settings are invalid.');
+        settingsVersion=saved.version;q('#lt-model').value=saved.configuration.model;reasoningOptions(saved.configuration.reasoning);
+        form.querySelector('fieldset').disabled=false;form.querySelector('[type="submit"]').disabled=false;
+      }catch(error){if(!settingsOpen||load!==settingsLoad)return;q('.lt-settings-error').textContent=error.message;q('.lt-settings-error').hidden=false;q('[data-action="reload-settings"]').hidden=false}
+    }
+    function hideSettings(){
+      if(!settingsOpen)return;settingsOpen=false;++settingsLoad;
+      q('.lt-settings-page').hidden=true;q('.lt-content').hidden=false;q('.lt-top-right').hidden=false;
+      document.title='Learning Threads';q('.lt-view-menu summary').focus({preventScroll:true});window.scrollTo(0,activeNode().scrollY||0);
+    }
+    function leaveSettings(){
+      if(history.state?.learningSettings)history.back();
+      else{const url=new URL(location.href);url.hash='';history.replaceState(null,'',url);hideSettings()}
+    }
+    q('#lt-model').innerHTML=LearningAssistantModels.models.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
+    q('#lt-model').value=LearningAssistantModels.defaults.model;reasoningOptions(LearningAssistantModels.defaults.reasoning);
+    q('#lt-model').addEventListener('change',()=>reasoningOptions(q('#lt-reasoning').value));
+    q('#lt-settings-form').addEventListener('submit',async event=>{
+      event.preventDefault();const button=event.target.querySelector('[type="submit"]'),fieldset=event.target.querySelector('fieldset'),load=settingsLoad;button.disabled=true;fieldset.disabled=true;
+      q('.lt-settings-error').hidden=true;
+      try{
+        const saved=await assistant.request('/api/settings',{version:settingsVersion,configuration:{model:q('#lt-model').value,reasoning:q('#lt-reasoning').value}});
+        if(settingsOpen&&load===settingsLoad){settingsVersion=saved.version;leaveSettings()}
+      }catch(error){if(settingsOpen&&load===settingsLoad){q('.lt-settings-error').textContent=error.message;q('.lt-settings-error').hidden=false}}
+      finally{if(load===settingsLoad){button.disabled=false;fieldset.disabled=false}}
+    });
+    window.addEventListener('popstate',()=>{if(location.hash==='#settings')showSettings();else hideSettings()});
     const design={layout:'Side by side',textSize:19,surrounding:false};
     function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}})}
     function buildControls(){
@@ -704,6 +766,9 @@
       if(action==='close-history'){q('.lt-reading-history').close();return}
       if(action==='usage'){showUsage();return}
       if(action==='close-usage'){q('.lt-usage-dialog').close();return}
+      if(action==='settings'){if(location.hash!=='#settings')history.pushState({learningSettings:true},'','#settings');showSettings();return}
+      if(action==='back-settings'){leaveSettings();return}
+      if(action==='reload-settings'){showSettings();return}
       if(action==='export-study'){exportStudy();return}
       if(action==='retry-save'){saveStudy();return}
       if(action==='open-wrist'){openWrist();q('h2').scrollIntoView({block:'start'});return}
@@ -769,6 +834,7 @@
     function applyDesign(){root.classList.toggle('lt-stacked',design.layout==='Visual below');root.style.setProperty('--lt-reading-size',design.textSize+'px');render()}
     const resumed=loadStudy();
     q('.lt-view-options').insertAdjacentHTML('beforeend','<div class="lt-actions"><a class="lt-action" href="#" data-export-study download style="text-decoration:none">Export</a><button class="lt-action" type="button" data-action="restore-study">Restore</button><button class="lt-action" type="button" data-action="saved-copies">Saved copies</button></div>');
+    q('.lt-view-options').insertAdjacentHTML('afterbegin','<button class="lt-action" type="button" data-action="settings">Settings</button>');
     cloudSync=LearningStudySync.create({book:LearningStudyStore.BOOK,storage:()=>window.localStorage,status:syncStatus,normalize:LearningStudyStore.upgrade,canApply:()=>studyLoaded&&!runningRequests.size&&!document.activeElement?.matches('input,textarea'),apply:saved=>{
       validateSourceLinks(saved);applyingCloud=true;
       try{studyStore.save(saved);loadStudy(saved);q('#lt-layout').value=design.layout;q('#lt-text-size').value=design.textSize;q('#lt-size-value').textContent=design.textSize+' px';q('#lt-surrounding').checked=design.surrounding;applyDesign();restoreReadingPosition();saveStudy()}
@@ -789,6 +855,7 @@
     if(!resumed&&new URLSearchParams(location.search).get('example')==='wrist')openWrist();
     if(!resumed&&new URLSearchParams(location.search).get('example')==='highlight'){openWrist();returnToHighlight(activeNode().id)}
     restoreReadingPosition();
+    if(location.hash==='#settings')showSettings();
     requestAnimationFrame(()=>{studyReady=true;if(studyLoaded){saveStudy();cloudSync.start(studySnapshot(),resumed);for(const node of conversations.values())for(const m of node.messages)if(m.request&&['queued','running','connecting'].includes(m.request.state))startReply(node,m)}});
     setInterval(()=>{if(document.visibilityState==='visible')cloudSync.refresh()},15000);
     window.addEventListener('online',()=>cloudSync.refresh());

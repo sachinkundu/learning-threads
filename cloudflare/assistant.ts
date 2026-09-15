@@ -1,13 +1,17 @@
 import {RequestError} from './errors.ts';
-import {MODEL,PRICES,OpenAIError,openaiRequest,responseBody,resultOf} from './openai.ts';
+import {pricing,OpenAIError,openaiRequest,responseBody,resultOf} from './openai.ts';
+import {configuration,getSettings,saveSettings} from './settings.ts';
+import Models from '../web/assistant-models.js';
 import type {LearningPayload,OpenAIResponse,Price,TokenUsage} from './openai.ts';
 export interface AssistantEnv {DB:D1Database;OPENAI_API_KEY?:string}
-export type Call={id:string;payload:string;digest:string;status:string;created:string;result:string|null;provider:string;provider_id:string|null;submission_started:string|null;poll_after:number;poll_lease_until:number;pricing:string|null};
+export type Call={id:string;payload:string;digest:string;status:string;created:string;result:string|null;provider:string;provider_id:string|null;submission_started:string|null;poll_after:number;poll_lease_until:number;pricing:string|null;configuration:string|null};
 type SavedResult={text?:string;usage?:Partial<TokenUsage>|null;cost_usd?:number|null;model?:string;[key:string]:unknown};
 const fields=['input_tokens','cached_input_tokens','cache_write_tokens','output_tokens','reasoning_output_tokens'] as const;
 const canonical=(value:unknown):string=>JSON.stringify(value,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
-const expose=(call:Call)=>({id:call.id,status:call.status,created:call.created,provider:call.provider,...(call.result?JSON.parse(call.result) as SavedResult:{})});
+const choiceOf=(call:Call)=>configuration(call.configuration?JSON.parse(call.configuration):Models.legacy);
+const expose=(call:Call)=>({id:call.id,status:call.status,created:call.created,provider:call.provider,
+  ...(call.provider==='openai'?choiceOf(call):{}),...(call.result?JSON.parse(call.result) as SavedResult:{})});
 const get=(db:D1Database,id:string)=>db.prepare('SELECT * FROM assistant_calls WHERE id=?').bind(id).first<Call>();
 const pending=(call:{status:string})=>['queued','running'].includes(call.status);
 function payload(value:unknown):{id:string;data:LearningPayload}{
@@ -27,7 +31,7 @@ async function fail(db:D1Database,id:string,error:string,extra:Record<string,unk
     .bind(JSON.stringify({error,usage:null,cost_usd:null,finished:new Date().toISOString(),...extra}),id).run();
 }
 async function saveResponse(env:AssistantEnv,call:Call,response:OpenAIResponse){
-  const price:Price=call.pricing?JSON.parse(call.pricing):PRICES,result=resultOf(response,price);
+  const choice=choiceOf(call),price:Price=call.pricing?JSON.parse(call.pricing):pricing(choice.model),result=resultOf(response,price,choice);
   await env.DB.prepare("UPDATE assistant_calls SET provider_id=?,status=?,result=?,poll_after=?,poll_lease_until=0 WHERE id=? AND provider='openai' AND status IN ('queued','running')")
     .bind(response.id,result.status,JSON.stringify(result),Date.now()+1000,call.id).run();
 }
@@ -40,6 +44,7 @@ export async function advance(env:AssistantEnv,id:string,request:typeof fetch=fe
     await fail(db,id,'This reply was interrupted before the switch to OpenAI. Retry the saved question.');
     return (await get(db,id))!;
   }
+  const choice=choiceOf(call);
   if(!call.submission_started){
     const claim=await db.prepare("UPDATE assistant_calls SET status='running',submission_started=? WHERE id=? AND provider='openai' AND submission_started IS NULL AND status='queued'")
       .bind(new Date().toISOString(),id).run();
@@ -47,12 +52,12 @@ export async function advance(env:AssistantEnv,id:string,request:typeof fetch=fe
       // Claim before the network call. Uncertain submissions are never reissued,
       // including after a lost browser acknowledgement or a Worker restart.
       let response:OpenAIResponse;
-      try{response=await openaiRequest(key,'',responseBody(JSON.parse(call.payload),id),id,request)}
+      try{response=await openaiRequest(key,'',responseBody(JSON.parse(call.payload),id,choice),id,request)}
       catch(error){
         const detail=error instanceof Error?error.message:String(error);
         const rejected=error instanceof OpenAIError&&[400,401,403,404,422,429].includes(error.status);
         await fail(db,id,rejected?`OpenAI: ${detail}`:`OpenAI did not confirm this request: ${detail} It has not been sent again; a charge may still appear in OpenAI usage.`,
-          {provider:'openai',model:MODEL,submission_uncertain:!rejected,provider_request_id:error instanceof OpenAIError?error.requestId:null});
+          {provider:'openai',...choice,submission_uncertain:!rejected,provider_request_id:error instanceof OpenAIError?error.requestId:null});
         return (await get(db,id))!;
       }
       // A D1 fault here must not be mistaken for a rejected OpenAI request.
@@ -63,7 +68,7 @@ export async function advance(env:AssistantEnv,id:string,request:typeof fetch=fe
   }
   if(!call.provider_id){
     if(call.submission_started&&Date.now()-Date.parse(call.submission_started)>60000)
-      await fail(db,id,'OpenAI submission could not be recovered. It has not been sent again; a charge may still appear in OpenAI usage.',{provider:'openai',model:MODEL,submission_uncertain:true});
+      await fail(db,id,'OpenAI submission could not be recovered. It has not been sent again; a charge may still appear in OpenAI usage.',{provider:'openai',...choice,submission_uncertain:true});
     return (await get(db,id))!;
   }
   if(call.poll_after>Date.now())return call;
@@ -76,7 +81,7 @@ export async function advance(env:AssistantEnv,id:string,request:typeof fetch=fe
   }catch(error){
     const detail=error instanceof Error?error.message:String(error);
     if(error instanceof OpenAIError&&error.status===404){
-      await fail(db,id,`OpenAI could not retrieve the saved reply: ${detail}`,{provider:'openai',model:MODEL,provider_response_id:call.provider_id});
+      await fail(db,id,`OpenAI could not retrieve the saved reply: ${detail}`,{provider:'openai',...choice,provider_response_id:call.provider_id});
     }else{
       await db.prepare('UPDATE assistant_calls SET poll_lease_until=0,poll_after=? WHERE id=?').bind(Date.now()+15000,id).run();
       throw error;
@@ -92,6 +97,8 @@ export async function collectReplies(env:AssistantEnv){
 }
 export async function assistant(request:Request,env:AssistantEnv,path:string,body:()=>Promise<unknown>,ctx:ExecutionContext):Promise<Response>{
   const db=env.DB;
+  if(path==='/api/settings'&&request.method==='GET')return json(await getSettings(db));
+  if(path==='/api/settings'&&request.method==='POST')return json(await saveSettings(db,await body()));
   if(path==='/api/usage'&&request.method==='GET'){
     const {results}=await db.prepare('SELECT * FROM assistant_calls ORDER BY created DESC').all<Call>();
     const calls=results.map(c=>{const call={...expose(c),question:(JSON.parse(c.payload) as LearningPayload).question};delete call.text;return call});
@@ -115,8 +122,9 @@ export async function assistant(request:Request,env:AssistantEnv,path:string,bod
       const work=advance(env,id);ctx.waitUntil(work);return json(expose(await work));
     }
     apiKey(env);
-    await db.prepare("INSERT INTO assistant_calls (id,payload,digest,status,created,provider,pricing) SELECT ?,?,?,'queued',?,'openai',? WHERE (SELECT count(*) FROM assistant_calls WHERE status IN ('queued','running'))<4 ON CONFLICT(id) DO NOTHING")
-      .bind(id,JSON.stringify(data),digest,new Date().toISOString(),JSON.stringify(PRICES)).run();
+    const {configuration:choice}=await getSettings(db);
+    await db.prepare("INSERT INTO assistant_calls (id,payload,digest,status,created,provider,pricing,configuration) SELECT ?,?,?,'queued',?,'openai',?,? WHERE (SELECT count(*) FROM assistant_calls WHERE status IN ('queued','running'))<4 ON CONFLICT(id) DO NOTHING")
+      .bind(id,JSON.stringify(data),digest,new Date().toISOString(),JSON.stringify(pricing(choice.model)),JSON.stringify(choice)).run();
     const call=await get(db,id);
     if(!call)return json({error:'Four replies are in progress. Try again when one finishes.'},429);
     if(call.digest!==digest)return json({error:'This request ID belongs to another question.'},409);

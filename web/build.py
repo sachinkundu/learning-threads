@@ -13,7 +13,7 @@ book_script = '<script>window.LearningBookData=' + json.dumps(book, ensure_ascii
 content = content.replace('<script src="./book.js"></script>', book_script + '<script>' + (folder / 'book.js').read_text() + '</script>')
 for filename in ['thread-examples.css']:
     content = content.replace(f'<link rel="stylesheet" href="./{filename}">', '<style>' + (folder / filename).read_text() + '</style>')
-for filename in ['study-store.js', 'study-sync.js', 'study-links.js', 'assistant-client.js', 'assistant-context.js', 'thread-examples.js']:
+for filename in ['study-store.js', 'study-sync.js', 'study-links.js', 'assistant-client.js', 'assistant-context.js', 'assistant-models.js', 'thread-examples.js']:
     content = content.replace(f'<script src="./{filename}"></script>', '<script>' + (folder / filename).read_text() + '</script>')
 # Keep the same pinned icon set as the approved prototype.
 content += '''

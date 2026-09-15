@@ -66,12 +66,12 @@ def handler(site, origins, cloud):
                 self.end_headers()
                 self.wfile.write(data)
                 return
-            if path in ['/api/study', '/api/usage'] or path.startswith(('/api/study/', '/api/replies/')):
+            if path in ['/api/study', '/api/usage', '/api/settings'] or path.startswith(('/api/study/', '/api/replies/')):
                 return self.proxy('GET')
             self.send_json({'error': 'Not found.'}, 404)
 
         def do_POST(self):
-            if self.path in ['/api/study', '/api/replies']:
+            if self.path in ['/api/study', '/api/replies', '/api/settings']:
                 return self.proxy('POST')
             self.send_json({'error': 'Not found.'}, 404)
 
