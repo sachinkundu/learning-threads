@@ -21,7 +21,7 @@ tracked in SAC-193.
 
 ## OpenAI assistant
 
-The new harness calls the OpenAI Responses API from a Cloudflare Worker.
+The live reader calls the OpenAI Responses API from a Cloudflare Worker.
 Cutover status and real provider evidence are recorded in `planning/workpad.md`.
 The API key is a Worker secret named `OPENAI_API_KEY`. It must never be added
 to frontend assets, book data, study state, or version control.
@@ -73,9 +73,11 @@ Run `rtk proxy npm test`, `rtk proxy npm run test:server`, and
 `rtk proxy npm run check`. Local tests cover context preservation, cost math,
 concurrent claims, interrupted submissions, reconnects, and background result
 collection, using SQLite and stubbed provider responses. They are not proof of
-real OpenAI access. Complete the live Brave checks before closing SAC-207.
+real OpenAI access. Live Brave checks for SAC-207 passed on 2026-09-15, including
+a production follow-up with the Mac relay stopped and QA completion after the
+browser tab closed. Provider records and deployment evidence are in the workpad.
 
-Before production cutover:
+The completed production cutover used this sequence:
 1. Configure the Worker secret and verify a real API call in the isolated QA deployment.
 2. Wait for the old relay's outstanding jobs to finish; preserve its local ledger.
 3. Stop the old Mac LaunchAgent, then apply D1 migration 0003 and deploy.

@@ -482,11 +482,10 @@ this build.
 Requested change: replace the Mac/Codex CLI relay with the OpenAI API while
 carrying the learning context. Work is on `codex/openai-cloud-assistant`.
 
-Implementation is ready in the isolated QA Worker. Production has not switched:
-no OpenAI API key is configured in the environment, project, or production
-Worker secrets. The user was asked for its local file path or environment
-variable name, without sharing the key in chat. SAC-207 remains In Progress.
-The old production relay is still running until a real QA API call passes.
+Production now uses the OpenAI API directly. The Mac relay is stopped and its
+automatic restart removed. The release and real provider evidence are recorded
+below. SAC-207 is complete. The earlier QA phase waited for the user to place an
+API key in the project `.env`; that key was then provisioned as a Worker secret.
 
 The Worker now starts GPT-6 Astra Responses with low reasoning, standard service,
 and a 6,000-token output limit. D1 retains the provider response ID, request,
@@ -537,7 +536,7 @@ Verification completed:
   paragraph 2.2.1-p2, and spherical visual controls. The assistant ledger remained
   at two legacy calls: no provider call or charge was made.
 
-Remaining before cutover:
+Cutover checklist (completed below):
 1. Provision OPENAI_API_KEY in QA and complete a real Brave follow-up. Read back
    its provider ID, token usage, cost calculation, and background recovery.
 2. Provision the production secret. Verify old Mac jobs are finished and retain
@@ -547,6 +546,58 @@ Remaining before cutover:
 4. Continue an existing production conversation in Brave with the Mac service
    stopped. Check source links, context, usage, reload, and active 100% deployment.
 
-No real OpenAI API response, Mac-independent production reply, or production
-migration is claimed by the QA checks above. SAC-193's exported-file verification
-and SAC-197's generated/interactive answer visuals remain separate work.
+The initial checks above used stubbed responses or the missing-key path. The
+following verification uses real OpenAI responses. SAC-193's exported-file
+verification and SAC-197's generated/interactive answer visuals remain separate.
+
+### Live API and production cutover
+
+The user supplied `.env` on 2026-09-15. It remains Git-ignored and mode 0600.
+The key was read without printing it and sent through stdin to Wrangler's
+secret command for QA, then production. It was not placed in frontend assets;
+a byte-level check of every deployed asset confirmed its absence.
+
+External Brave resumed the saved actuation question in QA. OpenAI response
+`resp_0708bae717595b5b006aa8e80962c087d2871ffc92ccda845a` completed with 1,960
+input tokens, 1,957 cache writes, and 278 output tokens. Its answer explicitly
+connected the selected sensor claim with the earlier spherical-wrist discussion.
+The per-answer Usage disclosure showed the actual token counts and estimated
+API cost (about $0.0383925). A second follow-up used the equation from that answer.
+
+Background proof: Brave submitted request `amu2ayod1-4seqtsrdik3` and closed the
+tab while it displayed Thinking. At 06:40:41 UTC, a read-only usage request found
+the job still running with provider response
+`resp_04ce8bcbeb40e247006aa8e85aee6487d2b8562fa4858a5849`. No reply-poll endpoint
+was called after closing the tab. The Cloudflare collector saved completion at
+06:41:04 UTC, before the page was reopened. Reopening restored the complete
+worked example, diagram, units, assumptions, and cost. QA D1 version 42 retained
+all three new exchanges. Their calculated cost subtotal was $0.1357525; each
+record was independently checked against its reported usage and saved prices.
+
+Before cutover, both the local SQLite ledger and production D1 contained six
+completed legacy calls and no pending jobs. The Mac LaunchAgent was unloaded;
+its plist was moved out of LaunchAgents to prevent restart. A consistent SQLite
+backup and the old Tailscale configuration are preserved under:
+`/Users/sachin/Library/Application Support/LearningThreads/retired-mac-relay-20260915T064207Z/`.
+Only Learning Threads ports 8080 and 8443 were removed from Tailscale Serve.
+The unrelated port 443 route is unchanged. Port 63402 has no listener.
+
+Production migration 0003 applied successfully. Worker version
+`66f6bdd5-7ed5-4a72-b63f-36118c6070bf` is active at 100% traffic on
+https://learn.voxdez.com. The minute collector is deployed. The pre-deploy dry
+run passed; no implementation changes were needed after the 37 Node / 3 Python
+tests and TypeScript checks in the prior phase.
+
+With the Mac service stopped, Brave continued the existing Chapter 1 cup-reaching
+answer. Request `amu2b2xah-ec6cnryhzw` carried paragraph `mr-ch01-p001`, printed
+page 1 / PDF page 21, replyTo m6, and all four earlier messages m3–m6. Response
+`resp_06392f21c24a2dda006aa8e9211fcc87d293519432fad844c7` completed at 06:43:51 UTC
+with 745 input and 142 output tokens, costing an estimated $0.01455. The answer
+explained alternative arm postures and included a text diagram. The production
+Usage disclosure matched the provider record. Reload retained all six messages;
+D1 version 15 contained the context, request, and new answer. All six legacy call
+records remain unchanged with their unknown dollar charges.
+
+An older user-owned production tab showed its existing stale-tab warning. It
+was left intact; verification used a fresh production tab to preserve that
+older tab's work.
