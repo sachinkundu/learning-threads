@@ -672,3 +672,17 @@ optional local preview were closed. No physical iPad test was performed here.
 
 Unauthenticated requests to the production settings endpoint returned 401.
 The API key is absent from every built asset. The Mac relay remains retired.
+
+## Remove first-paragraph test conversations (2026-09-15)
+
+The user requested a clean first paragraph. Removed the four test exchanges
+(m3–m10) from paragraph `mr-ch01-p001` through the normal versioned study API.
+Validated the complete saved state before writing against head 29; revision 30
+was accepted and read back with zero first-paragraph messages. No child threads
+or draft needed removal. Other paragraphs, notes, highlights, reading progress,
+settings, and the usage ledger were preserved. Earlier saved revisions remain
+available through the existing history mechanism.
+
+A fresh external Brave tab showed Paragraph 1 with an empty conversation and
+“Ask about this paragraph”. No code deployment was needed. Added a project rule
+to keep test exchanges in QA rather than the learner's production reading.
