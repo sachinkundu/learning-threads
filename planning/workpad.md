@@ -726,3 +726,9 @@ leaks in the 14 pre-publication commits. An independent exact-value check of 153
 historical blobs and tracked working files found none of the current OpenAI or
 QA/production bridge credentials. The private `.env` and original PDF are not
 tracked. Publish only the scanned committed tree and history.
+
+Created https://github.com/sachinkundu/learning-threads as PUBLIC and pushed the
+full history to `main`. GitHub readback confirmed `main` as the default branch
+and commit `9d6dbf90956ec818c64fbb2c6bb2a187411f682e`. The final 15-commit history
+scan and a separate scan of the committed public file tree both passed with no
+findings. Only the empty `.env.example` is included; `.env` remains ignored.
